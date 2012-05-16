@@ -1,0 +1,87 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=gb2312"/>
+		<title>Yet yet yet another jquery color picker plugin</title>
+		<meta name="author" content="http://www.vivasky.com"/>
+		<meta name="keywords" content="JQuery,HTML,CSS,Javascript"/>
+		<meta name="description" content="jQuery.icolor-Yet another jquery color picker plugin"/>
+		<meta name="copyright" content="Creative Commons Attribution 3.0 License"/>
+		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js" type="text/javascript"></script>
+		<script type="text/javascript" src="js/jquery.icolor.min.js"></script> 
+		<style type="text/css">
+			.icolor{position:absolute;}
+			.icolor_flat,.icolor_ft{position:relative;}
+			.icolor td{width: 15px;height: 15px;border: solid 1px #000000;	cursor:pointer;}
+			.icolor table{background-color: #FFFFFF;border: solid 1px #ccc;}
+			.icolor .icolor_tbx{width:170px;border-top:1px solid #999;border-left:1px solid #ccc;border-right:1px solid #ccc;border-bottom:1px solid #ccc;}
+			.icolor_ok img{border:none;}
+			
+			.icolorC,h2{width:500px;margin:80px auto;}
+			#icolor3 .icolor_tbx{width:154px;padding-right:16px;}
+			#icolor3 .icolor_ok{position:absolute;left:154px;top:50%;margin-top:-8px;}
+		</style> 
+	</head>
+	<body>
+		<h2>1,Demo-Default colors with inline style</h2>
+		<div id="icolor" class="icolorC"></div>
+		<h2>2,Demo-Custom colors with inline style,no input box,4 columns</h2>
+		<div id="icolor1" class="icolorC"></div>
+		<h2>3,Demo-Custom colors with inline style,no input box,single line</h2>
+		<div id="icolor2" class="icolorC"></div>
+		<h2>4,Demo-Default colors with inline style,additional button</h2>
+		<div id="icolor3" class="icolorC"></div>
+		<h2>5,Demo-Default colors with popup style,auto close when clicking color elements</h2>
+		<div class="icolorC">
+			<input type="text" id="icolor4"/>
+		</div>
+		<h2>6,Demo-Default colors with popup style,no auto-colose</h2>
+		<div class="icolorC">
+			<input type="text" id="icolor5"/>
+		</div>							
+	</body>
+	<script type="text/javascript">
+	//<![CDATA[
+		$("#icolor").icolor({
+			flat:true,
+			onSelect:function(c,i){i.$tb.css("background-color",c);},
+			showInput:true,
+			title:false
+		});
+		
+		//2
+		$("#icolor1").icolor({
+			flat:true,
+			colors:["FFFFFF", "EEEEEE", "FFFF88", "FF7400", "CDEB8B", "6BBA70",
+			"006E2E", "C3D9FF", "4096EE", "356AA0", "FF0096", "B02B2C", "000000"],
+			col:4,
+			onSelect:function(c,i){i.$tb.css("background-color",c);},
+		});
+		//3
+		$("#icolor2").icolor({
+			flat:true,
+			colors:["FFFFFF", "EEEEEE", "FFFF88", "FF7400", "CDEB8B", "6BBA70",
+			"006E2E", "C3D9FF", "4096EE", "356AA0", "FF0096", "B02B2C", "000000"],
+			col:false,
+			onSelect:function(c,i){i.$tb.css("background-color",c);},
+		});
+		//4
+		$("#icolor3").icolor({
+			flat:true,
+			onSelect:function(c,i){i.$tb.css("background-color",c);},
+			showInput:true,
+			okTpl:'<a class="icolor_ok" href="#"><img src="img/icon_done.gif" alt="ok"/></a>'
+		});	
+		//5
+		$("#icolor4").icolor({
+			onSelect:function(c,i){i.$tb.css("background-color",c);i.$t.val(c);}
+		});	
+		//6
+		$("#icolor5").icolor({
+			onSelect:function(c,i){i.$tb.css("background-color",c);i.$t.val(c);},
+			autoClose:false
+		});						
+	//]]>
+	</script>
+ 
+</html>

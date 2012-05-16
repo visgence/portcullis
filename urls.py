@@ -14,7 +14,7 @@ urlpatterns = patterns('',
 
     # Uncomment the next line to enable the admin:
     url(r'^$', redirect_to,{'url':'/portcullis/'}),
-    url(r'^render_graph/$', 'The_Keep.views.render_graph'),
+    url(r'^render_graph/$', 'drawbridge.views.render_graph'),
     url(r'^admin/', include(admin.site.urls)),
     url(r'^portcullis/', include('portcullis.urls')),
     url(r'^favicon\.ico$', redirect_to, {'url': '/static/portcullis/favicon.ico'}),

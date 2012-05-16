@@ -1,4 +1,7 @@
 # Django settings for portcullis project.
+import re,os
+program_path = os.path.realpath(__file__)
+APP_PATH = re.sub('settings.py[c]*$','',program_path);
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
@@ -70,6 +73,7 @@ STATICFILES_DIRS = (
     # Put strings here, like "/home/html/static" or "C:/www/django/static".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
+    APP_PATH + '/static/',
 )
 
 # List of finder classes that know how to find static files in
@@ -125,7 +129,7 @@ INSTALLED_APPS = (
     # 'django.contrib.admindocs',
     'portcullis',
     'stream_editor',
-    'The_Keep',
+    'drawbridge',
 )
 
 # A sample logging configuration. The only tangible logging

@@ -4,7 +4,7 @@ from django.conf.urls import patterns, include, url
 from django.contrib import admin
 admin.autodiscover()
 
-urlpatterns = patterns('The_Keep.views',
+urlpatterns = patterns('drawbridge.views',
     # Examples:
     # url(r'^$', 'portcullis.views.home', name='home'),
     # url(r'^portcullis/', include('portcullis.foo.urls')),
