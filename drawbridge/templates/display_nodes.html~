@@ -1,0 +1,43 @@
+<head>
+    {% load static from staticfiles %}
+    <script language="javascript" type="text/javascript" src="/static/js/jquery-1.7.1.min.js"></script>
+    <script language="javascript" type="text/javascript" src="/static/js/jquery.flot.js"></script>
+    <script language="javascript" type="text/javascript" src="/static/js/jquery.flot.selection.min.js"></script>
+    <script language="javascript" type="text/javascript" src="/static/js/json2.js"></script>
+    <script type="text/javascript" src="/static/js/jquery-ui-1.8.18.custom.min.js"></script>
+    <script type="text/javascript" src="/static/js/jquery-ui-timepicker-addon.js"></script>
+    <script type="text/javascript" src="/static/js/jquery-ui-sliderAccess.js"></script>
+    <script type="text/javascript" src="/static/js/plotter.js"></script>
+    <script type="text/javascript" src="/static/js/scaling_functions.js"></script>
+    <script type="text/javascript" src="/static/js/jquery.flot.axislabels.js"></script>
+    <script type="text/javascript" src="/static/js/date_picker.js"></script>
+    <link rel="stylesheet" media="all" type="text/css" href="/static/css/ui-lightness/jquery-ui-1.7.3.custom.css" />
+    <link rel="stylesheet" media="all" type="text/css" href="/static/css/display_nodes.css" />
+</head>
+<body>
+<h1> Sensor Readings</h1>
+
+    <h2 id="utc_stamp"></h2>
+    
+
+<!-- Date range form -->
+<form class="date_form" >
+    Start: <input type="text" name ="start" id="start" value=""/>
+    End: <input type="text" name = "end" id="end" value="" />
+    <input type="hidden" name = "to_epoch" value ="true" />
+    <!-- Data granularity -->
+    Number of datapoints: <input type="text" name = "granularity" id="granularity" value="100" />
+    <input type="button" value="Submit" onClick="submit_form()" />
+</form>
+
+    <a id="shortcut" href="/" ><div>Share this view</div></a>
+
+    <!-- Create a placeholder for each datastream -->
+        <b id = "graph_title18">  </b>
+        <div id ="18" class="portcullis-graph">
+        <div id="sensor18" class="sensor_graph" ></div>
+        <div id="overview18" class = "overview_graph"></div>
+        </div>
+        <br>
+<div id="debug"></div>
+</body>
