@@ -4,12 +4,12 @@ from django.conf.urls import patterns, include, url
 from django.contrib import admin
 admin.autodiscover()
 
-urlpatterns = patterns('graphs.views',
+urlpatterns = patterns('',
     # Examples:
     # url(r'^$', 'portcullis.views.home', name='home'),
     # url(r'^portcullis/', include('portcullis.foo.urls')),
      url(r'^render_graph/$', 'render_graph'),
-     url(r'^generate_view/$', 'generate_view'),
+     url(r'^graphs/$', include('graphs.urls')),
  
     # Uncomment the admin/doc line below to enable admin documentation:
     # url(r'^admin/doc/', include('django.contrib.admindocs.urls')),

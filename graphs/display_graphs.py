@@ -10,9 +10,37 @@ from portcullis.models import DataStream, SensorReading, ScalingFunction
 #Local Imports
 import data_reduction
 
-def generate_view(request):
-    return render(request,'display_nodes.html', context_instance=RequestContext(request))
+def display_graphs
+{
+    if(request.method == 'GET'):
+        node = int(request.GET.get('node'));
+        port = int(request.GET.get('port'));
+        start = int(request.GET.get('start'));
+        end = int(request.GET.get('end'));
+        granularity = int(request.GET.get('granularity'));
 
+        streams = 0
+
+        if(node != None and port != None):
+            streams = DataStream.objects.filter(node_id = node, port_id = port)
+            elif(node != None):
+                streams = DataStream.objects.filter(node_id = node)
+            else:
+                streams = DataStream.objects.all()
+
+        return render(request,'display_nodes.html', streams, context_instance=RequestContext(request))        
+
+
+}
+
+
+
+
+
+##
+#Takes a single datastream id and a time frame and generates json for the data
+#Returns: json
+##
 def render_graph(request):
     if(request.method == 'GET'):
         start = int(request.GET.get('start'));
