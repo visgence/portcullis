@@ -8,7 +8,7 @@ urlpatterns = patterns('',
     # Examples:
     # url(r'^$', 'portcullis.views.home', name='home'),
     # url(r'^portcullis/', include('portcullis.foo.urls')),
-     url(r'^render_graph/$', 'render_graph'),
+     url(r'^/$', 'login'),
      url(r'^graphs/$', include('graphs.urls')),
  
     # Uncomment the admin/doc line below to enable admin documentation:

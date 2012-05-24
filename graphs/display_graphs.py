@@ -10,28 +10,26 @@ from portcullis.models import DataStream, SensorReading, ScalingFunction
 #Local Imports
 import data_reduction
 
-def display_graphs
-{
+def display_graphs(request):
     if(request.method == 'GET'):
-        node = int(request.GET.get('node'));
-        port = int(request.GET.get('port'));
-        start = int(request.GET.get('start'));
-        end = int(request.GET.get('end'));
-        granularity = int(request.GET.get('granularity'));
+        node = int(request.GET.get('node'))
+        port = int(request.GET.get('port'))
+        start = int(request.GET.get('start'))
+        end = int(request.GET.get('end'))
+        granularity = int(request.GET.get('granularity'))
 
         streams = 0
 
         if(node != None and port != None):
             streams = DataStream.objects.filter(node_id = node, port_id = port)
-            elif(node != None):
-                streams = DataStream.objects.filter(node_id = node)
-            else:
-                streams = DataStream.objects.all()
+        elif(node != None):
+            streams = DataStream.objects.filter(node_id = node)
+        else:
+            streams = DataStream.objects.all()
 
         return render(request,'display_nodes.html', streams, context_instance=RequestContext(request))        
 
 
-}
 
 
 
@@ -43,29 +41,29 @@ def display_graphs
 ##
 def render_graph(request):
     if(request.method == 'GET'):
-        start = int(request.GET.get('start'));
-        end = int(request.GET.get('end'));
-        datastream_id = int(request.GET.get('datastream_id'));
-        granularity = request.GET.get('granularity');
+        start = int(request.GET.get('start'))
+        end = int(request.GET.get('end'))
+        datastream_id = int(request.GET.get('datastream_id'))
+        granularity = request.GET.get('granularity')
         total_time = end - start
         stream_data = []
 
         if(granularity == None):
-            granularity = 100;
+            granularity = 100
     
         #Pull the data for this stream
         stream_info = DataStream.objects.get(id = datastream_id)
 
         #These fields could be used for graph settings client-side
-        stream_info.xmin = start;
-        stream_info.xmax = end;
+        stream_info.xmin = start
+        stream_info.xmax = end
 
         time_chunk = total_time / granularity
         end_of_chunk = start + time_chunk
-        reduced_data = [];#will contain final data after it is reduced
+        reduced_data = []#will contain final data after it is reduced
 
         while (end_of_chunk < end):
-            tmp_data=[];
+            tmp_data=[]
             sub_readings = SensorReading.objects.filter(date_entered__gte = start, date_entered__lte = end_of_chunk, datastream = datastream_id).order_by('date_entered')
            
             if(sub_readings):
