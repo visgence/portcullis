@@ -1,8 +1,7 @@
 # Django settings for portcullis project.
 import re,os
 program_path = os.path.realpath(__file__)
-APP_PATH = re.sub('settings.py[c]*$','',program_path); 
-
+APP_PATH = re.sub('settings.py[c]*$','',program_path);
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
@@ -17,8 +16,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
         'NAME': 'portcullis',                      # Or path to database file if using sqlite3.
-        'USER': 'david',                      # Not used with sqlite3.
-        'PASSWORD': '',                  # Not used with sqlite3.
+        'USER': 'portcullis',                      # Not used with sqlite3.
+        'PASSWORD': 'p0rtcullis',                  # Not used with sqlite3.
         'HOST': '',                      # Set to empty string for localhost. Not used with sqlite3.
         'PORT': '',                      # Set to empty string for default. Not used with sqlite3.
     }
@@ -31,7 +30,7 @@ DATABASES = {
 # timezone as the operating system.
 # If running in a Windows environment this must be set to the same as your
 # system time zone.
-TIME_ZONE = 'America/Denver'
+TIME_ZONE = 'America/Chicago'
 
 # Language code for this installation. All choices can be found here:
 # http://www.i18nguy.com/unicode/language-identifiers.html
@@ -105,7 +104,7 @@ MIDDLEWARE_CLASSES = (
     # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
 
-ROOT_URLCONF = 'urls'
+ROOT_URLCONF = 'graphs.urls'
 
 # Python dotted path to the WSGI application used by Django's runserver.
 WSGI_APPLICATION = 'portcullis.wsgi.application'

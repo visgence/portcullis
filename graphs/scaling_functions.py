@@ -14,7 +14,7 @@ def scaling_functions(request):
         
         js = "scaling_functions = {"
 
-        for function in scaling_functions
+        for function in scaling_functions:
             js = js + str(function.function_id) + ": function(x){" + str(function.definition) + "}, "
         js = js + "};"
         print scaling_functions

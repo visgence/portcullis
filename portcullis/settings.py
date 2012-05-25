@@ -130,6 +130,7 @@ INSTALLED_APPS = (
     'portcullis',
     'datastreams',
     'graphs',
+    'collector'
 )
 
 # A sample logging configuration. The only tangible logging
