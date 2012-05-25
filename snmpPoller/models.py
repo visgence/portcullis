@@ -31,4 +31,4 @@ class SnmpStream(models.Model):
     maxValPerPoll = models.BigIntegerField()
     
     def __unicode__(self):
-        return "SnmpStream: dataStreamID=\"%d\" hostname=%d oid=%s lastTime=%s lastValue=%s" % (self.dataStream.id,self.host.self.hostname,self.oid,self.lastTime,self.lastValue)
+        return "SnmpStream: dataStreamID=\"%d\" hostname=%d oid=%s lastTime=%s lastValue=%s" % (self.dataStream.id,self.host,self.hostname,self.oid,self.lastTime,self.lastValue)
