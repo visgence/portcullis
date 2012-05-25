@@ -14,10 +14,10 @@ urlpatterns = patterns('',
 
     # Uncomment the next line to enable the admin:
     url(r'^$', redirect_to,{'url':'/portcullis/'}),
-    url(r'^render_graph/$', 'graphs.display_graphs.render_graph'),
-    url(r'^graphs/', include('graphs.urls')),
-    url(r'^scaling_functions.js/$', 'graphs.scaling_functions.scaling_functions'),
+    #url(r'^render_graph/$', 'graphs.display_graphs.render_graph'),
+    #url(r'^graphs/', include('graphs.urls')),
+    #url(r'^scaling_functions.js/$', 'graphs.scaling_functions.scaling_functions'),
     url(r'^admin/', include(admin.site.urls)),
     url(r'^portcullis/', include('portcullis.urls')),
-    url(r'^favicon\.ico$', redirect_to, {'url': '/static/portcullis/favicon.ico'}),
+    #url(r'^favicon\.ico$', redirect_to, {'url': '/static/portcullis/favicon.ico'}),
 )
