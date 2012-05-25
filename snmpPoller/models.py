@@ -24,7 +24,7 @@ class SnmpStream(models.Model):
     dataStream = models.ForeignKey(DataStream)
     host = models.ForeignKey(Host)
     oid = models.CharField(max_length=128)
-    lastTime = models.DateField(auto_now=False,null=True,blank=True)
+    lastTime = models.DateTimeField(auto_now=False,null=True,blank=True)
     lastValue = models.BigIntegerField(null=True,blank=True)
     maxTime = models.IntegerField()
     maxValue = models.BigIntegerField()
