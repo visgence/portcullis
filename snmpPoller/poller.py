@@ -43,6 +43,7 @@ for s in streams:
             else:
 
                 valdiff = value - s.lastValue
+                #If we rollover
                 if(valdiff < 0):
                     valdiff += s.maxValue 
         
@@ -55,10 +56,14 @@ for s in streams:
                     rate = float(valdiff) / float(timediff)
                 else:
                     rate = 0.0;
+                
+                if(rate > s.maxValPerPoll):
+                    print "Possible Spike"
 
-                print "Rate is %f timediff=%d valdiff=%d" % (rate,timediff,valdiff)
-                command = "curl \"" + url + "?auth_token=" + authToken + "&datastream_id=" + str(s.dataStream.id) + "&value=" + str(rate) + "\""   
-                print os.system(command)
+                else:
+                    print "Rate is %f timediff=%d valdiff=%d" % (rate,timediff,valdiff)
+                    command = "curl \"" + url + "?auth_token=" + authToken + "&datastream_id=" + str(s.dataStream.id) + "&value=" + str(rate) + "\""   
+                    print os.system(command)
 
     else:
         print "no data for host"
