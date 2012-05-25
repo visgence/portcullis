@@ -3,7 +3,7 @@ from django.contrib import admin
 
 
 class SnmpStreamAdmin(admin.ModelAdmin):
-    list_display = ('dataStream_id','host_hostname','oid')
+    list_display = ('active','dataStream_id','host_hostname','oid','lastTime','lastValue','maxTime','maxValue','maxValPerPoll')
 
     def dataStream_id(self,obj):
         return obj.dataStream.id
