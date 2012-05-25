@@ -14,6 +14,7 @@ def user_login(request):
     #Read next url to be redirected to
     try:
         redirect_to = request.REQUEST["next"]
+        print redirect_to
     except KeyError:
         redirect_to = "/"
 
@@ -36,5 +37,5 @@ def user_login(request):
 
 def logout(request):
     auth_logout(request)
-    return HttpResponseRedirect("/login/")
+    return HttpResponseRedirect("/portcullis/")
 
