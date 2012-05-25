@@ -10,6 +10,8 @@ urlpatterns = patterns('portcullis.login',
     # url(r'^portcullis/', include('portcullis.foo.urls')),
      url(r'^$', 'user_login'),
      url(r'^login/$', 'user_login'),
+     url(r'^logout/$', 'logout'),
+     
     # Uncomment the admin/doc line below to enable admin documentation:
     # url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
 

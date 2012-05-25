@@ -36,6 +36,7 @@ def user_login(request):
     return HttpResponse(t.render(c))
 
 def logout(request):
+    print "just logged out"
     auth_logout(request)
     return HttpResponseRedirect("/portcullis/")
 

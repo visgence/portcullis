@@ -14,7 +14,7 @@ urlpatterns = patterns('',
 
     # Uncomment the next line to enable the admin:
     url(r'^$', redirect_to,{'url':'/portcullis/'}),
-    #url(r'^/logout$', redirect_to,{'url':'/portcullis/'}),
+    #url(r'^logout$', redirect_to,{'url':'/portcullis/logout/'}),
     #url(r'^render_graph/$', 'graphs.display_graphs.render_graph'),
     url(r'^graphs/', include('graphs.urls')),
     #url(r'^graphs/', include('graphs.urls')),
