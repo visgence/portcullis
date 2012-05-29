@@ -118,13 +118,13 @@ function plot_graph(data,options,div)
         var empty_plot = $.plot($(div), [[2,2]], 
                         {
                             bars: { show: true, barWidth: 0.5, fill: 0.9 },
-                            label:  data.name, 
+                            label:  data.label, 
                             xaxis: {ticks: [], autoscaleMargin: 0.02, min: 0, max: 10 },
                             yaxis: { min: 0, max: 10 }
                         });
         //inform the user that there is no data for this sensor 
         var offset = empty_plot.pointOffset({ x: 4, y: 5});
-        $(div).append('<div style="position:absolute;width:800px;text-align:center;top:' + offset.top + 'px;color:#666;font-size:smaller">No Data for '+ data.name + ' in this range</div>');
+        $(div).append('<div style="position:absolute;width:800px;text-align:center;top:' + offset.top + 'px;color:#666;font-size:smaller">No Data for '+ data.label + ' in this range</div>');
     }//end if
     else
     {
@@ -180,7 +180,7 @@ function zoom_graph(ranges, granularity, datastream_id)
     function on_data_recieved(data) 
     {
         //set the graphs title
-        $("#graph_title" + datastream_id).text(data.name + " - Node " + data.node_id + " - Stream " + datastream_id );
+        $("#graph_title" + datastream_id).text(data.label + " - Node " + data.node_id + " - Stream " + datastream_id );
 
         options.yaxis = {min:data.min_value, max:data.max_value, axisLabel: data.units};
         var plot =  plot_graph(data,options,"#sensor" + datastream_id);

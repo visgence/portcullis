@@ -8,7 +8,7 @@
     <script type="text/javascript" src="/static/js/jquery-ui-timepicker-addon.js"></script>
     <script type="text/javascript" src="/static/js/jquery-ui-sliderAccess.js"></script>
     <script type="text/javascript" src="/static/js/plotter.js"></script>
-    <script type="text/javascript" src="/scaling_functions.js"></script>
+    <script type="text/javascript" src="scaling_functions.js/"></script>
     <script type="text/javascript" src="/static/js/jquery.flot.axislabels.js"></script>
     <script type="text/javascript" src="/static/js/date_picker.js"></script>
     <link rel="stylesheet" media="all" type="text/css" href="/static/css/ui-lightness/jquery-ui-1.7.3.custom.css" />
@@ -32,12 +32,20 @@
 
     <a id="shortcut" href="/" ><div>Share this view</div></a>
 
+    {% for stream in streams%}
     <!-- Create a placeholder for each datastream -->
-        <b id = "graph_title18">  </b>
-        <div id ="18" class="portcullis-graph">
-        <div id="sensor18" class="sensor_graph" ></div>
-        <div id="overview18" class = "overview_graph"></div>
+        <h4>Node:{{stream.node_id}} Port:{{stream.port_id}}</h4>
+        <b id = "graph_title{{stream.id}}">  </b>
+        <div id ="{{stream.id}}" class="portcullis-graph">
+            <div id="sensor{{stream.id}}" class="sensor_graph" ></div>
+            <div id="overview{{stream.id}}" class = "overview_graph"></div>
         </div>
         <br>
-<div id="debug"></div>
+
+
+    {% endfor %}
+
+
+
+   <div id="debug"></div>
 </body>

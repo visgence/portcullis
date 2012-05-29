@@ -22,7 +22,7 @@ def validate_stream(stream_id, node_id, port_id):
         if(stream):
             return {'datastream_id':stream['datastream_id']}
         else:
-            return {'error':"\ndatastream_id %d does not exist in the datastream table.\n" % stream_id}A
+            return {'error':"\ndatastream_id %d does not exist in the datastream table.\n" % stream_id}
 
     elif(node_id != '' and port_id != ''):
         stream = DataStream.objects.get(node_id = self.node_id, port_id = self.port_id)
@@ -30,6 +30,6 @@ def validate_stream(stream_id, node_id, port_id):
         if(stream):
             return {'datastream_id':stream['datastream_id']}
         else:
-            return {'error':"\nNode id %d and port id %d does not map to an existing datastream id.\n" % {node_id, port_id}}A
+            return {'error':"\nNode id %d and port id %d does not map to an existing datastream id.\n" % {node_id, port_id}}
 
     return {'error':"Not enough info to uniquely identify a data stream. You must give either a datastream_id or both a node_id and a port_id. Example: \"datastream_id=1\" or \"node_id=1&port_id=3.\"\n\n" }

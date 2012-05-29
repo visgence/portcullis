@@ -12,22 +12,29 @@ import data_reduction
 
 def display_graphs(request):
     if(request.method == 'GET'):
-        node = int(request.GET.get('node'))
-        port = int(request.GET.get('port'))
-        start = int(request.GET.get('start'))
-        end = int(request.GET.get('end'))
-        granularity = int(request.GET.get('granularity'))
+        node = request.GET.get('node')
+        port = request.GET.get('port')
+        start = request.GET.get('start')
+        end = request.GET.get('end')
+        granularity = request.GET.get('granularity')
 
         streams = 0
+        data = {
+                    'granularity':granularity,
+                    'start':start,
+                    'end':end
+               }
 
         if(node != None and port != None):
-            streams = DataStream.objects.filter(node_id = node, port_id = port)
+            data['streams'] = DataStream.objects.filter(node_id = int(node), port_id = int(port))
         elif(node != None):
-            streams = DataStream.objects.filter(node_id = node)
+            data['streams'] = DataStream.objects.filter(node_id = int(node))
         else:
-            streams = DataStream.objects.all()
+            data['streams'] = DataStream.objects.all()
 
-        return render(request,'display_nodes.html', streams, context_instance=RequestContext(request))        
+        print data['streams']
+
+        return render(request,'display_nodes.html', data, context_instance=RequestContext(request))        
 
 
 
@@ -44,7 +51,7 @@ def render_graph(request):
         start = int(request.GET.get('start'))
         end = int(request.GET.get('end'))
         datastream_id = int(request.GET.get('datastream_id'))
-        granularity = request.GET.get('granularity')
+        granularity = int(request.GET.get('granularity'))
         total_time = end - start
         stream_data = []
 
@@ -78,13 +85,14 @@ def render_graph(request):
         stream_info.label = stream_info.name
 
         json = to_json(stream_info)
-        print json
+        print "print scaling_function: %s" % stream_info.scaling_function
+        print "print json: %s" % json
 
         return HttpResponse(json)
 
         
 def to_json(stream):
-    stream_data = {"reduction_type":stream.reduction_type,"label":stream.name,"port_id":stream.port_id,"data":stream.data,"max_value":stream.max_value,"min_value":stream.min_value,"description":stream.description,"scaling_function":stream.description,"datastream_id":stream.id,"color":stream.color,"node_id":stream.node_id,"xmin":stream.xmin,"xmax":stream.xmax,"units":stream.units}
+    stream_data = {"reduction_type":stream.reduction_type,"label":stream.name,"port_id":stream.port_id,"data":stream.data,"max_value":stream.max_value,"min_value":stream.min_value,"description":stream.description,"scaling_function":stream.scaling_function.id,"datastream_id":stream.id,"color":stream.color,"node_id":stream.node_id,"xmin":stream.xmin,"xmax":stream.xmax,"units":stream.units}
 
     return simplejson.dumps(stream_data)
 
