@@ -139,6 +139,9 @@ function submit_form(datastream_id)
     var start = new Date($("#start").val());
     var end = new Date($("#end").val());
     
+    if($("#granularity").val() == '')
+        $("#granularity").val(100) 
+
     epoch_start = start.getTime();
     epoch_end= end.getTime();  
     
@@ -281,11 +284,11 @@ function update_link()
 
     if(node != 'null')
     {
-        $("a").attr("href","/graphs/?node="+node +"&start="+ start.toLocaleString()+"&end="+end.toLocaleString());
+        $("a").attr("href","/graphs/?node="+node +"&start="+ start.toLocaleString()+"&end="+end.toLocaleString()+"&granularity="+$("#granularity").val());
     }
     else
     {
-        $("a").attr("href","/graphs/?start="+ start.toLocaleString()+"&end="+end.toLocaleString());
+        $("a").attr("href","/graphs/?start="+ start.toLocaleString()+"&end="+end.toLocaleString()+"&granularity="+$("#granularity").val());
     }
 }//end update_link
 

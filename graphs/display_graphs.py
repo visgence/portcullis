@@ -25,6 +25,9 @@ def display_graphs(request):
                     'end':end
                }
 
+        if(granularity != None):
+            data['granularity'] = int(granularity)
+
         if(node != None and port != None):
             data['streams'] = DataStream.objects.filter(node_id = int(node), port_id = int(port))
         elif(node != None):

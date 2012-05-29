@@ -35,8 +35,13 @@
     {% endifequal %}
 
     <input type="hidden" name = "to_epoch" value ="true" />
-    <!-- Data granularity -->
-    Number of datapoints: <input type="text" name = "granularity" id="granularity" value="100" />
+
+    {% ifequal granularity None %}
+        Number of datapoints: <input type="text" name = "granularity" id="granularity" value="100" />
+    {% else %}
+        Number of datapoints: <input type="text" name = "granularity" id="granularity" value="{{granularity}}" />
+    {% endifequal %}
+
     <input type="button" value="Submit" onClick="submit_form()" />
 </form>
 
