@@ -281,11 +281,11 @@ function update_link()
 
     if(node != 'null')
     {
-        $("a").attr("href","/?node="+node +"&start="+ start.toLocaleString()+"&end="+end.toLocaleString());
+        $("a").attr("href","/graphs/?node="+node +"&start="+ start.toLocaleString()+"&end="+end.toLocaleString());
     }
     else
     {
-        $("a").attr("href","/?start="+ start.toLocaleString()+"&end="+end.toLocaleString());
+        $("a").attr("href","/graphs/?start="+ start.toLocaleString()+"&end="+end.toLocaleString());
     }
 }//end update_link
 

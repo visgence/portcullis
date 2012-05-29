@@ -32,8 +32,6 @@ def display_graphs(request):
         else:
             data['streams'] = DataStream.objects.all()
 
-        print data['streams']
-
         return render(request,'display_nodes.html', data, context_instance=RequestContext(request))        
 
 

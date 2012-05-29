@@ -22,8 +22,18 @@
 
 <!-- Date range form -->
 <form class="date_form" >
-    Start: <input type="text" name ="start" id="start" value=""/>
-    End: <input type="text" name = "end" id="end" value="" />
+    {% ifequal start None %}
+        Start: <input type="text" name ="start" id="start" value=""/>
+    {% else %}
+        Start: <input type="text" name ="start" id="start" value="{{start}}"/>
+    {% endifequal %}
+
+    {% ifequal end None %}
+        End: <input type="text" name = "end" id="end" value="" />
+    {% else %}
+        End: <input type="text" name = "end" id="end" value="{{end}}" />
+    {% endifequal %}
+
     <input type="hidden" name = "to_epoch" value ="true" />
     <!-- Data granularity -->
     Number of datapoints: <input type="text" name = "granularity" id="granularity" value="100" />
