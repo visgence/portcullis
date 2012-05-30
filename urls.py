@@ -9,6 +9,7 @@ urlpatterns = patterns('',
     # url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
 
     url(r'^$', redirect_to,{'url':'/portcullis/'}),
+    url(r'^login/$', redirect_to,{'url':'/portcullis/'}),
     url(r'^render_graph/$', 'graphs.display_graphs.render_graph'),
     url(r'^graphs/', include('graphs.urls')),
     url(r'^admin/', include(admin.site.urls)),

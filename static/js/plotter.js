@@ -140,7 +140,7 @@ function submit_form(datastream_id)
     var end = new Date($("#end").val());
     
     if($("#granularity").val() == '')
-        $("#granularity").val(100) 
+        $("#granularity").val(300) 
 
     epoch_start = start.getTime();
     epoch_end= end.getTime();  

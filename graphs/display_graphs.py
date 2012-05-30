@@ -6,11 +6,18 @@ from django.core import serializers
 from django.utils import simplejson
 from django.shortcuts import render
 from portcullis.models import DataStream, SensorReading, ScalingFunction 
+from check_access import check_access
 
 #Local Imports
 import data_reduction
 
 def display_graphs(request):
+
+    response = check_access(request)
+    print response
+    if(response):
+        return response
+
     if(request.method == 'GET'):
         node = request.GET.get('node')
         port = request.GET.get('port')

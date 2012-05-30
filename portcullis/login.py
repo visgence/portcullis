@@ -14,15 +14,17 @@ def user_login(request):
     #Read next url to be redirected to
     try:
         redirect_to = request.REQUEST["next"]
-        print redirect_to
+        print "redirect to: %s" % redirect_to
     except KeyError:
-        redirect_to = "/"
+        redirect_to = "/portcullis/user_streams/"
+        print "redirect to: %s" % redirect_to
 
     if request.method == 'POST':
         user = authenticate(username=request.POST["username"], password=request.POST["password"])
         if user is not None:
             if user.is_active:
                 login(request, user)
+                print "logged in"
                 return HttpResponseRedirect(redirect_to)
             else:
                 error = "Account disabled"
