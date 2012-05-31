@@ -7,6 +7,7 @@ from django.utils import simplejson
 from django.shortcuts import render
 from portcullis.models import DataStream, SensorReading, ScalingFunction 
 from check_access import check_access
+from django.db.models import Q
 
 #Local Imports
 import data_reduction
@@ -25,15 +26,21 @@ def display_graphs(request):
         end = request.GET.get('end')
         granularity = request.GET.get('granularity')
 
-        streams = 0
         data = {
                     'granularity':granularity,
                     'start':start,
-                    'end':end
+                    'end':end,
+                    'streams':DataStream.objects.none()
                }
-
+        
         if(granularity != None):
             data['granularity'] = int(granularity)
+        
+        #datastreams take precedence
+        if(request.GET.getlist('stream')):
+            for stream in request.GET.getlist('stream'):
+                data['streams'] = data['streams'] | DataStream.objects.filter(Q(id=stream)) 
+            return render(request,'display_nodes.html', data, context_instance=RequestContext(request))        
 
         if(node != None and port != None):
             data['streams'] = DataStream.objects.filter(node_id = int(node), port_id = int(port))
@@ -93,8 +100,7 @@ def render_graph(request):
         stream_info.label = stream_info.name
 
         json = to_json(stream_info)
-        print "print scaling_function: %s" % stream_info.scaling_function
-        print "print json: %s" % json
+        #print "print json: %s" % json
 
         return HttpResponse(json)
 

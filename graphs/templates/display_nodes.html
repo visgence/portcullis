@@ -15,6 +15,15 @@
     <link rel="stylesheet" media="all" type="text/css" href="/static/css/display_nodes.css" />
 </head>
 <body>
+
+    <div>
+        {% if user.first_name %}
+            {{user.first_name}} {{user.last_name}} (<a href="/portcullis/logout/">logout</a>)
+        {% endif %}
+    </div>
+
+
+
 <h1> Sensor Readings</h1>
 
     <h2 id="utc_stamp"></h2>
@@ -22,6 +31,7 @@
 
 <!-- Date range form -->
 <form class="date_form" >
+    {% csrf_token %}
     {% ifequal start None %}
         Start: <input type="text" name ="start" id="start" value=""/>
     {% else %}
@@ -45,7 +55,7 @@
     <input type="button" value="Submit" onClick="submit_form()" />
 </form>
 
-    <a id="shortcut" href="/" ><div>Share this view</div></a>
+    <a id="share_link" href="/" ><div>Share this view</div></a>
 
     {% for stream in streams%}
     <!-- Create a placeholder for each datastream -->

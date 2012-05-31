@@ -8,6 +8,7 @@
 # into your database.
 
 from django.db import models
+from django.contrib.auth import models as auth_models
 
 class ScalingFunction(models.Model):
     id = models.AutoField(primary_key=True, db_column='function_id')
@@ -31,6 +32,8 @@ class DataStream(models.Model):
     max_value = models.DecimalField(null=True, max_digits=20,decimal_places=6, blank=True)
     scaling_function = models.ForeignKey(ScalingFunction, null=True, db_column='scaling_function', blank=True)
     reduction_type = models.CharField(max_length=32, blank=True)
+    owner = models.ForeignKey(auth_models.User)
+    is_public = models.BooleanField()
 
     class Meta:
         db_table = u'data_streams'

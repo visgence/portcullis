@@ -284,11 +284,11 @@ function update_link()
 
     if(node != 'null')
     {
-        $("a").attr("href","/graphs/?node="+node +"&start="+ start.toLocaleString()+"&end="+end.toLocaleString()+"&granularity="+$("#granularity").val());
+        $("#share_link").attr("href","/graphs/?node="+node +"&start="+ start.toLocaleString()+"&end="+end.toLocaleString()+"&granularity="+$("#granularity").val());
     }
     else
     {
-        $("a").attr("href","/graphs/?start="+ start.toLocaleString()+"&end="+end.toLocaleString()+"&granularity="+$("#granularity").val());
+        $("#share_link").attr("href","/graphs/?start="+ start.toLocaleString()+"&end="+end.toLocaleString()+"&granularity="+$("#granularity").val());
     }
 }//end update_link
 

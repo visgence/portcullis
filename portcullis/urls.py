@@ -19,6 +19,6 @@ urlpatterns = patterns('portcullis.login',
     url(r'^admin/', include(admin.site.urls)),
 )
 
-urlpatterns += patterns('portcullis.index',
+urlpatterns += patterns('portcullis.user_portal',
      url(r'^user_streams/$', 'user_streams'),
 )
