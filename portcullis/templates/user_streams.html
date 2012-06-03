@@ -1,0 +1,41 @@
+<head>
+    {% load static from staticfiles %}
+    <script language="javascript" type="text/javascript" src="/static/js/jquery-1.7.1.min.js"></script>
+    <script language="javascript" type="text/javascript" src="/static/js/json2.js"></script>
+    <script type="text/javascript" src="/static/js/jquery-ui-1.8.18.custom.min.js"></script>
+    <link rel="stylesheet" media="all" type="text/css" href="/static/css/ui-lightness/jquery-ui-1.7.3.custom.css" />
+</head>
+<body>
+<h1> Sensor Readings</h1>
+
+
+{%block content%}
+<div>
+    {% if user.first_name %}
+        Hello {{user.first_name}} {{user.last_name}} (<a href="/portcullis/logout/">logout</a>)
+    {% endif %}     
+</div>
+
+
+<!-- Date range form -->
+<form action="/graphs/" >
+    {% csrf_token %}
+
+
+    {% for stream in streams%}
+    <!-- Create a placeholder for each datastream -->
+    <input type="checkbox" name="stream" class="stream" value="{{stream.id}}" /> {{stream.name}} 
+        <br>
+    {% endfor %}
+
+    </br>
+    Show public streams? <input type="checkbox" name="show_public" value="True"/> 
+    </br>
+
+    <input type="submit" value="Submit"/>
+</form>
+
+   <div id="debug"></div>
+</body>
+{%endblock%}
+
