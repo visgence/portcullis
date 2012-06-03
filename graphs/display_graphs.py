@@ -120,7 +120,28 @@ def render_graph(request):
 
         
 def to_json(stream):
-    stream_data = {"reduction_type":float(stream.reduction_type),"label":stream.name,"port_id":stream.port_id,"data":stream.data,"max_value":float(stream.max_value),"min_value":float(stream.min_value),"description":stream.description,"scaling_function":stream.scaling_function.id,"datastream_id":stream.id,"color":stream.color,"node_id":stream.node_id,"xmin":stream.xmin,"xmax":stream.xmax,"units":stream.units}
+    
+    min_value = stream.min_value
+    max_value = stream.max_value
+    data = stream.data
+    
+    #Doing this because simplejson in python 2.6 can not handle Decimal()
+    try:
+        min_value = float(min_value)
+    except:
+        pass
+
+    try:
+        max_value = float(max_value)
+    except:
+        pass
+
+    try:
+        data = float(data)
+    except:
+        pass
+
+    stream_data = {"reduction_type":stream.reduction_type,"label":stream.name,"port_id":stream.port_id,"data":data,"max_value":max_value,"min_value":min_value,"description":stream.description,"scaling_function":stream.scaling_function.id,"datastream_id":stream.id,"color":stream.color,"node_id":stream.node_id,"xmin":stream.xmin,"xmax":stream.xmax,"units":stream.units}
 
     return simplejson.dumps(stream_data)
 
