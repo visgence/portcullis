@@ -42,7 +42,7 @@ class DataStream(models.Model):
         return " Node: %s," % self.node_id + " Port: %s," % self.port_id + " Name: " + self.name
 
 class SensorReading(models.Model):
-    id = models.IntegerField(primary_key=True, db_column='read_id', editable=False)
+    id = models.AutoField(primary_key=True, db_column='read_id', editable=False)
     datastream = models.ForeignKey(DataStream, null=True, blank=True)
     sensor_value = models.DecimalField(null=True, max_digits=6, decimal_places=0, blank=True)
     date_entered = models.IntegerField(null=True, blank=True)
