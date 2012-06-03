@@ -14,6 +14,7 @@ urlpatterns = patterns('',
     url(r'^graphs/', include('graphs.urls')),
     url(r'^admin/', include(admin.site.urls)),
     url(r'^portcullis/', include('portcullis.urls')),
+    url(r'^datastreams/', include('datastreams.urls')),
     #url(r'^collector/', include('collector.urls')),
     #url(r'^favicon\.ico$', redirect_to, {'url': '/static/portcullis/favicon.ico'}),
 )

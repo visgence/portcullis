@@ -128,7 +128,9 @@ function plot_graph(data,options,div)
     }//end if
     else
     {
-        var plot = $.plot($(div), [scale_data(data)], options);
+        var scaled_data = scale_data(data);
+
+        var plot = $.plot($(div), [scaled_data], options);
         return plot;
     }
 }//end plot_graph

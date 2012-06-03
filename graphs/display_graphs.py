@@ -25,6 +25,10 @@ def display_graphs(request):
         start = request.GET.get('start')
         end = request.GET.get('end')
         granularity = request.GET.get('granularity')
+        show_public= request.GET.get('show_public')
+
+        print show_public
+
 
         data = {
                     'granularity':granularity,
@@ -36,18 +40,27 @@ def display_graphs(request):
         if(granularity != None):
             data['granularity'] = int(granularity)
         
-        #datastreams take precedence
+        #A specific datastream(s) request always takes precedence
         if(request.GET.getlist('stream')):
             for stream in request.GET.getlist('stream'):
-                data['streams'] = data['streams'] | DataStream.objects.filter(Q(id=stream)) 
-            return render(request,'display_nodes.html', data, context_instance=RequestContext(request))        
+                data['streams'] = data['streams'] | DataStream.objects.filter(id = stream, owner = request.user) 
 
+            #Pull public streams if the user requests them.
+            if(show_public == 'True'):
+                print "SHOWING PUBLIC"
+                data['streams'] = data['streams'] | DataStream.objects.filter(is_public = True) 
+                print data['streams']
+            
+
+            #TODO Pull shared streams if the user requested them
+            return render(request,'display_nodes.html', data, context_instance=RequestContext(request))        
+        #If a user passes a node param, pull all streams for that node
         if(node != None and port != None):
-            data['streams'] = DataStream.objects.filter(node_id = int(node), port_id = int(port))
+            data['streams'] = DataStream.objects.filter(node_id = int(node), port_id = int(port), owner = request.user)
         elif(node != None):
-            data['streams'] = DataStream.objects.filter(node_id = int(node))
+            data['streams'] = DataStream.objects.filter(node_id = int(node), owner = request.user)
         else:
-            data['streams'] = DataStream.objects.all()
+            data['streams'] = DataStream.objects.filter(owner = request.user)
 
         return render(request,'display_nodes.html', data, context_instance=RequestContext(request))        
 
