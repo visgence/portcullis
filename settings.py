@@ -131,7 +131,8 @@ INSTALLED_APPS = (
     'portcullis',
     'datastreams',
     'graphs',
-    'collector'
+    'collector',
+    'snmpPoller'
 )
 
 # A sample logging configuration. The only tangible logging
