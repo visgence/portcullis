@@ -112,6 +112,7 @@ def render_graph(request):
         stream_info.data = reduced_data
         stream_info.label = stream_info.name
 
+        print "stream_info: %s" % stream_info.data
         json = to_json(stream_info)
         #print "print json: %s" % json
 
@@ -119,7 +120,7 @@ def render_graph(request):
 
         
 def to_json(stream):
-    stream_data = {"reduction_type":stream.reduction_type,"label":stream.name,"port_id":stream.port_id,"data":stream.data,"max_value":stream.max_value,"min_value":stream.min_value,"description":stream.description,"scaling_function":stream.scaling_function.id,"datastream_id":stream.id,"color":stream.color,"node_id":stream.node_id,"xmin":stream.xmin,"xmax":stream.xmax,"units":stream.units}
+    stream_data = {"reduction_type":float(stream.reduction_type),"label":stream.name,"port_id":stream.port_id,"data":stream.data,"max_value":float(stream.max_value),"min_value":float(stream.min_value),"description":stream.description,"scaling_function":stream.scaling_function.id,"datastream_id":stream.id,"color":stream.color,"node_id":stream.node_id,"xmin":stream.xmin,"xmax":stream.xmax,"units":stream.units}
 
     return simplejson.dumps(stream_data)
 
