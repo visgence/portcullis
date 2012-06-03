@@ -6,7 +6,7 @@ def reduce_data(readings, start, end, reduction_type):
         reduction_type = 'mean'
     
     coord_data = mean(readings)
-    return [coord_time, coord_data]
+    return [coord_time, float(coord_data)]
 
 def mean(readings):
     summation = 0

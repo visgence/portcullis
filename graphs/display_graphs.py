@@ -3,11 +3,12 @@ from django.http import HttpResponse
 from django.template import Context, loader
 from django.contrib.auth import authenticate, login, logout
 from django.core import serializers
-from django.utils import simplejson
+#from django.utils import simplejson
 from django.shortcuts import render
 from portcullis.models import DataStream, SensorReading, ScalingFunction 
 from check_access import check_access
 from django.db.models import Q
+import json
 
 #Local Imports
 import data_reduction
@@ -119,9 +120,20 @@ def render_graph(request):
 
         
 def to_json(stream):
-    stream_data = {"reduction_type":stream.reduction_type,"label":stream.name,"port_id":stream.port_id,"data":stream.data,"max_value":stream.max_value,"min_value":stream.min_value,"description":stream.description,"scaling_function":stream.scaling_function.id,"datastream_id":stream.id,"color":stream.color,"node_id":stream.node_id,"xmin":stream.xmin,"xmax":stream.xmax,"units":stream.units}
 
-    return simplejson.dumps(stream_data)
+    min_value = stream.min_value
+    if(min_value != None):
+        min_value = float(min_value)
+
+    max_value = stream.max_value
+    if(max_value != None):
+        max_value = float(max_value)
+
+
+
+    stream_data = {"reduction_type":stream.reduction_type,"label":stream.name,"port_id":int(stream.port_id),"data":stream.data,"max_value":max_value,"min_value":min_value,"description":stream.description,"scaling_function":stream.scaling_function.id,"datastream_id":stream.id,"color":stream.color,"node_id":int(stream.node_id),"xmin":stream.xmin,"xmax":stream.xmax,"units":stream.units}
+
+    return json.dumps(stream_data)
 
 
 
