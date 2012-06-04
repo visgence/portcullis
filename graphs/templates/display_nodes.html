@@ -57,20 +57,24 @@
 
     <a id="share_link" href="/" ><div>Share this view</div></a>
 
-    {% for stream in streams%}
     <!-- Create a placeholder for each datastream -->
+    {% for stream in streams%}
         <h4>Node:{{stream.node_id}} Port:{{stream.port_id}}</h4>
         <b id = "graph_title{{stream.id}}">  </b>
+        <!--actions menu -->
+        <ul>
+            <li class="ui-state-default ui-corner-all" style="width: 20px" title="Show CSV" onclick="toggle('{{stream.id}}_csv_container')">
+                <span class="ui-icon ui-icon-script">&nbsp;</span>
+            </li>
+        </ul>
         <div id ="{{stream.id}}" class="portcullis-graph">
             <div id="sensor{{stream.id}}" class="sensor_graph" ></div>
             <div id="overview{{stream.id}}" class = "overview_graph"></div>
-        </div>
+        </div><!--end graph div-->
+        <div id="{{stream.id}}_csv_container" style="display: none"><!--csv div-->
+            <textarea id="sensor{{stream.id}}_csv"></textarea>
+        </div><!--end csv div-->
         <br>
-
-
     {% endfor %}
-
-
-
    <div id="debug"></div>
 </body>

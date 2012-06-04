@@ -129,7 +129,15 @@ function plot_graph(data,options,div)
     else
     {
         var scaled_data = scale_data(data);
-
+        var csv="time,raw reading,scaled value\n";
+        for (var i in scaled_data['data'])
+        {   
+            //console.log(scaled_data['data'][i]);//DEBUG
+            csv += data['data'][i][0]+",";
+            csv += data['data'][i][1]+",";
+            csv += scaled_data['data'][i][1]+"\n";
+        }   
+        $(div+"_csv").html(csv);
         var plot = $.plot($(div), [scaled_data], options);
         return plot;
     }
@@ -301,3 +309,9 @@ function getURLParameter(name)
         (RegExp(name + '=' + '(.+?)(&|$)').exec(location.search)||[,null])[1]
     );
 }//end getURLParameter
+
+function toggle(div)
+{
+   $("#"+div).toggle();
+}//end toggle
+
