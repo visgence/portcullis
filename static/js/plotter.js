@@ -290,28 +290,42 @@ function update_link()
 {
     var start = new Date($("#start").val());
     var end = new Date($("#end").val());
-    var node = getURLParameter("node");
+    var streams = ''
 
-    if(node != 'null')
+    //TODO find all graphs on this page and create share link
+    divs = $(".portcullis-graph");
+    for (var i = 0; i < divs.length; i++) 
     {
-        $("#share_link").attr("href","/graphs/?node="+node +"&start="+ start.toLocaleString()+"&end="+end.toLocaleString()+"&granularity="+$("#granularity").val());
+        streams += '&stream=' + divs[i].id
     }
-    else
-    {
-        $("#share_link").attr("href","/graphs/?start="+ start.toLocaleString()+"&end="+end.toLocaleString()+"&granularity="+$("#granularity").val());
-    }
+
+    $("#share_link").attr("href","/graphs/?start="+ start.toLocaleString()+"&end="+end.toLocaleString()+"&granularity="+$("#granularity").val() + streams);
 }//end update_link
-
-function getURLParameter(name)
-{
-    return decodeURI
-    (
-        (RegExp(name + '=' + '(.+?)(&|$)').exec(location.search)||[,null])[1]
-    );
-}//end getURLParameter
 
 function toggle(div)
 {
    $("#"+div).toggle();
 }//end toggle
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

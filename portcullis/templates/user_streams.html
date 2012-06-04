@@ -28,7 +28,7 @@
     <b>Public Streams</b> </br>
     <!-- Create a checkbox for each public datastream -->
     {% for stream in public_streams%}
-    <input type="checkbox" name="public_stream" class="stream" value="{{stream.id}}" /> {{stream.name}} 
+    <input type="checkbox" name="stream" class="stream" value="{{stream.id}}" /> {{stream.name}} 
         <br>
     {% endfor %}
 

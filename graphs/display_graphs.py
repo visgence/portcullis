@@ -16,7 +16,6 @@ import data_reduction
 def display_graphs(request):
 
     response = check_access(request)
-    print response
     if(response):
         return response
 
@@ -27,9 +26,6 @@ def display_graphs(request):
         end = request.GET.get('end')
         granularity = request.GET.get('granularity')
         show_public= request.GET.get('show_public')
-
-        print show_public
-
 
         data = {
                     'granularity':granularity,
@@ -44,11 +40,7 @@ def display_graphs(request):
         #A specific datastream(s) request always takes precedence
         if(request.GET.getlist('stream')):
             for stream in request.GET.getlist('stream'):
-                data['streams'] = data['streams'] | DataStream.objects.filter(id = stream, owner = request.user) 
-
-            #add any requested public streams
-            for stream in request.GET.getlist('public_stream'):
-                data['streams'] = data['streams'] | DataStream.objects.filter(id = stream)
+                data['streams'] = data['streams'] | DataStream.objects.filter(id = stream) 
 
             #TODO Pull shared streams if the user requested them
             return render(request,'display_nodes.html', data, context_instance=RequestContext(request))        
