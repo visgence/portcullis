@@ -114,7 +114,7 @@ def render_graph(request):
         stream_info.label = stream_info.name
 
         json = to_json(stream_info)
-        #print "print json: %s" % json
+        print "print json: %s" % json
 
         return HttpResponse(json)
 
