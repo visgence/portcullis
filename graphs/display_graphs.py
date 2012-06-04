@@ -113,6 +113,7 @@ def render_graph(request):
         stream_info.data = reduced_data
         stream_info.label = stream_info.name
 
+        print "stream_info: %s" % stream_info.data
         json = to_json(stream_info)
         print "print json: %s" % json
 
