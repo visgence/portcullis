@@ -11,10 +11,15 @@ def user_streams(request):
         return response
 
     if request.method == 'GET':
-        streams = DataStream.objects.filter(owner = request.user)
+        #Pull streams that are owned by this user.
+        owned_streams = DataStream.objects.filter(owner = request.user)
+        
+        #Pull any public streams as well
+        public_streams = DataStream.objects.filter(is_public = True)
+
 
         t = loader.get_template('user_streams.html')
-        c = Context({'user':request.user,'streams':streams})
+        c = Context({'user':request.user,'owned_streams':owned_streams, 'public_streams':public_streams})
         c.update(csrf(request))
         return HttpResponse(t.render(c))
 

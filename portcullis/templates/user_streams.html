@@ -6,9 +6,6 @@
     <link rel="stylesheet" media="all" type="text/css" href="/static/css/ui-lightness/jquery-ui-1.7.3.custom.css" />
 </head>
 <body>
-<h1> Sensor Readings</h1>
-
-
 {%block content%}
 <div>
     {% if user.first_name %}
@@ -16,20 +13,25 @@
     {% endif %}     
 </div>
 
+</br>
 
-<!-- Date range form -->
 <form action="/graphs/" >
     {% csrf_token %}
 
-
-    {% for stream in streams%}
-    <!-- Create a placeholder for each datastream -->
+    <b> My Streams</b> </br>
+    <!-- Create a checkbox for each datastream owned by this user-->
+    {% for stream in owned_streams%}
     <input type="checkbox" name="stream" class="stream" value="{{stream.id}}" /> {{stream.name}} 
         <br>
     {% endfor %}
 
-    </br>
-    Show public streams? <input type="checkbox" name="show_public" value="True"/> 
+    <b>Public Streams</b> </br>
+    <!-- Create a checkbox for each public datastream -->
+    {% for stream in public_streams%}
+    <input type="checkbox" name="stream" class="stream" value="{{stream.id}}" /> {{stream.name}} 
+        <br>
+    {% endfor %}
+
     </br>
 
     <input type="submit" value="Submit"/>
