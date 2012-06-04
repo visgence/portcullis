@@ -46,12 +46,9 @@ def display_graphs(request):
             for stream in request.GET.getlist('stream'):
                 data['streams'] = data['streams'] | DataStream.objects.filter(id = stream, owner = request.user) 
 
-            #Pull public streams if the user requests them.
-            if(show_public == 'True'):
-                print "SHOWING PUBLIC"
-                data['streams'] = data['streams'] | DataStream.objects.filter(is_public = True) 
-                print data['streams']
-            
+            #add any requested public streams
+            for stream in request.GET.getlist('public_stream'):
+                data['streams'] = data['streams'] | DataStream.objects.filter(id = stream)
 
             #TODO Pull shared streams if the user requested them
             return render(request,'display_nodes.html', data, context_instance=RequestContext(request))        
@@ -64,13 +61,6 @@ def display_graphs(request):
             data['streams'] = DataStream.objects.filter(owner = request.user)
 
         return render(request,'display_nodes.html', data, context_instance=RequestContext(request))        
-
-
-
-
-
-
-
 ##
 #Takes a single datastream id and a time frame and generates json for the data
 #Returns: json
