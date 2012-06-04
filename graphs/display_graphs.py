@@ -85,7 +85,7 @@ def render_graph(request):
         stream_data = []
 
         if(granularity == None):
-            granularity = 100
+            granularity = 300
     
         #Pull the data for this stream
         stream_info = DataStream.objects.get(id = datastream_id)
@@ -94,30 +94,52 @@ def render_graph(request):
         stream_info.xmin = start
         stream_info.xmax = end
 
-        time_chunk = total_time / granularity
-        end_of_chunk = start + time_chunk
-        reduced_data = []#will contain final data after it is reduced
 
-        while (end_of_chunk < end):
-            tmp_data=[]
-            sub_readings = SensorReading.objects.filter(date_entered__gte = start, date_entered__lte = end_of_chunk, datastream = datastream_id).order_by('date_entered')
-           
-            if(sub_readings):
-                tmp_data = data_reduction.reduce_data(sub_readings, start, end_of_chunk, stream_info.reduction_type)
-            if(tmp_data):
-                reduced_data.append(tmp_data)
+        #Check if there are less points in timeframe then granularity
+        number_of_readings = SensorReading.objects.filter(date_entered__gte = start, date_entered__lte = end, datastream = datastream_id).order_by('date_entered').count()
+        
+        if(number_of_readings < granularity):
+            data = []
 
-            start = end_of_chunk
+            readings = SensorReading.objects.filter(date_entered__gte = start, date_entered__lte = end, datastream = datastream_id).order_by('date_entered')
+            
+            #loop through and add all points to data
+            for reading in readings:
+                data.append([reading.date_entered,float("%.3f" % (reading.sensor_value))])
+
+            stream_info.data = data
+            stream_info.label = stream_info.name
+            
+            json = to_json(stream_info)
+            #print "print json: %s" % json
+            return HttpResponse(json)
+
+        else:
+            time_chunk = total_time / granularity
+            #print "Time Chunk: %s" % time_chunk
             end_of_chunk = start + time_chunk
+            reduced_data = []#will contain final data after it is reduced
 
-        stream_info.data = reduced_data
-        stream_info.label = stream_info.name
+            while (end_of_chunk < end):
+                tmp_data=[]
+                sub_readings = SensorReading.objects.filter(date_entered__gte = start, date_entered__lte = end_of_chunk, datastream = datastream_id).order_by('date_entered')
+           
+                if(sub_readings):
+                    tmp_data = data_reduction.reduce_data(sub_readings, start, end_of_chunk, stream_info.reduction_type)
+                if(tmp_data):
+                    reduced_data.append(tmp_data)
 
-        print "stream_info: %s" % stream_info.data
-        json = to_json(stream_info)
-        print "print json: %s" % json
+                start = end_of_chunk
+                end_of_chunk = start + time_chunk
 
-        return HttpResponse(json)
+            stream_info.data = reduced_data
+            stream_info.label = stream_info.name
+
+            #print "stream_info: %s" % stream_info.data
+            json = to_json(stream_info)
+            #print "print json: %s" % json
+
+            return HttpResponse(json)
 
         
 def to_json(stream):

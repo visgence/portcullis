@@ -69,7 +69,7 @@ $("document").ready(function ()
     //check for granularity from server
     if(!$("#granularity").val()) 
     {
-        $("#granularity").val(100);//default
+        $("#granularity").val(300);//default
     }
  
     //Find all portcullis graph divs
