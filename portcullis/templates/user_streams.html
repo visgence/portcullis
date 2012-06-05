@@ -22,23 +22,23 @@
     {% csrf_token %}
 
     {% if owned_streams %}
-        <b> My Streams</b> </br>
+        <b> My Streams</b> 
+        <input type="checkbox" onClick="checkPrivate(this)" /> Check All <br>
         <!-- Create a checkbox for each datastream owned by this user-->
         {% for stream in owned_streams%}
             <input type="checkbox" name="private" class="stream" value="{{stream.id}}" /> {{stream.name}} <br>
         {% endfor %}
 
-        <input type="checkbox" onClick="checkPrivate(this)" /> Check All <br>
     {% endif %}
-
+ <br>
     {% if public_streams %}
-        <b>Public Streams</b> </br>
+        <b>Public Streams</b> 
+        <input type="checkbox" onClick="checkPublic(this)" /> Check All <br>
         <!-- Create a checkbox for each public datastream -->
         {% for stream in public_streams%}
             <input type="checkbox" name="public" class="stream" value="{{stream.id}}" /> {{stream.name}} <br>
         {% endfor %}
 
-        <input type="checkbox" onClick="checkPublic(this)" /> Check All <br>
     {% endif %}
 
     </br>
