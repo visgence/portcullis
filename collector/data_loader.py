@@ -1,8 +1,7 @@
-from portcullis.models import DataStream, SensorReading
-from django.http import HttpResponse
+from portcullis.models import DataStream, SensorReading from django.http import HttpResponse
 from django.utils import simplejson
 import time
-
+import urllib
 
 
 password = 'correcthorsebatterystaple'
@@ -52,7 +51,7 @@ def add_reading(request):
 
 def add_reading_bulk(request):
     auth_token = request.GET.get('auth_token')
-    json_text = request.GET.get('json')
+    json_text = urllib.unquote(request.GET.get('json'))
 
     if(auth_token != password):
         return HttpResponse('Incorrect Authentication!')
@@ -139,7 +138,7 @@ def validate_stream(stream_id, node_id, port_id):
         else:
             return {'error':"\ndatastream_id %s does not exist in the datastream table.\n" % stream_id}
 
-    elif(node_id != '' and port_id != ''):
+    elif((node_id != None and node_id != '') and (port_id != None and port_id != '')):
         stream = None
         try:
             stream = DataStream.objects.get(node_id = node_id, port_id = port_id)

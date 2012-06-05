@@ -11,7 +11,7 @@ from django.utils.timezone import now
 from snmpPoller.models import *
 
 
-url = "http://127.0.0.1:8080/add_reading"
+url = "http://192.168.11.19:7400/collector/add_reading"
 authToken = "correcthorsebatterystaple"
 
 
