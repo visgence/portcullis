@@ -37,9 +37,16 @@ def display_graphs(request):
         if(granularity != None):
             data['granularity'] = int(granularity)
         
-        #A specific datastream(s) request always takes precedence
         if(request.GET.getlist('stream')):
             for stream in request.GET.getlist('stream'):
+                data['streams'] = data['streams'] | DataStream.objects.filter(id = stream) 
+
+        if(request.GET.getlist('private')):
+            for stream in request.GET.getlist('private'):
+                data['streams'] = data['streams'] | DataStream.objects.filter(id = stream) 
+
+        if(request.GET.getlist('public')):
+            for stream in request.GET.getlist('public'):
                 data['streams'] = data['streams'] | DataStream.objects.filter(id = stream) 
 
             #TODO Pull shared streams if the user requested them

@@ -2,11 +2,14 @@
     {% load static from staticfiles %}
     <script language="javascript" type="text/javascript" src="/static/js/jquery-1.7.1.min.js"></script>
     <script language="javascript" type="text/javascript" src="/static/js/json2.js"></script>
+    <script language="javascript" type="text/javascript" src="/static/js/checkbox.js"></script>
     <script type="text/javascript" src="/static/js/jquery-ui-1.8.18.custom.min.js"></script>
     <link rel="stylesheet" media="all" type="text/css" href="/static/css/ui-lightness/jquery-ui-1.7.3.custom.css" />
 </head>
 <body>
+
 {%block content%}
+
 <div>
     {% if user.first_name %}
         Hello {{user.first_name}} {{user.last_name}} (<a href="/portcullis/logout/">logout</a>)
@@ -18,19 +21,25 @@
 <form action="/graphs/" >
     {% csrf_token %}
 
-    <b> My Streams</b> </br>
-    <!-- Create a checkbox for each datastream owned by this user-->
-    {% for stream in owned_streams%}
-    <input type="checkbox" name="stream" class="stream" value="{{stream.id}}" /> {{stream.name}} 
-        <br>
-    {% endfor %}
+    {% if owned_streams %}
+        <b> My Streams</b> </br>
+        <!-- Create a checkbox for each datastream owned by this user-->
+        {% for stream in owned_streams%}
+            <input type="checkbox" name="private" class="stream" value="{{stream.id}}" /> {{stream.name}} <br>
+        {% endfor %}
 
-    <b>Public Streams</b> </br>
-    <!-- Create a checkbox for each public datastream -->
-    {% for stream in public_streams%}
-    <input type="checkbox" name="stream" class="stream" value="{{stream.id}}" /> {{stream.name}} 
-        <br>
-    {% endfor %}
+        <input type="checkbox" onClick="checkPrivate(this)" /> Check All <br>
+    {% endif %}
+
+    {% if public_streams %}
+        <b>Public Streams</b> </br>
+        <!-- Create a checkbox for each public datastream -->
+        {% for stream in public_streams%}
+            <input type="checkbox" name="public" class="stream" value="{{stream.id}}" /> {{stream.name}} <br>
+        {% endfor %}
+
+        <input type="checkbox" onClick="checkPublic(this)" /> Check All <br>
+    {% endif %}
 
     </br>
 
