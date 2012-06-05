@@ -14,7 +14,7 @@ def user_login(request):
     #Read next url to be redirected to
     try:
         redirect_to = request.REQUEST["next"]
-        print "redirect to: %s" % redirect_to
+        print redirect_to
     except KeyError:
         redirect_to = "/portcullis/user_streams/"
         print "redirect to: %s" % redirect_to

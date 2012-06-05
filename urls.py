@@ -9,13 +9,10 @@ urlpatterns = patterns('',
     # url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
 
     url(r'^$', redirect_to,{'url':'/portcullis/'}),
-    url(r'^login/$', redirect_to,{'url':'/portcullis/'}),
     url(r'^render_graph/$', 'graphs.display_graphs.render_graph'),
     url(r'^graphs/', include('graphs.urls')),
     url(r'^admin/', include(admin.site.urls)),
     url(r'^portcullis/', include('portcullis.urls')),
     url(r'^datastreams/', include('datastreams.urls')),
     url(r'^collector/', include('collector.urls')),
-    #url(r'^collector/', include('collector.urls')),
-    #url(r'^favicon\.ico$', redirect_to, {'url': '/static/portcullis/favicon.ico'}),
 )
