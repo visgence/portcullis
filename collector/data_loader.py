@@ -1,4 +1,5 @@
-from portcullis.models import DataStream, SensorReading from django.http import HttpResponse
+from portcullis.models import DataStream, SensorReading 
+from django.http import HttpResponse
 from django.utils import simplejson
 import time
 import urllib
