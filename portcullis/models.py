@@ -21,6 +21,29 @@ class ScalingFunction(models.Model):
     def __unicode__(self):
         return "Name: " + self.name + ", ID: %s," % self.id + " Definition: %s" % self.definition 
 
+class Device(models.Model):
+    name = models.CharField(max_length=64)
+    description = models.TextField()
+    ip_address = models.IPAddressField()
+
+    class Meta:
+        db_table = u'device'
+
+    def __unicode__(self):
+        return self.name
+
+class Key(models.Model):
+    user = models.ForeignKey(User, null = True, blank = True)
+    devices = models.ForeignKey(Device, null = True, blank = True)
+    key = models.CharField(max_length=64)
+    description = models.TextField()
+
+    class Meta:
+        db_table = u'key'
+
+    def __unicode__(self):
+        return self.key 
+
 class DataStream(models.Model):
     id = models.AutoField(primary_key=True, db_column='datastream_id')
     node_id = models.IntegerField(null=True, blank=True)
@@ -70,13 +93,18 @@ class Permission(models.Model):
 
 
 class Organization(models.Model):
-    name = models.CharField(max_length=64, blank=True)
+    name = models.CharField(max_length=64)
     members = models.ManyToManyField(User)
-    suborganization = models.ManyToManyField("self", symmetrical = False, null = True, blank = True)
+    devices = models.ManyToManyField(Device, null = True, blank = True)
+    suborganizations = models.ManyToManyField("self", symmetrical = False, null = True, blank = True)
 
     class Meta:
         db_table = u'organization'
 
     def __unicode__(self):
-        return "Name: %s" % self.name 
+        return self.name 
+
+
+
+
 
