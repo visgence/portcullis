@@ -1,0 +1,8 @@
+<script type="text/javascript" src="/graphs/scaling_functions.js/"></script>
+Time,Raw,Scaled
+
+{%for reading in readings%}
+{{reading.date_entered}},{{reading.sensor_value}},{{reading.sensor_value}}</br>
+{% endfor %}
+
+

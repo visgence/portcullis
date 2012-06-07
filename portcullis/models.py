@@ -10,10 +10,6 @@
 from django.db import models
 from django.contrib.auth.models import User, UserManager
 
-class UserProfile(models.Model):
-    user = models.ForeignKey(User, unique=True)
-
-    
 
 class ScalingFunction(models.Model):
     id = models.AutoField(primary_key=True, db_column='function_id')
