@@ -46,18 +46,21 @@ def display_graphs(request):
                 data['streams'] = data['streams'] | DataStream.objects.filter(id = stream) 
 
         if(request.GET.getlist('public')):
+            print request.GET.getlist('public')
             for stream in request.GET.getlist('public'):
                 data['streams'] = data['streams'] | DataStream.objects.filter(id = stream) 
 
             #TODO Pull shared streams if the user requested them
+        if(data['streams']):
             return render(request,'display_nodes.html', data, context_instance=RequestContext(request))        
+
         #If a user passes a node param, pull all streams for that node
         if(node != None and port != None):
-            data['streams'] = DataStream.objects.filter(node_id = int(node), port_id = int(port), owner = request.user)
+            data['streams'] = DataStream.objects.filter(node_id = int(node), port_id = int(port), users = request.user, permission__read = True).order_by('node_id', 'port_id')
         elif(node != None):
-            data['streams'] = DataStream.objects.filter(node_id = int(node), owner = request.user)
+            data['streams'] = DataStream.objects.filter(node_id = int(node), users = request.user, permission__read = True).order_by('node_id', 'port_id')
         else:
-            data['streams'] = DataStream.objects.filter(owner = request.user)
+            data['streams'] = DataStream.objects.filter(users = request.user, permission__read = True).order_by('node_id', 'port_id')
 
         return render(request,'display_nodes.html', data, context_instance=RequestContext(request))        
 ##
