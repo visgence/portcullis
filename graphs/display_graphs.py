@@ -55,11 +55,11 @@ def display_graphs(request):
 
         #If a user passes a node param, pull all streams for that node
         if(node != None and port != None):
-            data['streams'] = DataStream.objects.filter(node_id = int(node), port_id = int(port), users = request.user, permission__read = True).order_by('node_id', 'port_id')
+            data['streams'] = DataStream.objects.filter(node_id = int(node), port_id = int(port), users = request.user, permission__read = True).order_by('node_id', 'port_id', 'id')
         elif(node != None):
-            data['streams'] = DataStream.objects.filter(node_id = int(node), users = request.user, permission__read = True).order_by('node_id', 'port_id')
+            data['streams'] = DataStream.objects.filter(node_id = int(node), users = request.user, permission__read = True).order_by('node_id', 'port_id', 'id')
         else:
-            data['streams'] = DataStream.objects.filter(users = request.user, permission__read = True).order_by('node_id', 'port_id')
+            data['streams'] = DataStream.objects.filter(users = request.user, permission__read = True).order_by('node_id', 'port_id', 'id')
 
         return render(request,'display_nodes.html', data, context_instance=RequestContext(request))        
 ##
