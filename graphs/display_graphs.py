@@ -36,8 +36,8 @@ def display_graphs(request):
         if(granularity != None):
             data['granularity'] = int(granularity)
         
-        if(request.GET.getlist('stream')):
-            for stream in request.GET.getlist('stream'):
+        if(request.GET.getlist('view')):
+            for stream in request.GET.getlist('view'):
                 data['streams'] = data['streams'] | DataStream.objects.filter(id = stream) 
 
         if(request.GET.getlist('private')):
@@ -51,6 +51,7 @@ def display_graphs(request):
 
             #TODO Pull shared streams if the user requested them
         if(data['streams']):
+            data['streams'] = data['streams'].order_by('node_id', 'port_id', 'id')
             return render(request,'display_nodes.html', data, context_instance=RequestContext(request))        
 
         #If a user passes a node param, pull all streams for that node

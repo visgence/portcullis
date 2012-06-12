@@ -34,7 +34,7 @@
         <b>Viewable Streams</b> </br>
         <!-- Create a checkbox for each public datastream -->
         {% for stream in viewable_streams%}
-            <input type="checkbox" name="view" class="stream" value="{{stream.datastream.id}}" /> {{stream.datastream.name}} <br>
+            <input type="checkbox" name="view" class="stream" value="{{stream.id}}" /> {{stream.datastream.name}} <br>
         {% endfor %}
         <input type="checkbox" onClick="checkView(this)" /> Check All <br>
     {% endif %}

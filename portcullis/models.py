@@ -39,6 +39,7 @@ class DataStream(models.Model):
 
     class Meta:
         db_table = u'data_streams'
+        ordering = ['node_id', 'port_id', 'id']
 
     def __unicode__(self):
         return " Node: %s," % self.node_id + " Port: %s," % self.port_id + " Name: " + self.name
