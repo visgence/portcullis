@@ -29,7 +29,16 @@
         {% endfor %}
 
     {% endif %}
- <br>
+
+    {% if viewable_streams%}
+        <b>Viewable Streams</b> </br>
+        <!-- Create a checkbox for each public datastream -->
+        {% for stream in viewable_streams%}
+            <input type="checkbox" name="public" class="stream" value="{{stream.datastream.id}}" /> {{stream.datastream.name}} <br>
+        {% endfor %}
+
+    {% endif %}
+
     {% if public_streams %}
         <b>Public Streams</b> 
         <input type="checkbox" onClick="checkPublic(this)" /> Check All <br>

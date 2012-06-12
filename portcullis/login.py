@@ -18,7 +18,7 @@ def user_login(request):
     except KeyError:
         redirect_to = "/portcullis/user_streams/"
         print "redirect to: %s" % redirect_to
-
+    print request.user
     if request.method == 'POST':
         user = authenticate(username=request.POST["username"], password=request.POST["password"])
         if user is not None:
