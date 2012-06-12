@@ -3,7 +3,6 @@ from django.http import HttpResponse
 from django.template import Context, loader
 from django.contrib.auth import authenticate, login, logout
 from django.core import serializers
-#from django.utils import simplejson
 from django.shortcuts import render
 from portcullis.models import DataStream, SensorReading, ScalingFunction 
 from check_access import check_access
