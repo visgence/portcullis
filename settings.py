@@ -11,12 +11,6 @@ ADMINS = (
     # ('Your Name', 'your_email@example.com'),
 )
 
-AUTHENTICATION_BACKENDS = (
-        'portcullis.auth_backends.CustomUserModelBackend',
-)
-
-CUSTOM_USER_MODEL = 'portcullis.CustomUser'
-
 MANAGERS = ADMINS
 
 DATABASES = {

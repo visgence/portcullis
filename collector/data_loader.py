@@ -49,6 +49,79 @@ def add_reading(request):
             insert_reading(stream_info['datastream'], raw_sensor_value)
             return HttpResponse('Successfully inserted record')
 
+def add_reading_bulk_hash(request):
+    auth_token = request.GET.get('auth_token')
+    json_text = urllib.unquote(request.GET.get('json'))
+    print json_text
+
+    if(auth_token != password):
+        return HttpResponse('Incorrect Authentication!')
+
+    if(json_text is None): 
+        return HttpResponse("No json received. Please send a serialized array of arrays in the form [[node_id1,port_id1,value1],[node_id2,port_id2,value2]]")
+
+    readings = simplejson.loads(json_text)
+    print readings
+    insertion_attempts = 0
+    insertion_successes = 0
+    error_string = ''
+
+    for reading in readings:
+        time = None
+        node_id = None
+        port_id = None
+        data_stream = None
+        raw_sensor_value = None
+
+        insertion_attempts += 1
+        
+        try:
+            node_id = reading['node']
+            port_id = reading['port']
+        except:
+            pass
+
+        try:
+            raw_sensor_value = reading['value']
+        except:
+            pass
+
+        try:
+            time = reading['time']
+        except:
+            pass
+
+        try:
+            data_stream['stream']
+        except:
+            pass
+
+        if(raw_sensor_value is None):
+            error_string += "\nNo data was passed for insertion! The information that was sent was: \ntime=%(time)s\nnode_id=%(node)s\nport_id=%(port)s\ndata_stream=%(stream)s\n" % {'time':time, 'node':node_id, 'port':port_id, 'stream':data_stream}
+
+        else:
+            if(node_id is not None and port_id is not None):
+                stream_info = validate_stream(None, node_id, port_id)
+                if(stream_info['error']):
+                    error_string += stream_info['error'] 
+                else:
+                    insert_reading(stream_info['datastream'], raw_sensor_value)
+                    insertion_successes += 1
+            else:
+                error_string += "\nNot enough info to uniquely identify a data stream. The information that was sent was: \ntime=%(time)s\nnode_id=%(node)s\nport_id=%(port)s\ndata_stream=%(stream)s\nvalue=%(raw_sensor_value)s" % {'time':time, 'node':node_id, 'port':port_id, 'stream':data_stream, 'raw_sensor_value':raw_sensor_value};
+
+    if(error_string is '' and insertion_attempts != 0):
+        success_message = "\n\nTotal Insertion Attempts: %s" % insertion_attempts
+        success_message += "\n\nSuccessful Insertions : %s" % insertion_successes
+        success_message += "\n\nAll records inserted!"
+        return HttpResponse(success_message)
+    else:
+        error_string += "\n\nTotal Insertion Attempts: %s" % insertion_attempts
+        error_string += "\n\nSuccessful Insertions : %s" % insertion_successes
+        failed_insertions = insertion_attempts - insertion_successes
+        error_string += "\n\nFailed Insertions : %s" % failed_insertions
+        return HttpResponse(error_string)
+
 
 def add_reading_bulk(request):
     auth_token = request.GET.get('auth_token')

@@ -57,7 +57,7 @@ class DataStream(models.Model):
     scaling_function = models.ForeignKey(ScalingFunction, null=True, db_column='scaling_function', blank=True)
     reduction_type = models.CharField(max_length=32, blank=True)
     is_public = models.BooleanField()
-    users = models.ManyToManyField(User, through='Permission')
+    users = models.ManyToManyField(User, through='Permission', null=True, blank=True)
 
 
     class Meta:
