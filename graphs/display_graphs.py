@@ -4,7 +4,6 @@ from django.http import HttpResponse
 from django.template import Context, loader
 from django.contrib.auth import authenticate, login, logout
 from django.core import serializers
-#from django.utils import simplejson
 from django.shortcuts import render
 from portcullis.models import DataStream, SensorReading, ScalingFunction 
 from check_access import check_access
@@ -46,7 +45,7 @@ def display_graphs(request):
         
         if(granularity != None):
             data['granularity'] = int(granularity)
-       
+
         if(request.GET.getlist('view')):
             for stream in request.GET.getlist('view'):
                 data['streams'] = data['streams'] | DataStream.objects.filter(id = stream) 
@@ -56,18 +55,22 @@ def display_graphs(request):
                 data['streams'] = data['streams'] | DataStream.objects.filter(id = stream) 
 
         if(request.GET.getlist('public')):
+            print request.GET.getlist('public')
             for stream in request.GET.getlist('public'):
                 data['streams'] = data['streams'] | DataStream.objects.filter(id = stream) 
 
+            #TODO Pull shared streams if the user requested them
         if(data['streams']):
+            data['streams'] = data['streams'].order_by('node_id', 'port_id', 'id')
             return render(request,'display_nodes.html', data, context_instance=RequestContext(request))        
+
         #If a user passes a node param, pull all streams for that node
         if(node != None and port != None):
-            data['streams'] = DataStream.objects.filter(node_id = int(node), port_id = int(port), users = request.user)
+           data['streams'] = DataStream.objects.filter(node_id = int(node), port_id = int(port), users = request.user, permission__read = True).order_by('node_id', 'port_id', 'id')
         elif(node != None):
-            data['streams'] = DataStream.objects.filter(node_id = int(node), users = request.user)
+            data['streams'] = DataStream.objects.filter(node_id = int(node), users = request.user, permission__read = True).order_by('node_id', 'port_id', 'id')
         else:
-            data['streams'] = DataStream.objects.filter(users = request.user)
+            data['streams'] = DataStream.objects.filter(users = request.user, permission__read = True).order_by('node_id', 'port_id', 'id')
 
         return render(request,'display_nodes.html', data, context_instance=RequestContext(request))        
 ##
