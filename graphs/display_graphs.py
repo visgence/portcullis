@@ -1,3 +1,4 @@
+
 from django.template import RequestContext
 from django.http import HttpResponse
 from django.template import Context, loader
@@ -14,6 +15,15 @@ import json
 import data_reduction
 
 def display_graphs(request):
+    '''
+    Grabs all relevent data streams that are to be displayed and returns them to the display_nodes
+    template. There are two ways for this to be called. The first is through the user portal after
+    logging in.  This requires them to check off all streams they want to see and we grab them. 
+    Otherwise we get url parameters through a GET and obtain the proper streams that way.
+
+    TODO: The share this view linkage needs GET in order to work.  Would like to seperate that 
+          functionality out to have POST as well from the user portal perhaps.  
+    '''
 
     response = check_access(request)
     if(response):
@@ -36,13 +46,13 @@ def display_graphs(request):
         
         if(granularity != None):
             data['granularity'] = int(granularity)
-        
-        if(request.GET.getlist('stream')):
-            for stream in request.GET.getlist('stream'):
+       
+        if(request.GET.getlist('view')):
+            for stream in request.GET.getlist('view'):
                 data['streams'] = data['streams'] | DataStream.objects.filter(id = stream) 
 
-        if(request.GET.getlist('private')):
-            for stream in request.GET.getlist('private'):
+        if(request.GET.getlist('owned')):
+            for stream in request.GET.getlist('owned'):
                 data['streams'] = data['streams'] | DataStream.objects.filter(id = stream) 
 
         if(request.GET.getlist('public')):
