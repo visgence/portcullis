@@ -32,18 +32,6 @@ class Device(models.Model):
     def __unicode__(self):
         return self.name
 
-class Key(models.Model):
-    user = models.ForeignKey(User, null = True, blank = True)
-    devices = models.ForeignKey(Device, null = True, blank = True)
-    key = models.CharField(max_length=64)
-    description = models.TextField()
-
-    class Meta:
-        db_table = u'key'
-
-    def __unicode__(self):
-        return self.key 
-
 class DataStream(models.Model):
     id = models.AutoField(primary_key=True, db_column='datastream_id')
     node_id = models.IntegerField(null=True, blank=True)
@@ -62,6 +50,7 @@ class DataStream(models.Model):
 
     class Meta:
         db_table = u'data_streams'
+        ordering = ['node_id', 'port_id', 'id']
 
     def __unicode__(self):
         return " Node: %s," % self.node_id + " Port: %s," % self.port_id + " Name: " + self.name

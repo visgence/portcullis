@@ -8,6 +8,10 @@ import urllib
 password = 'correcthorsebatterystaple'
 
 def add_reading(request):
+    '''
+    Adds a single reading to the database. In order to insert a reading we either need a stream id or a node/port pair. 
+    '''
+
     node_id = request.GET.get('node_id')
     port_id = request.GET.get('port_id')
     datastream_id = request.GET.get('datastream_id')
@@ -37,6 +41,7 @@ def add_reading(request):
             #Insert
             insert_reading(stream_info['datastream'], raw_sensor_value)
             return HttpResponse('Successfully inserted record')
+
     #Alternatively, allow insertions if they passed both a node_id and port_id
     elif(node_id is not None and port_id is not None):
         #validate
@@ -50,6 +55,13 @@ def add_reading(request):
             return HttpResponse('Successfully inserted record')
 
 def add_reading_bulk_hash(request):
+    '''
+    Adds multiple readings at "once". If for any reading there is a port, node, and sensor value then we insert the reading otherwise we record 
+    an error and continue with the other readings. 
+
+    Works just like add_reading_bulk except incoming data is in a list of hashes instead of a list of lists.
+    '''
+
     auth_token = request.GET.get('auth_token')
     json_text = urllib.unquote(request.GET.get('json'))
     print json_text
@@ -58,7 +70,7 @@ def add_reading_bulk_hash(request):
         return HttpResponse('Incorrect Authentication!')
 
     if(json_text is None): 
-        return HttpResponse("No json received. Please send a serialized array of arrays in the form [[node_id1,port_id1,value1],[node_id2,port_id2,value2]]")
+        return HttpResponse("No json received. Please send a serialized array of hashes in the form [{port=port1, node=node1, value=value1, stream=stream1, time=time1}, ...]")
 
     readings = simplejson.loads(json_text)
     print readings
@@ -95,11 +107,13 @@ def add_reading_bulk_hash(request):
             data_stream['stream']
         except:
             pass
-
+        
+        #If no sensor value then skip reading
         if(raw_sensor_value is None):
             error_string += "\nNo data was passed for insertion! The information that was sent was: \ntime=%(time)s\nnode_id=%(node)s\nport_id=%(port)s\ndata_stream=%(stream)s\n" % {'time':time, 'node':node_id, 'port':port_id, 'stream':data_stream}
 
         else:
+            #If no port or node skip reading
             if(node_id is not None and port_id is not None):
                 stream_info = validate_stream(None, node_id, port_id)
                 if(stream_info['error']):
@@ -110,6 +124,7 @@ def add_reading_bulk_hash(request):
             else:
                 error_string += "\nNot enough info to uniquely identify a data stream. The information that was sent was: \ntime=%(time)s\nnode_id=%(node)s\nport_id=%(port)s\ndata_stream=%(stream)s\nvalue=%(raw_sensor_value)s" % {'time':time, 'node':node_id, 'port':port_id, 'stream':data_stream, 'raw_sensor_value':raw_sensor_value};
 
+    #Give a message based on number of insertions, attempts, errors etc
     if(error_string is '' and insertion_attempts != 0):
         success_message = "\n\nTotal Insertion Attempts: %s" % insertion_attempts
         success_message += "\n\nSuccessful Insertions : %s" % insertion_successes
@@ -124,6 +139,11 @@ def add_reading_bulk_hash(request):
 
 
 def add_reading_bulk(request):
+    '''
+    Adds multiple readings at "once". If for any reading there is a port, node, and sensor value then we insert the reading otherwise we record 
+    an error and continue with the other readings.
+    '''
+
     auth_token = request.GET.get('auth_token')
     json_text = urllib.unquote(request.GET.get('json'))
 
@@ -137,7 +157,8 @@ def add_reading_bulk(request):
     insertion_attempts = 0
     insertion_successes = 0
     error_string = ''
-
+    
+    #Grab all reading from the json
     for reading in readings:
         node_id = None
         port_id = None
@@ -152,19 +173,22 @@ def add_reading_bulk(request):
         except:
             pass
 
+        #If no sensor value then skip this reading
         if(raw_sensor_value is None):
-           error_string += "\nNo data was passed for insertion! Please be sure to pass some data. Example: \"value=233 \"\""
-
-        if(node_id is not None and port_id is not None):
-            stream_info = validate_stream(None, node_id, port_id)
-            if(stream_info['error']):
-                error_string += stream_info['error'] 
-            else:
-                insert_reading(stream_info['datastream'], raw_sensor_value)
-                insertion_successes += 1
+           error_string += "\nNo data was passed for insertion! Please be sure to pass some data.\n"
         else:
-            error_string += "\nNot enough info to uniquely identify a data stream.You must give  both a node_id and a port_id. Example: \"node_id=1&port_id=3.\"\n "
+            #if no port or node then skip this reading
+            if(node_id is not None and port_id is not None):
+                stream_info = validate_stream(None, node_id, port_id)
+                if(stream_info['error']):
+                    error_string += stream_info['error'] 
+                else:
+                    insert_reading(stream_info['datastream'], raw_sensor_value)
+                    insertion_successes += 1
+            else:
+                error_string += "\nNot enough info to uniquely identify a data stream.You must give both a node_id and a port_id.\n "
 
+    #Give a message based on number of insertions, attempts, errors etc
     if(error_string is '' and insertion_attempts != 0):
         success_message = "\n\nTotal Insertion Attempts: %s" % insertion_attempts
         success_message += "\n\nSuccessful Insertions : %s" % insertion_successes
@@ -177,13 +201,15 @@ def add_reading_bulk(request):
         error_string += "\n\nFailed Insertions : %s" % failed_insertions
         return HttpResponse(error_string)
 
+
 def insert_reading(datastream, raw_sensor_value):
     try:
         reading = SensorReading(datastream = datastream, sensor_value = raw_sensor_value, date_entered = time.time())
         reading.save()
     except:
         return HttpResponse('An error occured while trying to save a reading.')
-        
+
+
 def validate_stream(stream_id, node_id, port_id):
     '''
         Checks to make sure a given stream exists or not. It either checks by using the streams id or by checking the node/port id pairing.
