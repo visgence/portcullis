@@ -10,6 +10,7 @@
 from django.db import models
 from django.contrib.auth.models import User, UserManager
 
+
 class ScalingFunction(models.Model):
     id = models.AutoField(primary_key=True, db_column='function_id')
     name = models.CharField(max_length=32, unique=True, blank=True)
@@ -31,6 +32,17 @@ class Device(models.Model):
     def __unicode__(self):
         return self.name
 
+class Key(models.Model):
+    user = models.ForeignKey(User, null = True, blank = True)
+    devices = models.ForeignKey(Device, null = True, blank = True)
+    key = models.CharField(max_length=64)
+    description = models.TextField()
+
+    class Meta:
+        db_table = u'key'
+
+    def __unicode__(self):
+        return self.key 
 
 class DataStream(models.Model):
     id = models.AutoField(primary_key=True, db_column='datastream_id')
@@ -45,7 +57,7 @@ class DataStream(models.Model):
     scaling_function = models.ForeignKey(ScalingFunction, null=True, db_column='scaling_function', blank=True)
     reduction_type = models.CharField(max_length=32, blank=True)
     is_public = models.BooleanField()
-    users = models.ManyToManyField(User, through='Permission', null = True, blank = True)
+    users = models.ManyToManyField(User, through='Permission', null=True, blank=True)
 
 
     class Meta:
@@ -74,10 +86,11 @@ class Permission(models.Model):
     write = models.BooleanField(default = False)
 
     class Meta:
-        abstract = True
-    
+        db_table = u'permission'
+
     def __unicode__(self):
-        return "User: %s" % self.user.username + ", Datastream: %s," + self.datastream.name + " Read: %s" % self.read + ", Write: %s" % self.write
+        return "User: %s" % self.user.username + ", Datastream: %s," % self.datastream.name + " Read: %s" % self.read + ", Write: %s" % self.write
+
 
 class Organization(models.Model):
     name = models.CharField(max_length=64)
@@ -90,5 +103,8 @@ class Organization(models.Model):
 
     def __unicode__(self):
         return self.name 
+
+
+
 
 
