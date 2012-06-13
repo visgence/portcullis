@@ -6,10 +6,6 @@ from django.utils import simplejson
 import time
 import urllib
 
-#Local Imports
-import key_validator
-
-
 password = 'correcthorsebatterystaple'
 
 @csrf_exempt
@@ -20,7 +16,7 @@ def add_reading(request):
     auth_token = request.POST.get('auth_token')
     raw_sensor_value = request.POST.get('value')
 
-    if(key_validator.validate_key(auth_token) != True):
+    if(auth_token != password):
         return HttpResponse('Incorrect Authentication!')
 
     #Is there even any data?
@@ -61,10 +57,6 @@ def add_reading_bulk(request):
     auth_token = request.POST.get('auth_token')
     json_text = urllib.unquote(request.POST.get('json'))
 
-    
-    key_validator.validate_key(auth_token)
-
-    #validate key
     if(auth_token != password):
         return HttpResponse('Incorrect Authentication!')
 

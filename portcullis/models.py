@@ -9,7 +9,7 @@
 
 from django.db import models
 from django.contrib.auth.models import User, UserManager
-
+from django.core.exceptions import ObjectDoesNotExist
 
 class ScalingFunction(models.Model):
     id = models.AutoField(primary_key=True, db_column='function_id')
@@ -32,17 +32,58 @@ class Device(models.Model):
     def __unicode__(self):
         return self.name
 
+#Goes with Key
+'''
+class KeyManager(models.Manager):
+    def validate(self, key):
+        try:
+            Key.objects.get(key = key)
+            return True
+        except ObjectDoesNotExist:
+            return False
+'''
+
+#TODO: Use keys to validate user, devices, streams etc
+'''
 class Key(models.Model):
     key = models.CharField(primary_key=True, max_length=64)
     user = models.ForeignKey(User, null = True, blank = True)
-    devices = models.ForeignKey(Device, null = True, blank = True)
+    device = models.ForeignKey(Device, null = True, blank = True)
     description = models.TextField(null = True, blank = True)
+    objects = KeyManager()
 
     class Meta:
         db_table = u'key'
 
+    def get_type(self):
+        if(self.device):
+            return self.device
+        elif(self.user):
+            return self.user
+        else:
+            return None
+
     def __unicode__(self):
         return self.key 
+'''
+
+#TODO: Be able to grab all Data Streams by key that are writable/readable to etc.
+'''
+class DataStreamManager(models.Manager):
+    def get_all_writable(self, key):
+        if(Key.objects.validate(key) == False):
+            return []
+
+        valid_key = Key.objects.get(key = key)
+        key_type = valid_key.get_type()
+
+        if(key_type == None):
+            return []
+        
+        streams = key_type.datastreams
+
+        return 
+'''
 
 class DataStream(models.Model):
     id = models.AutoField(primary_key=True, db_column='datastream_id')
@@ -59,6 +100,7 @@ class DataStream(models.Model):
     is_public = models.BooleanField()
     users = models.ManyToManyField(User, through='UserPermission')
     devices = models.ManyToManyField(Device, through='DevicePermission')
+    #objects = DataStreamManager()
 
 
     class Meta:
@@ -85,6 +127,8 @@ class Permission(models.Model):
 
     class Meta:
         abstract = True
+    
+
 
 class DevicePermission(Permission):
     datastream = models.ForeignKey(DataStream)
@@ -120,8 +164,5 @@ class Organization(models.Model):
 
     def __unicode__(self):
         return self.name 
-
-
-
 
 
