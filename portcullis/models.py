@@ -33,10 +33,10 @@ class Device(models.Model):
         return self.name
 
 class Key(models.Model):
+    key = models.CharField(primary_key=True, max_length=64)
     user = models.ForeignKey(User, null = True, blank = True)
     devices = models.ForeignKey(Device, null = True, blank = True)
-    key = models.CharField(max_length=64)
-    description = models.TextField()
+    description = models.TextField(null = True, blank = True)
 
     class Meta:
         db_table = u'key'
@@ -57,7 +57,8 @@ class DataStream(models.Model):
     scaling_function = models.ForeignKey(ScalingFunction, null=True, db_column='scaling_function', blank=True)
     reduction_type = models.CharField(max_length=32, blank=True)
     is_public = models.BooleanField()
-    users = models.ManyToManyField(User, through='Permission')
+    users = models.ManyToManyField(User, through='UserPermission')
+    devices = models.ManyToManyField(Device, through='DevicePermission')
 
 
     class Meta:
@@ -79,17 +80,33 @@ class SensorReading(models.Model):
         return self.datastream.name + ", Value: %s," % self.sensor_value + " Date Entered: %s" % self.date_entered
 
 class Permission(models.Model):
-    datastream = models.ForeignKey(DataStream)
-    user = models.ForeignKey(User)
-    owner = models.BooleanField(default = False)
     read = models.BooleanField(default = True)
     write = models.BooleanField(default = False)
 
     class Meta:
-        db_table = u'permission'
+        abstract = True
+
+class DevicePermission(Permission):
+    datastream = models.ForeignKey(DataStream)
+    device = models.ForeignKey(Device)
+
+    class Meta:
+        db_table = u'device_permission'
+
+    def __unicode__(self):
+        return "Device: %s" % self.device.name + ", Datastream: %s," % self.datastream.name + " Read: %s" % self.read + ", Write: %s" % self.write
+
+class UserPermission(Permission):
+    datastream = models.ForeignKey(DataStream)
+    user = models.ForeignKey(User)
+    owner = models.BooleanField(default = False)
+
+    class Meta:
+        db_table = u'user_permission'
 
     def __unicode__(self):
         return "User: %s" % self.user.username + ", Datastream: %s," % self.datastream.name + " Read: %s" % self.read + ", Write: %s" % self.write
+
 
 
 class Organization(models.Model):

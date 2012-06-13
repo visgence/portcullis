@@ -1,20 +1,26 @@
+#System Imports
 from portcullis.models import DataStream, SensorReading 
+from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse
 from django.utils import simplejson
 import time
 import urllib
 
+#Local Imports
+import key_validator
+
 
 password = 'correcthorsebatterystaple'
 
+@csrf_exempt
 def add_reading(request):
-    node_id = request.GET.get('node_id')
-    port_id = request.GET.get('port_id')
-    datastream_id = request.GET.get('datastream_id')
-    auth_token = request.GET.get('auth_token')
-    raw_sensor_value = request.GET.get('value')
+    node_id = request.POST.get('node_id')
+    port_id = request.POST.get('port_id')
+    datastream_id = request.POST.get('datastream_id')
+    auth_token = request.POST.get('auth_token')
+    raw_sensor_value = request.POST.get('value')
 
-    if(auth_token != password):
+    if(key_validator.validate_key(auth_token) != True):
         return HttpResponse('Incorrect Authentication!')
 
     #Is there even any data?
@@ -50,10 +56,15 @@ def add_reading(request):
             return HttpResponse('Successfully inserted record')
 
 
+@csrf_exempt
 def add_reading_bulk(request):
-    auth_token = request.GET.get('auth_token')
-    json_text = urllib.unquote(request.GET.get('json'))
+    auth_token = request.POST.get('auth_token')
+    json_text = urllib.unquote(request.POST.get('json'))
 
+    
+    key_validator.validate_key(auth_token)
+
+    #validate key
     if(auth_token != password):
         return HttpResponse('Incorrect Authentication!')
 
