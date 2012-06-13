@@ -46,25 +46,31 @@ def display_graphs(request):
         if(granularity != None):
             data['granularity'] = int(granularity)
 
+        #Grab all read-able streams
         if(request.GET.getlist('view')):
             for stream in request.GET.getlist('view'):
                 data['streams'] = data['streams'] | DataStream.objects.filter(id = stream) 
 
+        #Grab all owned streams by this user
         if(request.GET.getlist('owned')):
             for stream in request.GET.getlist('owned'):
                 data['streams'] = data['streams'] | DataStream.objects.filter(id = stream) 
 
+        #Grab all public streams
         if(request.GET.getlist('public')):
             print request.GET.getlist('public')
             for stream in request.GET.getlist('public'):
                 data['streams'] = data['streams'] | DataStream.objects.filter(id = stream) 
 
-            #TODO Pull shared streams if the user requested them
+        #TODO: Pull shared streams if the user requested them
+
+        #It's possible for this to be empty so check then order the streams and return them
         if(data['streams']):
             data['streams'] = data['streams'].order_by('node_id', 'port_id', 'id')
             return render(request,'display_nodes.html', data, context_instance=RequestContext(request))        
 
-        #If a user passes a node param, pull all streams for that node
+        #If we have a node or node/port pair then pull streams for those otherwise pull streams
+        #based on user
         if(node != None and port != None):
            data['streams'] = DataStream.objects.filter(node_id = int(node), port_id = int(port), users = request.user, permission__read = True).order_by('node_id', 'port_id', 'id')
         elif(node != None):
@@ -73,11 +79,13 @@ def display_graphs(request):
             data['streams'] = DataStream.objects.filter(users = request.user, permission__read = True).order_by('node_id', 'port_id', 'id')
 
         return render(request,'display_nodes.html', data, context_instance=RequestContext(request))        
-##
-#Takes a single datastream id and a time frame and generates json for the data
-#Returns: json
-##
+
+
 def render_graph(request):
+    '''
+    Takes a single datastream id and a time frame and generates json for the data.
+    '''
+
     if(request.method == 'GET'):
         start = int(request.GET.get('start'))
         end = int(request.GET.get('end'))
@@ -143,6 +151,9 @@ def render_graph(request):
 
         
 def to_json(stream):
+    '''
+    Takes a single stream and turns all of it's data into json and returns it.
+    '''
 
     min_value = stream.min_value
     if(min_value != None):
@@ -157,7 +168,4 @@ def to_json(stream):
     stream_data = {"reduction_type":stream.reduction_type,"label":stream.name,"port_id":int(stream.port_id),"data":stream.data,"max_value":max_value,"min_value":min_value,"description":stream.description,"scaling_function":stream.scaling_function.id,"datastream_id":stream.id,"color":stream.color,"node_id":int(stream.node_id),"xmin":stream.xmin,"xmax":stream.xmax,"units":stream.units}
 
     return json.dumps(stream_data)
-
-
-
 
