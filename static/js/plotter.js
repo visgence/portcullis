@@ -310,7 +310,7 @@ function update_link()
     divs = $(".portcullis-graph");
     for (var i = 0; i < divs.length; i++) 
     {
-        streams += '&stream=' + divs[i].id
+        streams += '&view=' + divs[i].id
     }
 
     $("#share_link").attr("href","/graphs/?start="+ start.toLocaleString()+"&end="+end.toLocaleString()+"&granularity="+$("#granularity").val() + streams);
