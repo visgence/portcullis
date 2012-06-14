@@ -8,8 +8,9 @@ Replace this with more appropriate tests for your application.
 from django.test import TestCase
 from django.test.client import Client
 from django.contrib.auth.models import User
+
 #Local imports
-from portcullis.models import DataStream
+from portcullis.models import DataStream, Key, Device
 from data_loader import validate_stream
 
 
@@ -18,33 +19,36 @@ class addReadingTest(TestCase):
     def setUp(self):
         self.client = Client()
 
+        myKey1 = Key.objects.create(key = "pear")
+        myKey2 = Key.objects.create(key = "apple")
+
     def test_auth_token(self):
-        response = self.client.get('/collector/add_reading/', {'auth_token':"IncorrectToken"})
+        response = self.client.get('/collector/add_reading/', {'auth_token':"cherry"})
         self.assertEqual(response.content, "Incorrect Authentication!")
 
 
     def test_raw_sensor_value(self):
-        response = self.client.get('/collector/add_reading/', {'auth_token':"correcthorsebatterystaple"})
+        response = self.client.get('/collector/add_reading/', {'auth_token':"pear"})
         self.assertEqual(response.content, "No data was passed for insertion! Please be sure to pass some data. Example: value=233")
 
-        response = self.client.get('/collector/add_reading/', {'auth_token':"correcthorsebatterystaple", 'value':""})
+        response = self.client.get('/collector/add_reading/', {'auth_token':"pear", 'value':""})
         self.assertEqual(response.content, "No data was passed for insertion! Please be sure to pass some data. Example: value=233")
 
 
     def test_sensor_identifier(self):
-        #When no stream id and port/node id pair is given
-        response = self.client.get('/collector/add_reading/', {'auth_token':"correcthorsebatterystaple", 'value':200})
+        '''When no stream id and port/node id pair is given'''
+
+        response = self.client.get('/collector/add_reading/', {'auth_token':"apple", 'value':200})
         self.assertEqual(response.content, "Not enough info to uniquely identify a data stream. You must give either a datastream_id or both a node_id and a port_id. Example: \"datastream_id=1\" or \"node_id=1&port_id=3.")
 
-        response = self.client.get('/collector/add_reading/', {'auth_token':"correcthorsebatterystaple", 'value':200, 'datastream_id':""})
+        response = self.client.get('/collector/add_reading/', {'auth_token':"apple", 'value':200, 'datastream_id':""})
         self.assertEqual(response.content, "Not enough info to uniquely identify a data stream. You must give either a datastream_id or both a node_id and a port_id. Example: \"datastream_id=1\" or \"node_id=1&port_id=3.")
 
 
 class validateStreamTest(TestCase):
 
     def setUp(self):
-        self.user = User.objects.create_user('david', 'blah@weiner.com', 'hunter1')
-        self.stream = DataStream.objects.create(id=4, node_id=1, port_id=2, owner=self.user)
+        self.stream = DataStream.objects.create(id=4, node_id=1, port_id=2)
 
     def test_stream_id_validation(self):
         """
@@ -83,3 +87,10 @@ class validateStreamTest(TestCase):
 
         info = validate_stream(None, '', 2)
         self.assertEqual(info['error'], "Not enough info to uniquely identify a data stream. You must give either a datastream_id or both a node_id and a port_id. Example: \"datastream_id=1\" or \"node_id=1&port_id=3.\"\n\n")
+
+
+
+
+
+
+

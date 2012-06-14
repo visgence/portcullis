@@ -23,13 +23,13 @@ def add_reading(request):
         return HttpResponse('Incorrect Authentication!')
 
     #Is there even any data?
-    if(raw_sensor_value is None):
+    if(raw_sensor_value is None or raw_sensor_value == ""):
         return HttpResponse("No data was passed for insertion! Please be sure to pass some data. Example: value=233")
 
     #Check to make sure we have enough info to uniquely identify a sensor
-    if(datastream_id is None):
+    if(datastream_id is None or datastream_id == ""):
         #Then we should have a node/pot pair, if otherwise return error
-        if(node_id is None or port_id is None):
+        if((node_id is None or node_id == "") or (port_id == "" or port_id is None)):
             return HttpResponse("Not enough info to uniquely identify a data stream. You must give either a datastream_id or both a node_id and a port_id. Example: \"datastream_id=1\" or \"node_id=1&port_id=3.")
     
     #datastream_id always takes precedence
@@ -176,11 +176,11 @@ def add_reading_bulk(request):
             pass
 
         #If no sensor value then skip this reading
-        if(raw_sensor_value is None):
+        if(raw_sensor_value is None or raw_sensor_value == ""):
            error_string += "\nNo data was passed for insertion! Please be sure to pass some data.\n"
         else:
             #if no port or node then skip this reading
-            if(node_id is not None and port_id is not None):
+            if((node_id is not None and node_id != "") and (port_id is not None and port_id != "")):
                 stream_info = validate_stream(None, node_id, port_id)
                 if(stream_info['error']):
                     error_string += stream_info['error'] 
