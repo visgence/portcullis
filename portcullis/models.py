@@ -21,10 +21,35 @@ class ScalingFunction(models.Model):
     def __unicode__(self):
         return "Name: " + self.name + ", ID: %s," % self.id + " Definition: %s" % self.definition 
 
+class KeyManager(models.Manager):
+    def validate(self, key):
+        try:
+            return Key.objects.get(key = key)
+        except ObjectDoesNotExist:
+            return None
+
+class Key(models.Model):
+    key = models.CharField(primary_key=True, max_length=64)
+    description = models.TextField(null = True, blank = True)
+    objects = KeyManager()
+
+    class Meta:
+        db_table = u'key'
+
+    def __unicode__(self):
+        return self.key 
+
+
+class DeviceManager(models.Manager):
+    def get_by_key(self, key):
+        return Device.objects.get(key = key)
+
 class Device(models.Model):
     name = models.CharField(max_length=64)
-    description = models.TextField()
-    ip_address = models.IPAddressField()
+    description = models.TextField(null = True, blank = True)
+    ip_address = models.IPAddressField(null = True, blank = True)
+    key = models.OneToOneField(Key, null = True, blank = True)
+    objects = DeviceManager()
 
     class Meta:
         db_table = u'device'
@@ -32,58 +57,15 @@ class Device(models.Model):
     def __unicode__(self):
         return self.name
 
-#Goes with Key
-'''
-class KeyManager(models.Manager):
-    def validate(self, key):
-        try:
-            Key.objects.get(key = key)
-            return True
-        except ObjectDoesNotExist:
-            return False
-'''
 
-#TODO: Use keys to validate user, devices, streams etc
-'''
-class Key(models.Model):
-    key = models.CharField(primary_key=True, max_length=64)
-    user = models.ForeignKey(User, null = True, blank = True)
-    device = models.ForeignKey(Device, null = True, blank = True)
-    description = models.TextField(null = True, blank = True)
-    objects = KeyManager()
-
-    class Meta:
-        db_table = u'key'
-
-    def get_type(self):
-        if(self.device):
-            return self.device
-        elif(self.user):
-            return self.user
-        else:
-            return None
-
-    def __unicode__(self):
-        return self.key 
-'''
-
-#TODO: Be able to grab all Data Streams by key that are writable/readable to etc.
-'''
 class DataStreamManager(models.Manager):
-    def get_all_writable(self, key):
-        if(Key.objects.validate(key) == False):
-            return []
+    
+    def get_writable_by_device(self, device):
+        return DataStream.objects.filter(devicepermission__device = device, devicepermission__write = True)
 
-        valid_key = Key.objects.get(key = key)
-        key_type = valid_key.get_type()
-
-        if(key_type == None):
-            return []
-        
-        streams = key_type.datastreams
-
-        return 
-'''
+    def get_writable_by_key(self, key):
+        device = Device.objects.get_by_key(key)
+        return DataStream.objects.filter(devicepermission__device = device, devicepermission__write = True)
 
 class DataStream(models.Model):
     id = models.AutoField(primary_key=True, db_column='datastream_id')
@@ -100,11 +82,12 @@ class DataStream(models.Model):
     is_public = models.BooleanField()
     users = models.ManyToManyField(User, through='UserPermission')
     devices = models.ManyToManyField(Device, through='DevicePermission')
-    #objects = DataStreamManager()
+    objects = DataStreamManager()
 
 
     class Meta:
         db_table = u'data_streams'
+        ordering = ['node_id', 'port_id', 'id']
 
     def __unicode__(self):
         return " Node: %s," % self.node_id + " Port: %s," % self.port_id + " Name: " + self.name
@@ -128,8 +111,6 @@ class Permission(models.Model):
     class Meta:
         abstract = True
     
-
-
 class DevicePermission(Permission):
     datastream = models.ForeignKey(DataStream)
     device = models.ForeignKey(Device)

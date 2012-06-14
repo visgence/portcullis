@@ -11,3 +11,10 @@ function checkPublic(source)
   for(var i in checkboxes)
     checkboxes[i].checked = source.checked;
 }
+
+function checkView(source) 
+{
+  checkboxes = document.getElementsByName('view');
+  for(var i in checkboxes)
+    checkboxes[i].checked = source.checked;
+}
