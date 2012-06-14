@@ -4,6 +4,7 @@ from django.http import HttpResponse
 from django.template import Context, loader
 from django.contrib.auth import authenticate, login, logout
 from django.core import serializers
+from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render
 from portcullis.models import DataStream, SensorReading, ScalingFunction 
 from check_access import check_access
@@ -40,7 +41,7 @@ def display_graphs(request):
                     'granularity':granularity,
                     'start':start,
                     'end':end,
-                    'streams':DataStream.objects.none()
+                    'streams':DataStream.objects.none(),
                }
         
         if(granularity != None):
@@ -70,13 +71,12 @@ def display_graphs(request):
             return render(request,'display_nodes.html', data, context_instance=RequestContext(request))        
 
         #If we have a node or node/port pair then pull streams for those otherwise pull streams
-        #based on user
         if(node != None and port != None):
-           data['streams'] = DataStream.objects.filter(node_id = int(node), port_id = int(port), users = request.user).order_by('node_id', 'port_id', 'id')
+           data['streams'] = DataStream.objects.filter(node_id = int(node), port_id = int(port), users = request.user)
         elif(node != None):
-            data['streams'] = DataStream.objects.filter(node_id = int(node), users = request.user).order_by('node_id', 'port_id', 'id')
+            data['streams'] = DataStream.objects.filter(node_id = int(node), users = request.user)
         else:
-            data['streams'] = DataStream.objects.filter(users = request.user).order_by('node_id', 'port_id', 'id')
+            data['streams'] = DataStream.objects.filter(users = request.user)
 
         return render(request,'display_nodes.html', data, context_instance=RequestContext(request))        
 
@@ -96,14 +96,26 @@ def render_graph(request):
 
         if(granularity == None):
             granularity = 300
-    
+   
+
         #Pull the data for this stream
         stream_info = DataStream.objects.get(id = datastream_id)
+
+                
 
         #These fields could be used for graph settings client-side
         stream_info.xmin = start
         stream_info.xmax = end
 
+        try:
+            if(stream_info.is_public == True or stream_info.userpermission_set.get(read = True, user = request.user)):
+                stream_info.permission = "true"
+        except ObjectDoesNotExist:
+            stream_info.data = []
+            stream_info.label = stream_info.name
+            stream_info.permission = "false"
+            json = to_json(stream_info)
+            return HttpResponse(json)
 
         #Check if there are less points in timeframe then granularity
         readings = SensorReading.objects.filter(date_entered__gte = start, date_entered__lte = end, datastream = datastream_id).order_by('date_entered')
@@ -165,7 +177,7 @@ def to_json(stream):
 
 
 
-    stream_data = {"reduction_type":stream.reduction_type,"label":stream.name,"port_id":int(stream.port_id),"data":stream.data,"max_value":max_value,"min_value":min_value,"description":stream.description,"scaling_function":stream.scaling_function.id,"datastream_id":stream.id,"color":stream.color,"node_id":int(stream.node_id),"xmin":stream.xmin,"xmax":stream.xmax,"units":stream.units}
+    stream_data = {"reduction_type":stream.reduction_type,"label":stream.name,"port_id":int(stream.port_id),"data":stream.data,"max_value":max_value,"min_value":min_value,"description":stream.description,"scaling_function":stream.scaling_function.id,"datastream_id":stream.id,"color":stream.color,"node_id":int(stream.node_id),"xmin":stream.xmin,"xmax":stream.xmax,"units":stream.units,"permission":stream.permission}
 
     return json.dumps(stream_data)
 
