@@ -1,12 +1,11 @@
 #System Imports
-from portcullis.models import DataStream, SensorReading 
+from portcullis.models import DataStream, SensorReading, Key
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse
 from django.utils import simplejson
 import time
 import urllib
 
-password = 'correcthorsebatterystaple'
 
 @csrf_exempt
 def add_reading(request):
@@ -14,13 +13,13 @@ def add_reading(request):
     Adds a single reading to the database. In order to insert a reading we either need a stream id or a node/port pair. 
     '''
 
-    node_id = request.POST.get('node_id')
-    port_id = request.POST.get('port_id')
-    datastream_id = request.POST.get('datastream_id')
-    auth_token = request.POST.get('auth_token')
-    raw_sensor_value = request.POST.get('value')
+    node_id = request.REQUEST.get('node_id')
+    port_id = request.REQUEST.get('port_id')
+    datastream_id = request.REQUEST.get('datastream_id')
+    auth_token = request.REQUEST.get('auth_token')
+    raw_sensor_value = request.REQUEST.get('value')
 
-    if(auth_token != password):
+    if(Key.objects.validate(auth_token) == None):
         return HttpResponse('Incorrect Authentication!')
 
     #Is there even any data?
@@ -68,7 +67,7 @@ def add_reading_bulk_hash(request):
     json_text = urllib.unquote(request.GET.get('json'))
     print json_text
 
-    if(auth_token != password):
+    if(Key.objects.validate(auth_token) == None):
         return HttpResponse('Incorrect Authentication!')
 
     if(json_text is None): 
@@ -147,10 +146,10 @@ def add_reading_bulk(request):
     an error and continue with the other readings.
     '''
 
-    auth_token = request.POST.get('auth_token')
-    json_text = urllib.unquote(request.POST.get('json'))
+    auth_token = request.REQUEST.get('auth_token')
+    json_text = urllib.unquote(request.REQUEST.get('json'))
 
-    if(auth_token != password):
+    if(Key.objects.validate(auth_token) == None):
         return HttpResponse('Incorrect Authentication!')
 
     if(json_text is None): 

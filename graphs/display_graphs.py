@@ -78,7 +78,7 @@ def display_graphs(request):
         else:
             data['streams'] = DataStream.objects.filter(users = request.user).order_by('node_id', 'port_id', 'id')
 
-       return render(request,'display_nodes.html', data, context_instance=RequestContext(request))        
+        return render(request,'display_nodes.html', data, context_instance=RequestContext(request))        
 
 
 def render_graph(request):

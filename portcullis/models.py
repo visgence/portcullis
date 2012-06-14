@@ -90,7 +90,7 @@ class DataStream(models.Model):
         ordering = ['node_id', 'port_id', 'id']
 
     def __unicode__(self):
-        return " Node: %s," % self.node_id + " Port: %s," % self.port_id + " Name: " + self.name
+        return "Stream_ID: %s" % self.id  + " Node: %s," % self.node_id + " Port: %s," % self.port_id + " Name: " + self.name
 
 class SensorReading(models.Model):
     id = models.AutoField(primary_key=True, db_column='read_id', editable=False)
