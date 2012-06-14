@@ -72,13 +72,13 @@ def display_graphs(request):
         #If we have a node or node/port pair then pull streams for those otherwise pull streams
         #based on user
         if(node != None and port != None):
-           data['streams'] = DataStream.objects.filter(node_id = int(node), port_id = int(port), users = request.user, permission__read = True).order_by('node_id', 'port_id', 'id')
+           data['streams'] = DataStream.objects.filter(node_id = int(node), port_id = int(port), users = request.user).order_by('node_id', 'port_id', 'id')
         elif(node != None):
-            data['streams'] = DataStream.objects.filter(node_id = int(node), users = request.user, permission__read = True).order_by('node_id', 'port_id', 'id')
+            data['streams'] = DataStream.objects.filter(node_id = int(node), users = request.user).order_by('node_id', 'port_id', 'id')
         else:
-            data['streams'] = DataStream.objects.filter(users = request.user, permission__read = True).order_by('node_id', 'port_id', 'id')
+            data['streams'] = DataStream.objects.filter(users = request.user).order_by('node_id', 'port_id', 'id')
 
-        return render(request,'display_nodes.html', data, context_instance=RequestContext(request))        
+       return render(request,'display_nodes.html', data, context_instance=RequestContext(request))        
 
 
 def render_graph(request):

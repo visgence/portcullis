@@ -1,22 +1,24 @@
+#System Imports
 from portcullis.models import DataStream, SensorReading 
+from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse
 from django.utils import simplejson
 import time
 import urllib
 
-
 password = 'correcthorsebatterystaple'
 
+@csrf_exempt
 def add_reading(request):
     '''
     Adds a single reading to the database. In order to insert a reading we either need a stream id or a node/port pair. 
     '''
 
-    node_id = request.GET.get('node_id')
-    port_id = request.GET.get('port_id')
-    datastream_id = request.GET.get('datastream_id')
-    auth_token = request.GET.get('auth_token')
-    raw_sensor_value = request.GET.get('value')
+    node_id = request.POST.get('node_id')
+    port_id = request.POST.get('port_id')
+    datastream_id = request.POST.get('datastream_id')
+    auth_token = request.POST.get('auth_token')
+    raw_sensor_value = request.POST.get('value')
 
     if(auth_token != password):
         return HttpResponse('Incorrect Authentication!')
@@ -138,14 +140,15 @@ def add_reading_bulk_hash(request):
         return HttpResponse(error_string)
 
 
+@csrf_exempt
 def add_reading_bulk(request):
     '''
     Adds multiple readings at "once". If for any reading there is a port, node, and sensor value then we insert the reading otherwise we record 
     an error and continue with the other readings.
     '''
 
-    auth_token = request.GET.get('auth_token')
-    json_text = urllib.unquote(request.GET.get('json'))
+    auth_token = request.POST.get('auth_token')
+    json_text = urllib.unquote(request.POST.get('json'))
 
     if(auth_token != password):
         return HttpResponse('Incorrect Authentication!')
