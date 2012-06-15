@@ -149,13 +149,13 @@ def add_reading_bulk(request):
     '''
 
     auth_token = request.REQUEST.get('auth_token')
-    json_text = urllib.unquote(request.REQUEST.get('json'))
+    try:
+        json_text = urllib.unquote(request.REQUEST.get('json'))
+    except:
+        return HttpResponse("No json received. Please send a serialized array of arrays in the form [[node_id1,port_id1,value1],[node_id2,port_id2,value2]]")
 
     if(Key.objects.validate(auth_token) == None):
         return HttpResponse('Incorrect Authentication!')
-
-    if(json_text is None): 
-        return HttpResponse("No json received. Please send a serialized array of arrays in the form [[node_id1,port_id1,value1],[node_id2,port_id2,value2]]")
 
     readings = simplejson.loads(json_text)
     insertion_attempts = 0

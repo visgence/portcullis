@@ -88,9 +88,30 @@ class validateStreamTest(TestCase):
         info = validate_stream(None, '', 2)
         self.assertEqual(info['error'], "Not enough info to uniquely identify a data stream. You must give either a datastream_id or both a node_id and a port_id. Example: \"datastream_id=1\" or \"node_id=1&port_id=3.\"\n\n")
 
+class addReadingBulkTest(TestCase):
+    
+    def setUp(self):
+        self.client = Client()
 
+        myKey1 = Key.objects.create(key = "pear")
+        myKey2 = Key.objects.create(key = "apple")
+        myDataStream = DataStream.objects.create(node_id = 1, port_id = 1)
 
+    def test_auth_token(self):
+        response = self.client.get('/collector/add_reading_bulk/', {'auth_token':"cherry",'json':'[[]]'})
+        self.assertEqual(response.content, "Incorrect Authentication!")
 
-
+    def test_json(self):
+        response = self.client.get('/collector/add_reading_bulk/', {'auth_token':"pear"})
+        self.assertEqual(response.content, "No json received. Please send a serialized array of arrays in the form [[node_id1,port_id1,value1],[node_id2,port_id2,value2]]")
+    
+    def test_single_insert(self):
+        response = self.client.get('/collector/add_reading_bulk/', {'auth_token':'pear','json':'[[1,1,333]]'})
+        self.assertEqual(response.content,'\n\nTotal Insertion Attempts: 1\n\nSuccessful Insertions : 1\n\nAll records inserted!') 
+    
+    def test_multiple_insert(self):
+        response = self.client.get('/collector/add_reading_bulk/', {'auth_token':'pear','json':'[[1,1,333],[1,1,333],[1,1,333],[1,1,333],[1,1,333],[1,1,333],[1,1,333],[1,1,333],[1,1,333],[1,1,333],[1,1,333],[1,1,333],[1,1,333],[1,1,333],[1,1,333],[1,1,333],[1,1,333],[1,1,333],[1,1,333],[1,1,333],[1,1,333],[1,1,333],[1,1,333],[1,1,333],[1,1,333],[1,1,333],[1,1,333],[1,1,333],[1,1,333],[1,1,333],[1,1,333],[1,1,333],[1,1,333],[1,1,333],[1,1,333],[1,1,333],[1,1,333],[1,1,333],[1,1,333],[1,1,333],[1,1,333],[1,1],[132,1,333],[1,333],[1,0,333]]'})
+        self.assertEqual(response.content,'\nNo data was passed for insertion! Please be sure to pass some data.\n\nNode id 132 and port id 1 does not map to an existing datastream id.\n\nNo data was passed for insertion! Please be sure to pass some data.\n\nNode id 1 and port id 0 does not map to an existing datastream id.\n\n\nTotal Insertion Attempts: 45\n\nSuccessful Insertions : 41\n\nFailed Insertions : 4')
+ 
 
 
