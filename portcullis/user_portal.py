@@ -12,13 +12,13 @@ def user_streams(request):
 
     if request.method == 'GET':
         #Pull streams that are owned by this user.
-        owned_streams = UserPermission.objects.filter(user = request.user, owner = True) 
+        owned_streams = DataStream.objects.filter(userpermission__user = request.user, userpermission__owner = True) 
         
         #Pull streams that are viewable by this user.
-        viewable_streams = UserPermission.objects.filter(user = request.user, read = True) 
+        viewable_streams = DataStream.objects.filter(userpermission__user = request.user, userpermission__read = True).exclude(id__in=owned_streams)
 
         #Pull any public streams as well
-        public_streams = DataStream.objects.filter(is_public = True)
+        public_streams = DataStream.objects.filter(is_public = True).exclude(id__in=viewable_streams).exclude(id__in=owned_streams)
 
 
         t = loader.get_template('user_streams.html')
