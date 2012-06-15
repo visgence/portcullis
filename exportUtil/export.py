@@ -14,11 +14,13 @@ def in_search(line, stmts):
 
 stmtList = ['sensor_reading']
 
+print "BEGIN;"
+
 for line in fileinput.input():
     line = line.rstrip()
 
     if(in_search(line, stmtList)):
         print line
 
-
+print "END;"
 

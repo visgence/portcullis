@@ -86,7 +86,7 @@ class DataStream(models.Model):
 class SensorReading(models.Model):
     id = models.AutoField(primary_key=True, db_column='read_id', editable=False)
     datastream = models.ForeignKey(DataStream)
-    sensor_value = models.DecimalField(null=True, max_digits=6, decimal_places=0, blank=True)
+    sensor_value = models.DecimalField(null=True, max_digits=20, decimal_places=6, blank=True)
     date_entered = models.IntegerField(null=True, blank=True)
 
     class Meta:
