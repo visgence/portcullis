@@ -1,4 +1,4 @@
-
+#System Imports
 from django.template import RequestContext
 from django.http import HttpResponse
 from django.template import Context, loader
@@ -6,12 +6,11 @@ from django.contrib.auth import authenticate, login, logout
 from django.core import serializers
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render
-from portcullis.models import DataStream, SensorReading, ScalingFunction 
-from check_access import check_access
-from django.db.models import Q
 import json
 
 #Local Imports
+from portcullis.models import DataStream, SensorReading, ScalingFunction 
+from check_access import check_access
 import data_reduction
 
 def display_graphs(request):
@@ -97,16 +96,14 @@ def render_graph(request):
         if(granularity == None):
             granularity = 300
    
-
         #Pull the data for this stream
         stream_info = DataStream.objects.get(id = datastream_id)
-
-                
 
         #These fields could be used for graph settings client-side
         stream_info.xmin = start
         stream_info.xmax = end
 
+        #Check for read and public permissions.  Set a flag, true or false.
         try:
             if(stream_info.is_public == True or stream_info.userpermission_set.get(read = True, user = request.user)):
                 stream_info.permission = "true"
@@ -131,14 +128,12 @@ def render_graph(request):
             stream_info.label = stream_info.name
             
             json = to_json(stream_info)
-            #print "print json: %s" % json
             return HttpResponse(json)
 
         else:
             time_chunk = total_time / granularity
-            #print "Time Chunk: %s" % time_chunk
             end_of_chunk = start + time_chunk
-            reduced_data = []#will contain final data after it is reduced
+            reduced_data = []   #will contain final data after it is reduced
 
             while (end_of_chunk < end):
                 tmp_data=[]
@@ -154,10 +149,7 @@ def render_graph(request):
 
             stream_info.data = reduced_data
             stream_info.label = stream_info.name
-
-            #print "stream_info: %s" % stream_info.data
             json = to_json(stream_info)
-            #print "print json: %s" % json
 
             return HttpResponse(json)
 
