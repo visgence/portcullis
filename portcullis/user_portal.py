@@ -1,10 +1,17 @@
-from models import DataStream, UserPermission
+#System Imports
 from django.http import HttpResponse
 from django.template import Context, loader
 from django.core.context_processors import csrf
+
+#Local Imports
+from models import DataStream, UserPermission
 from check_access import check_access
 
 def user_streams(request):
+    '''
+    Grab all relevent streams to display as checkboxes in the user portal.  We make sure to remove any duplicate streams from each various section.
+    Presedence is given to owner, then to readable, then to public for the duplicate removal.
+    '''
 
     response = check_access(request)
     if(response):
