@@ -43,7 +43,7 @@ class DeviceManager(models.Manager):
 class Device(models.Model):
     name = models.CharField(max_length=64)
     description = models.TextField(null = True, blank = True)
-    ip_address = models.IPAddressField(null = True, blank = True)
+    ip_address = models.CharField(null = True, blank = True, max_length=18)
     key = models.OneToOneField(Key, null = True, blank = True)
     objects = DeviceManager()
 
