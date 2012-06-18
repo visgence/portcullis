@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<django-objects>
+    <object pk = "2" model="portcullis.scalingfunction">
+        <field type="CharField" name="name">identity</field>
+        <field type="CharField" name="definition">return x;</field>
+    </object>
+
+    <object pk="1" model="portcullis.datastream">
+        <field type="IntegerField" name="node_id">0</field>
+        <field type="IntegerField" name="port_id">0</field>
+        <field type="CharField" name="units"></field>
+        <field type="CharField" name="name">stream 1</field>
+        <field type="CharField" name="description"></field>
+        <field type="CharField" name="color"></field>
+        <field type="DecimalField" name="min_value"><None></None></field>
+        <field type="DecimalField" name="max_value"><None></None></field>
+        <field to="portcullis.scalingfunction" name="scaling_function" rel="ManyToOneRel"><natural>identity</natural></field>
+        <field type="CharField" name="reduction_type"></field>
+        <field type="BooleanField" name="is_public">False</field>
+    </object>
+    <object pk="2" model="portcullis.datastream">
+        <field type="IntegerField" name="node_id">0</field>
+        <field type="IntegerField" name="port_id">1</field>
+        <field type="CharField" name="units"></field>
+        <field type="CharField" name="name">stream 2</field>
+        <field type="CharField" name="description"></field>
+        <field type="CharField" name="color"></field>
+        <field type="DecimalField" name="min_value"><None></None></field>
+        <field type="DecimalField" name="max_value"><None></None></field>
+        <field to="portcullis.scalingfunction" name="scaling_function" rel="ManyToOneRel"><natural>identity</natural></field>
+        <field type="CharField" name="reduction_type"></field>
+        <field type="BooleanField" name="is_public">False</field>
+    </object>
+    <object pk="3" model="portcullis.datastream">
+        <field type="IntegerField" name="node_id">0</field>
+        <field type="IntegerField" name="port_id">2</field>
+        <field type="CharField" name="units"></field>
+        <field type="CharField" name="name">stream 3</field>
+        <field type="CharField" name="description"></field>
+        <field type="CharField" name="color"></field>
+        <field type="DecimalField" name="min_value"><None></None></field>
+        <field type="DecimalField" name="max_value"><None></None></field>
+        <field to="portcullis.scalingfunction" name="scaling_function" rel="ManyToOneRel"><natural>identity</natural></field>
+        <field type="CharField" name="reduction_type"></field>
+        <field type="BooleanField" name="is_public">False</field>
+    </object>
+
+    <object pk = "apple" model="portcullis.key">
+        <field type="TextField" name="description"><None></None></field>
+    </object>
+    <object pk = "pear" model="portcullis.key">
+        <field type="TextField" name="description"><None></None></field>
+    </object>
+    <object pk = "cherry" model="portcullis.key">
+        <field type="TextField" name="description"><None></None></field>
+    </object>
+
+    <object pk="1" model="portcullis.device">
+        <field type="CharField" name="name">device 1</field>
+        <field type="TextField" name="description"></field>
+        <field type="IPAddressField" name="ip_address"></field>
+        <field to="portcullis.key" name="key" rel="OneToOneRel"><natural>apple</natural></field>
+    </object>
+    <object pk="2" model="portcullis.device">
+        <field type="CharField" name="name">device 2</field>
+        <field type="TextField" name="description"></field>
+        <field type="IPAddressField" name="ip_address"></field>
+        <field to="portcullis.key" name="key" rel="OneToOneRel"><natural>pear</natural></field>
+    </object>
+    <object pk="3" model="portcullis.device">
+        <field type="CharField" name="name">device 3</field>
+        <field type="TextField" name="description"></field>
+        <field type="IPAddressField" name="ip_address"></field>
+        <field to="portcullis.key" name="key" rel="OneToOneRel"><natural>cherry</natural></field>
+    </object>
+
+    <object pk="1" model="portcullis.devicepermission">
+        <field type="BooleanField" name="read">True</field>
+        <field type="BooleanField" name="write">True</field>
+        <field to="portcullis.datastream" name="datastream" rel="ManyToOneRel">1</field>
+        <field to="portcullis.device" name="device" rel="ManyToOneRel">1</field>
+    </object>
+    <object pk="2" model="portcullis.devicepermission">
+        <field type="BooleanField" name="read">True</field>
+        <field type="BooleanField" name="write">True</field>
+        <field to="portcullis.datastream" name="datastream" rel="ManyToOneRel">2</field>
+        <field to="portcullis.device" name="device" rel="ManyToOneRel">2</field>
+    </object>
+    <object pk="3" model="portcullis.devicepermission">
+        <field type="BooleanField" name="read">True</field>
+        <field type="BooleanField" name="write">True</field>
+        <field to="portcullis.datastream" name="datastream" rel="ManyToOneRel">3</field>
+        <field to="portcullis.device" name="device" rel="ManyToOneRel">3</field>
+    </object>
+    <object pk="4" model="portcullis.devicepermission">
+        <field type="BooleanField" name="read">True</field>
+        <field type="BooleanField" name="write">False</field>
+        <field to="portcullis.datastream" name="datastream" rel="ManyToOneRel">1</field>
+        <field to="portcullis.device" name="device" rel="ManyToOneRel">2</field>
+    </object>
+    <object pk="5" model="portcullis.devicepermission">
+        <field type="BooleanField" name="read">True</field>
+        <field type="BooleanField" name="write">True</field>
+        <field to="portcullis.datastream" name="datastream" rel="ManyToOneRel">1</field>
+        <field to="portcullis.device" name="device" rel="ManyToOneRel">3</field>
+    </object>
+    <object pk="6" model="portcullis.devicepermission">
+        <field type="BooleanField" name="read">True</field>
+        <field type="BooleanField" name="write">True</field>
+        <field to="portcullis.datastream" name="datastream" rel="ManyToOneRel">2</field>
+        <field to="portcullis.device" name="device" rel="ManyToOneRel">3</field>
+    </object>
+
+</django-objects>

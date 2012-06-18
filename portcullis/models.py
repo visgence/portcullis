@@ -2,10 +2,15 @@ from django.db import models
 from django.contrib.auth.models import User, UserManager
 from django.core.exceptions import ObjectDoesNotExist
 
+class ScalingFunctionManager(models.Manager):
+    def get_by_natural_key(self, name):
+        return self.get(name = name)
+
 class ScalingFunction(models.Model):
     id = models.AutoField(primary_key=True, db_column='function_id')
     name = models.CharField(max_length=32, unique=True, blank=True)
     definition = models.CharField(max_length=1000, blank=True)
+    objects = ScalingFunctionManager()
 
     class Meta:
         db_table = u'scaling_functions'
@@ -50,7 +55,7 @@ class Device(models.Model):
 
 
 class DataStreamManager(models.Manager):
-    
+
     def get_writable_by_device(self, device):
         return DataStream.objects.filter(devicepermission__device = device, devicepermission__write = True)
 
@@ -102,23 +107,35 @@ class Permission(models.Model):
     class Meta:
         abstract = True
     
+class DevicePermissionManager(models.Manager):
+    def get_by_natural_key(self, stream, device):
+        return self.get(datastream=stream, device=device)
+
 class DevicePermission(Permission):
     datastream = models.ForeignKey(DataStream)
     device = models.ForeignKey(Device)
+    objects = DevicePermissionManager()
 
     class Meta:
         db_table = u'device_permission'
+        unique_together = (('datastream', 'device'),)
 
     def __unicode__(self):
         return "Device: %s" % self.device.name + ", Datastream: %s," % self.datastream.name + " Read: %s" % self.read + ", Write: %s" % self.write
+
+class UserPermissionManager(models.Manager):
+    def get_by_natural_key(self, stream, user):
+        return self.get(datastream=stream, user=user)
 
 class UserPermission(Permission):
     datastream = models.ForeignKey(DataStream)
     user = models.ForeignKey(User)
     owner = models.BooleanField(default = False)
+    objects = UserPermissionManager()
 
     class Meta:
         db_table = u'user_permission'
+        unique_together = (('datastream', 'user'),)
 
     def __unicode__(self):
         return "User: %s" % self.user.username + ", Datastream: %s," % self.datastream.name + " Read: %s" % self.read + ", Write: %s" % self.write
