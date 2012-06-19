@@ -27,13 +27,14 @@ class KeyManager(models.Manager):
 class Key(models.Model):
     key = models.CharField(primary_key=True, max_length=64)
     description = models.TextField(null = True, blank = True)
+    owner = models.ForeignKey(User, null = True, blank = True)
     objects = KeyManager()
 
     class Meta:
         db_table = u'key'
 
     def __unicode__(self):
-        return self.key 
+        return self.key + " Owned by %s" + self.owner.username
 
 
 class DeviceManager(models.Manager):
@@ -45,13 +46,15 @@ class Device(models.Model):
     description = models.TextField(null = True, blank = True)
     ip_address = models.CharField(null = True, blank = True, max_length=18)
     key = models.OneToOneField(Key, null = True, blank = True)
+    owner = models.ForeignKey(User, null = True, blank = True)
     objects = DeviceManager()
 
     class Meta:
         db_table = u'device'
+        unique_together = (('name', 'owner'),)
 
     def __unicode__(self):
-        return self.name
+        return self.name + " Owned by %s" + self.owner.username
 
 
 class DataStreamManager(models.Manager):
@@ -92,7 +95,7 @@ class SensorReading(models.Model):
     id = models.AutoField(primary_key=True, db_column='read_id', editable=False)
     datastream = models.ForeignKey(DataStream)
     sensor_value = models.DecimalField(null=True, max_digits=20, decimal_places=6, blank=True)
-    date_entered = models.IntegerField(null=True, blank=True)
+    date_entered = models.IntegerField(db_index = True, null=True, blank=True)
 
     class Meta:
         db_table = u'sensor_reading'
