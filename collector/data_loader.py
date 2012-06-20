@@ -67,7 +67,6 @@ def add_reading_bulk_hash(request):
 
     auth_token = request.GET.get('auth_token')
     json_text = urllib.unquote(request.GET.get('json'))
-    print json_text
 
     if(Key.objects.validate(auth_token) == None):
         return HttpResponse('Incorrect Authentication!')
@@ -76,7 +75,6 @@ def add_reading_bulk_hash(request):
         return HttpResponse("No json received. Please send a serialized array of hashes in the form [{port=port1, node=node1, value=value1, stream=stream1, time=time1}, ...]")
 
     readings = simplejson.loads(json_text)
-    print readings
     insertion_attempts = 0
     insertion_successes = 0
     error_string = ''

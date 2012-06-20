@@ -1,6 +1,9 @@
+#System Imports
 from django.db import models
 from django.contrib.auth.models import User, UserManager
 from django.core.exceptions import ObjectDoesNotExist
+
+
 
 class ScalingFunctionManager(models.Manager):
     def get_by_natural_key(self, name):
@@ -17,6 +20,8 @@ class ScalingFunction(models.Model):
     def __unicode__(self):
         return "Name: " + self.name + ", ID: %s," % self.id + " Definition: %s" % self.definition 
 
+
+
 class KeyManager(models.Manager):
     def validate(self, key):
         try:
@@ -27,7 +32,7 @@ class KeyManager(models.Manager):
 class Key(models.Model):
     key = models.CharField(primary_key=True, max_length=64)
     description = models.TextField(null = True, blank = True)
-    owner = models.ForeignKey(User, null = True, blank = True)
+    owner = models.ForeignKey(User)
     objects = KeyManager()
 
     class Meta:
@@ -35,6 +40,8 @@ class Key(models.Model):
 
     def __unicode__(self):
         return self.key + " Owned by %s" + self.owner.username
+
+
 
 
 class DeviceManager(models.Manager):
@@ -46,7 +53,7 @@ class Device(models.Model):
     description = models.TextField(null = True, blank = True)
     ip_address = models.CharField(null = True, blank = True, max_length=18)
     key = models.OneToOneField(Key, null = True, blank = True)
-    owner = models.ForeignKey(User, null = True, blank = True)
+    owner = models.ForeignKey(User)
     objects = DeviceManager()
 
     class Meta:
@@ -55,6 +62,8 @@ class Device(models.Model):
 
     def __unicode__(self):
         return self.name + " Owned by %s" + self.owner.username
+
+
 
 
 class DataStreamManager(models.Manager):
@@ -91,6 +100,8 @@ class DataStream(models.Model):
     def __unicode__(self):
         return "Stream_ID: %s" % self.id  + " Node: %s," % self.node_id + " Port: %s," % self.port_id + " Name: " + self.name
 
+
+
 class SensorReading(models.Model):
     id = models.AutoField(primary_key=True, db_column='read_id', editable=False)
     datastream = models.ForeignKey(DataStream)
@@ -103,13 +114,17 @@ class SensorReading(models.Model):
     def __unicode__(self):
         return self.datastream.name + ", Value: %s," % self.sensor_value + " Date Entered: %s" % self.date_entered
 
+
+
 class Permission(models.Model):
     read = models.BooleanField(default = True)
     write = models.BooleanField(default = False)
 
     class Meta:
         abstract = True
-    
+
+
+
 class DevicePermissionManager(models.Manager):
     def get_by_natural_key(self, stream, device):
         return self.get(datastream=stream, device=device)
@@ -125,6 +140,8 @@ class DevicePermission(Permission):
 
     def __unicode__(self):
         return "Device: %s" % self.device.name + ", Datastream: %s," % self.datastream.name + " Read: %s" % self.read + ", Write: %s" % self.write
+
+
 
 class UserPermissionManager(models.Manager):
     def get_by_natural_key(self, stream, user):

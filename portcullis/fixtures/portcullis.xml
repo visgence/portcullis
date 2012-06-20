@@ -1,5 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <django-objects>
+
+    <object model="auth.user">
+        <field type="CharField" name="username">portcullis</field>
+        <field type="CharField" name="first_name">Portcullis</field>
+        <field type="CharField" name="last_name"></field>
+        <field type="CharField" name="email">asdjlk@sljkdf.com</field>
+        <field type="CharField" name="password">pbkdf2_sha256$10000$JlYFRXL3ocCv$VmuU6KKp4Ei2GRnS+AGcXEy7/8qlEGOPKvFE6cJ4BB8=</field>
+        <field type="BooleanField" name="is_staff">True</field>
+        <field type="BooleanField" name="is_active">True</field>
+        <field type="BooleanField" name="is_superuser">True</field>
+        <field type="DateTimeField" name="last_login">2012-06-19T22:41:22+00:00</field>
+        <field type="DateTimeField" name="date_joined">2012-06-19T22:41:09+00:00</field>
+        <field to="auth.group" name="groups" rel="ManyToManyRel"></field>
+        <field to="auth.permission" name="user_permissions" rel="ManyToManyRel"></field>
+    </object>
+
     <object model="portcullis.scalingfunction">
         <field type="CharField" name="name">identity</field>
         <field type="CharField" name="definition">return x;</field>
@@ -28,23 +44,29 @@
     </object>
 
     <object pk = "apple" model="portcullis.key">
+        <field to="django.contrib.auth.auth_user" name="owner" rel="ManyToOneRel">1</field>
     </object>
     <object pk = "pear" model="portcullis.key">
+        <field to="django.contrib.auth.auth_user" name="owner" rel="ManyToOneRel">1</field>
     </object>
     <object pk = "cherry" model="portcullis.key">
+        <field to="django.contrib.auth.auth_user" name="owner" rel="ManyToOneRel">1</field>
     </object>
 
     <object pk="1" model="portcullis.device">
         <field type="CharField" name="name">device 1</field>
         <field to="portcullis.key" name="key" rel="OneToOneRel"><natural>apple</natural></field>
+        <field to="django.contrib.auth.auth_user" name="owner" rel="ManyToOneRel">1</field>
     </object>
     <object pk="2" model="portcullis.device">
         <field type="CharField" name="name">device 2</field>
         <field to="portcullis.key" name="key" rel="OneToOneRel"><natural>pear</natural></field>
+        <field to="django.contrib.auth.auth_user" name="owner" rel="ManyToOneRel">1</field>
     </object>
     <object pk="3" model="portcullis.device">
         <field type="CharField" name="name">device 3</field>
         <field to="portcullis.key" name="key" rel="OneToOneRel"><natural>cherry</natural></field>
+        <field to="django.contrib.auth.auth_user" name="owner" rel="ManyToOneRel">1</field>
     </object>
 
     <object model="portcullis.devicepermission">

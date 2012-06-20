@@ -14,17 +14,14 @@ def user_login(request):
     #Read next url to be redirected to
     try:
         redirect_to = request.REQUEST["next"]
-        print redirect_to
     except KeyError:
         redirect_to = "/portcullis/user_streams/"
-        print "redirect to: %s" % redirect_to
-    print request.user
+
     if request.method == 'POST':
         user = authenticate(username=request.POST["username"], password=request.POST["password"])
         if user is not None:
             if user.is_active:
                 login(request, user)
-                print "logged in"
                 return HttpResponseRedirect(redirect_to)
             else:
                 error = "Account disabled"
@@ -38,7 +35,6 @@ def user_login(request):
     return HttpResponse(t.render(c))
 
 def logout(request):
-    print "just logged out"
     auth_logout(request)
     return HttpResponseRedirect("/portcullis/")
 

@@ -8,6 +8,7 @@ Replace this with more appropriate tests for your application.
 from django.test import TestCase
 from django.test.client import Client
 from django.contrib.auth.models import User
+import time
 
 #Local imports
 from portcullis.models import DataStream, SensorReading, UserPermission
@@ -19,7 +20,10 @@ class renderGraphTest(TestCase):
         self.client = Client()
 
         myStream = DataStream.objects.create(node_id = 0, port_id = 0)
-        reading1 = SensorReading.objects.create(datastream = myStream, date_entered = 1339789049, sensor_value = 32)
+
+        for i in range(100000):
+            SensorReading.objects.create(datastream = myStream, date_entered = 1339789049 + i, sensor_value = 32)
+
         user = User.objects.create_user('fakename', 'fake@pukkared.com', 'mypassword')
         UserPermission.objects.create(datastream = myStream, user = user, owner = False)
 
@@ -34,3 +38,11 @@ class renderGraphTest(TestCase):
         self.assertEqual(response.content, "Incorrect Authentication!")
     '''
 
+    def test_data_time(self):
+        t1 = time.time()
+        readings = SensorReading.objects.all()
+        t2 = time.time()
+
+        print "Time for grabbing all sensor readings: %f" % (t2 - t1)
+
+        self.assertEqual(1+1, 2)

@@ -58,7 +58,6 @@ def display_graphs(request):
 
         #Grab all public streams
         if(request.GET.getlist('public')):
-            print request.GET.getlist('public')
             for stream in request.GET.getlist('public'):
                 data['streams'] = data['streams'] | DataStream.objects.filter(id = stream) 
 

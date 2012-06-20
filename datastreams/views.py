@@ -12,7 +12,6 @@ from django.db.models import Q
 def csv(request):
 
     response = check_access(request)
-    print response
     if(response):
         return response
 
@@ -33,7 +32,6 @@ def csv(request):
 
         readings = SensorReading.objects.filter(date_entered__gte = start, date_entered__lte = end, datastream = data_stream).order_by('date_entered')
 
-        print readings
 
         data = {
                     'start':start,

@@ -19,8 +19,9 @@ class addReadingTest(TestCase):
     def setUp(self):
         self.client = Client()
 
-        myKey1 = Key.objects.create(key = "pear")
-        myKey2 = Key.objects.create(key = "apple")
+        owner = User.objects.create(username = "portcullis")
+        myKey1 = Key.objects.create(key = "pear", owner = owner)
+        myKey2 = Key.objects.create(key = "apple", owner = owner)
 
     def test_auth_token(self):
         response = self.client.get('/collector/add_reading/', {'auth_token':"cherry"})
@@ -93,8 +94,9 @@ class addReadingBulkTest(TestCase):
     def setUp(self):
         self.client = Client()
 
-        myKey1 = Key.objects.create(key = "pear")
-        myKey2 = Key.objects.create(key = "apple")
+        owner = User.objects.create(username = "portcullis") 
+        myKey1 = Key.objects.create(key = "pear", owner = owner)
+        myKey2 = Key.objects.create(key = "apple", owner = owner)
         myDataStream = DataStream.objects.create(node_id = 1, port_id = 1)
 
     def test_auth_token(self):

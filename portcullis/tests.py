@@ -1,4 +1,5 @@
 from django.test import TestCase
+from django.contrib.auth.models import User
 from portcullis.models import DataStream, ScalingFunction, Device, DevicePermission, Key
 
 class PermissionTest(TestCase):
