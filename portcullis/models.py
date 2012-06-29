@@ -10,13 +10,10 @@ class ScalingFunctionManager(models.Manager):
         return self.get(name = name)
 
 class ScalingFunction(models.Model):
-    id = models.AutoField(primary_key=True, db_column='function_id')
     name = models.CharField(max_length=32, unique=True, blank=True)
     definition = models.CharField(max_length=1000, blank=True)
     objects = ScalingFunctionManager()
 
-    class Meta:
-        db_table = u'scaling_functions'
     def __unicode__(self):
         return "Name: " + self.name + ", ID: %s," % self.id + " Definition: %s" % self.definition 
 
@@ -35,8 +32,6 @@ class Key(models.Model):
     owner = models.ForeignKey(User)
     objects = KeyManager()
 
-    class Meta:
-        db_table = u'key'
 
     def __unicode__(self):
         return self.key + " Owned by %s" + self.owner.username
@@ -57,7 +52,6 @@ class Device(models.Model):
     objects = DeviceManager()
 
     class Meta:
-        db_table = u'device'
         unique_together = (('name', 'owner'),)
 
     def __unicode__(self):
@@ -76,7 +70,6 @@ class DataStreamManager(models.Manager):
         return DataStream.objects.filter(devicepermission__device = device, devicepermission__write = True)
 
 class DataStream(models.Model):
-    id = models.AutoField(primary_key=True, db_column='datastream_id')
     node_id = models.IntegerField(null=True, blank=True)
     port_id = models.IntegerField(null=True, blank=True)
     units = models.CharField(max_length=32, null = True, blank=True)
@@ -94,7 +87,6 @@ class DataStream(models.Model):
 
 
     class Meta:
-        db_table = u'data_streams'
         ordering = ['node_id', 'port_id', 'id']
 
     def __unicode__(self):
@@ -103,13 +95,11 @@ class DataStream(models.Model):
 
 
 class SensorReading(models.Model):
-    id = models.AutoField(primary_key=True, db_column='read_id', editable=False)
+    id = models.CharField(primary_key=True,max_length=32)
     datastream = models.ForeignKey(DataStream)
-    sensor_value = models.DecimalField(null=True, max_digits=20, decimal_places=6, blank=True)
-    date_entered = models.IntegerField(db_index = True, null=True, blank=True)
+    sensor_value = models.DecimalField(db_index = True, max_digits=20, decimal_places=6)
+    date_entered = models.IntegerField(db_index = True)
 
-    class Meta:
-        db_table = u'sensor_reading'
 
     def __unicode__(self):
         return self.datastream.name + ", Value: %s," % self.sensor_value + " Date Entered: %s" % self.date_entered
@@ -135,7 +125,6 @@ class DevicePermission(Permission):
     objects = DevicePermissionManager()
 
     class Meta:
-        db_table = u'device_permission'
         unique_together = (('datastream', 'device'),)
 
     def __unicode__(self):
@@ -154,7 +143,6 @@ class UserPermission(Permission):
     objects = UserPermissionManager()
 
     class Meta:
-        db_table = u'user_permission'
         unique_together = (('datastream', 'user'),)
 
     def __unicode__(self):
@@ -168,8 +156,6 @@ class Organization(models.Model):
     devices = models.ManyToManyField(Device, null = True, blank = True)
     suborganizations = models.ManyToManyField("self", symmetrical = False, null = True, blank = True)
 
-    class Meta:
-        db_table = u'organization'
 
     def __unicode__(self):
         return self.name 

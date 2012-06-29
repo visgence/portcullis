@@ -206,7 +206,8 @@ def add_reading_bulk(request):
 
 def insert_reading(datastream, raw_sensor_value):
     try:
-        reading = SensorReading(datastream = datastream, sensor_value = raw_sensor_value, date_entered = time.time())
+	now = int(time.time())
+        reading = SensorReading(id = (str(datastream.id) + '_' + str(now)), datastream = datastream, sensor_value = raw_sensor_value, date_entered = now)
         reading.save()
     except:
         return HttpResponse('An error occured while trying to save a reading.')
