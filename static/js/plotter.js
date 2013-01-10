@@ -89,8 +89,9 @@ $("document").ready(function ()
 
     //Creating range object for query
     var ranges = { xaxis: { from: epoch_start, to: epoch_end }};
-    zoom_all_graphs(ranges);
-    update_all_overviews(ranges);
+    loadAllGraphs(ranges);    
+    //zoom_all_graphs(ranges);
+    //update_all_overviews(ranges);
     update_link();
 });//end on_load
 
@@ -274,6 +275,87 @@ function update_overview(ranges, datastream_id)
 
 }//end update_overview
 
+
+function loadAllGraphs(ranges)
+{
+    divs = $(".portcullis-graph");
+    var granularity = $("#granularity").val();
+
+    //Cycle though all graphs and fetch data from server
+    for (var i = 0; i < divs.length; i++) 
+    {
+        var datastream_id = divs[i].id;
+        $.ajax(    
+        {
+            url:"/render_graph/?json=true&start=" + Math.round(ranges.xaxis.from/1000 + timezone_offset/1000) + "&end=" + Math.round(ranges.xaxis.to/1000 + timezone_offset/1000) + "&granularity=" + granularity + "&datastream_id=" + datastream_id,
+            method: 'GET',
+            dataType: 'json',
+            success: function(data) {
+
+                //Make a full copy of the data since the two graphs need their own copy to work.
+                var dData = $.extend(true, {}, data);
+                renderGraph(data, ranges);
+                renderOverview(dData, ranges);
+            }
+        });
+    }
+}
+
+function renderGraph(data, ranges)
+{
+    var result = $.Deferred();
+    var dataStreamId = data.datastream_id;
+
+    var options = 
+    { 
+        lines: { show: true }, 
+        xaxis: 
+        {     
+            mode: "time", 
+            timeformat: " %m-%d %h:%M %p",
+            min: ranges.xaxis.from,
+            max: ranges.xaxis.to,
+            ticks: 5
+        },
+        selection: {mode: "x"}
+    };
+
+    //set the graphs title
+    $("#graph_title" + dataStreamId).text(data.label + " - Node " + data.node_id + " - Stream " + dataStreamId);
+
+    options.yaxis = {min:data.min_value, max:data.max_value, axisLabel: data.units};
+    var plot =  plot_graph(data,options,"#sensor" + dataStreamId);
+    result.resolve(plot);//sent back for binding
+}
+
+function renderOverview(data, ranges)
+{
+    options = {
+        legend: { show:false },
+        series:     
+        {
+            lines: { show: true, lineWidth: 1 },
+            shadowSize: 0   
+        },
+        grid: { color: "#999" },
+        xaxis: 
+        {     
+            mode: "time", 
+            timeformat: "%d-%m %h:%M %p",
+            ticks: 5 ,
+            min: ranges.xaxis.from,
+            max: ranges.xaxis.to
+        },
+        selection: { mode: "x" }
+    };
+
+    if(data.min_value == null && data.max_value == null )
+        options.yaxis = {min:data.min_value, max:data.max_value};
+    else
+        options.yaxis = {min:data.min_value, max:data.max_value,ticks:[data.min_value, data.max_value]};
+    
+    $.plot($("#overview"+data.datastream_id), [scale_data(data)], options);
+}
 
 /*Responsible for keeping all graphs in sync (timewise) upon a date range
  *selection in flot. */
