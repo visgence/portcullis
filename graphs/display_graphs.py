@@ -108,49 +108,32 @@ def render_graph(request):
                 stream_info.permission = "true"
         except ObjectDoesNotExist:
             stream_info.data = []
-            stream_info.label = stream_info.name
             stream_info.permission = "false"
             json = to_json(stream_info)
             return HttpResponse(json)
 
         #Check if there are less points in timeframe then granularity
         readings = SensorReading.objects.filter(date_entered__gte = start, date_entered__lte = end, datastream = datastream_id).order_by('date_entered')
-        
-        if(readings.count() < granularity):
-            data = []
+        numReadings = readings.count()
+        data = []
+
+        if(numReadings < granularity):
 
             #loop through and add all points to data
             for reading in readings:
-                data.append([reading.date_entered,float("%.3f" % (reading.sensor_value))])
-
-            stream_info.data = data
-            stream_info.label = stream_info.name
-            
-            json = to_json(stream_info)
-            return HttpResponse(json)
+                data.append([reading.date_entered,float(reading.sensor_value)])
 
         else:
-            time_chunk = total_time / granularity
-            end_of_chunk = start + time_chunk
-            reduced_data = []   #will contain final data after it is reduced
+            increment = numReadings/granularity
+            rawData = list(readings.values_list('date_entered', 'sensor_value'))
 
-            while (end_of_chunk < end):
-                tmp_data=[]
-                sub_readings = SensorReading.objects.filter(date_entered__gte = start, date_entered__lte = end_of_chunk, datastream = datastream_id).order_by('date_entered')
-           
-                if(sub_readings):
-                    tmp_data = data_reduction.reduce_data(sub_readings, start, end_of_chunk, stream_info.reduction_type)
-                if(tmp_data):
-                    reduced_data.append(tmp_data)
+            for i in range(0, numReadings, increment):
+                data.append(data_reduction.reduce_data(rawData[i:i+increment]))
+            
+        stream_info.data = data
+        json = to_json(stream_info)
 
-                start = end_of_chunk
-                end_of_chunk = start + time_chunk
-
-            stream_info.data = reduced_data
-            stream_info.label = stream_info.name
-            json = to_json(stream_info)
-
-            return HttpResponse(json)
+        return HttpResponse(json)
 
         
 def to_json(stream):
@@ -168,7 +151,21 @@ def to_json(stream):
 
 
 
-    stream_data = {"reduction_type":stream.reduction_type,"label":stream.name,"port_id":int(stream.port_id),"data":stream.data,"max_value":max_value,"min_value":min_value,"description":stream.description,"scaling_function":stream.scaling_function.id,"datastream_id":stream.id,"color":stream.color,"node_id":int(stream.node_id),"xmin":stream.xmin,"xmax":stream.xmax,"units":stream.units,"permission":stream.permission}
+    stream_data = {"reduction_type":stream.reduction_type,
+                   "label":stream.name,
+                   "port_id":int(stream.port_id),
+                   "data":stream.data,
+                   "max_value":max_value,
+                   "min_value":min_value,
+                   "description":stream.description,
+                   "scaling_function":stream.scaling_function.id,
+                   "datastream_id":stream.id,
+                   "color":stream.color,
+                   "node_id":int(stream.node_id),
+                   "xmin":stream.xmin,
+                   "xmax":stream.xmax,
+                   "units":stream.units,
+                   "permission":stream.permission}
 
     return json.dumps(stream_data)
 
