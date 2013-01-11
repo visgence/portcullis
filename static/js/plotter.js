@@ -197,6 +197,7 @@ function zoom_graph(ranges, datastream_id)
         //set the graphs title
         $("#graph_title" + datastream_id).text(data.label + " - Node " + data.node_id + " - Stream " + datastream_id );
 
+        overviewPlots[datastream_id].setSelection({xaxis: {from: ranges.xaxis.from, to: ranges.xaxis.to}}, true);
         options.yaxis = {min:data.min_value, max:data.max_value, axisLabel: data.units};
         var plot =  plot_graph(data,options,"#sensor" + datastream_id);
         result.resolve(plot);//sent back for binding
@@ -352,6 +353,7 @@ function renderOverview(data, ranges)
  */
 function resetZoom(streamId)
 {
+    overviewPlots[streamId].clearSelection(true);
     var overviewData = overviewPlots[streamId].getData();
     var ranges = {
         xaxis: {
