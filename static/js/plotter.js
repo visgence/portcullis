@@ -18,16 +18,11 @@ function create_plot_select_handler(datastream_id)
 { 
     return function(event,ranges) 
     { 
-        //ranges.xaxis.from = ranges.xaxis.from - timezone_offset;
-        //ranges.xaxis.to = ranges.xaxis.to - timezone_offset;
-        zoom_all_graphs(ranges);
+        zoom_graph(ranges, datastream_id);
+        //zoom_all_graphs(ranges);
         var start = new Date(ranges.xaxis.from + timezone_offset);
         var end= new Date(ranges.xaxis.to + timezone_offset);
 
-        //$("#start").val(start.toString());
-        $("#start").datetimepicker('setDate', start);
-        $("#end").datetimepicker('setDate', end);
-//        $("#end").val(end.toString());
         update_link();
     } 
 }//end create_plot_select_handler
@@ -37,7 +32,7 @@ $("document").ready(function ()
 {
     var d = new Date();
     //print out utc date/time    
-    $("#utc_stamp").html(d.toUTCString());//DEBUG
+    //$("#utc_stamp").html(d.toUTCString());//DEBUG
     
     var range = (48 * 60 * 60);    
     //var timezone_offset = (d.getTimezoneOffset()/60) * 60 *60 * 1000;
@@ -90,8 +85,6 @@ $("document").ready(function ()
     //Creating range object for query
     var ranges = { xaxis: { from: epoch_start, to: epoch_end }};
     loadAllGraphs(ranges);    
-    //zoom_all_graphs(ranges);
-    //update_all_overviews(ranges);
     update_link();
 });//end on_load
 
@@ -174,8 +167,9 @@ function submit_form(datastream_id)
     epoch_end -= timezone_offset;
 
     var ranges = { xaxis: { from: epoch_start , to: epoch_end }};
-    zoom_all_graphs(ranges);
-    update_all_overviews(ranges);
+    loadAllGraphs(ranges);
+    //zoom_all_graphs(ranges);
+    //update_all_overviews(ranges);
     update_link();
 }//end submit_form
 
@@ -183,26 +177,22 @@ function submit_form(datastream_id)
  * ranges: date range for the query
  * granularity: how many data points the result should aim for
 */
-function zoom_graph(ranges, granularity, datastream_id)
+function zoom_graph(ranges, datastream_id)
 {
-
     var result = $.Deferred();
-    //alert(ranges.xaxis.from); //Generate the options for flot
     var options = 
     { 
         lines: { show: true }, 
         xaxis: 
         {     
             mode: "time", 
-            timeformat: " %d-%m %h:%M::%S %p",
+            timeformat: " %m-%d %h:%M %p",
             min: ranges.xaxis.from,
             max: ranges.xaxis.to,
             ticks: 5
         },
         selection: {mode: "x"}
     };
-  
-    //$("#debug").html(ranges.xaxis.from + " to " + ranges.xaxis.to);//DEBUG
 
     //plot the data that we receive
     function on_data_recieved(data) 
@@ -218,7 +208,7 @@ function zoom_graph(ranges, granularity, datastream_id)
     //request data for the new timeframe
     $.ajax(    
     {
-        url:"/render_graph/?json=true&start=" + Math.round(ranges.xaxis.from/1000 + timezone_offset/1000 )  + "&end=" + Math.round(ranges.xaxis.to/1000 + timezone_offset/1000) + "&granularity=" + granularity + "&datastream_id=" + datastream_id,
+        url:"/render_graph/?json=true&start=" + Math.round(ranges.xaxis.from/1000 + timezone_offset/1000 )  + "&end=" + Math.round(ranges.xaxis.to/1000 + timezone_offset/1000) + "&granularity=" + $("#granularity").val() + "&datastream_id=" + datastream_id,
         method: 'GET',
         dataType: 'json',
         success: on_data_recieved
@@ -341,7 +331,7 @@ function renderOverview(data, ranges)
         xaxis: 
         {     
             mode: "time", 
-            timeformat: "%d-%m %h:%M %p",
+            timeformat: "%m-%d %h:%M %p",
             ticks: 5 ,
             min: ranges.xaxis.from,
             max: ranges.xaxis.to
@@ -366,7 +356,7 @@ function zoom_all_graphs(ranges)
     for (var i = 0; i < divs.length; i++) 
     {
         var datastream_id = divs[i].id;
-        zoom_graph(ranges, $("#granularity").val(), datastream_id);
+        zoom_graph(ranges, datastream_id);
     }
 }//end zoom_all_graphs
 
