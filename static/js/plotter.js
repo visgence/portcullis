@@ -12,7 +12,7 @@
 //global
 var timezone_date = new Date();
 var timezone_offset = timezone_date.getTimezoneOffset()*60*1000//milliseconds
-
+var overviewPlots = {};
 
 function create_plot_select_handler(datastream_id) 
 { 
@@ -94,7 +94,6 @@ function scale_data(data)
     for(var i=0;i<data.data.length;i++) 
     {
         data.data[i][0] = data.data[i][0]*1000 - timezone_offset;//converting seconds to milliseconds
-        //data.data[i][0] = data.data[i][0]*1000;
         data.data[i][1] = scaling_functions[data.scaling_function](data.data[i][1]) 
     }
     return data;
@@ -168,8 +167,6 @@ function submit_form(datastream_id)
 
     var ranges = { xaxis: { from: epoch_start , to: epoch_end }};
     loadAllGraphs(ranges);
-    //zoom_all_graphs(ranges);
-    //update_all_overviews(ranges);
     update_link();
 }//end submit_form
 
@@ -217,6 +214,7 @@ function zoom_graph(ranges, datastream_id)
     return result;
 }//end zoom_graph
 
+/*
 function update_overview(ranges, datastream_id)
 {
     function setup_overview(data) 
@@ -264,7 +262,7 @@ function update_overview(ranges, datastream_id)
     });
 
 }//end update_overview
-
+*/
 
 function loadAllGraphs(ranges)
 {
@@ -284,18 +282,17 @@ function loadAllGraphs(ranges)
 
                 //Make a full copy of the data since the two graphs need their own copy to work.
                 var dData = $.extend(true, {}, data);
-                renderGraph(data, ranges);
+                renderGraph(data, ranges, true);
                 renderOverview(dData, ranges);
             }
         });
     }
 }
 
-function renderGraph(data, ranges)
+function renderGraph(data, ranges, shouldScale)
 {
     var result = $.Deferred();
     var dataStreamId = data.datastream_id;
-
     var options = 
     { 
         lines: { show: true }, 
@@ -312,9 +309,12 @@ function renderGraph(data, ranges)
 
     //set the graphs title
     $("#graph_title" + dataStreamId).text(data.label + " - Node " + data.node_id + " - Stream " + dataStreamId);
-
     options.yaxis = {min:data.min_value, max:data.max_value, axisLabel: data.units};
-    var plot =  plot_graph(data,options,"#sensor" + dataStreamId);
+    var plot;
+    if(shouldScale)
+        plot = plot_graph(data,options,"#sensor" + dataStreamId);
+    else
+        plot = $.plot($("#sensor" + dataStreamId), [data], options);
     result.resolve(plot);//sent back for binding
 }
 
@@ -344,7 +344,24 @@ function renderOverview(data, ranges)
     else
         options.yaxis = {min:data.min_value, max:data.max_value,ticks:[data.min_value, data.max_value]};
     
-    $.plot($("#overview"+data.datastream_id), [scale_data(data)], options);
+    overviewPlots[data.datastream_id] = $.plot($("#overview"+data.datastream_id), [scale_data(data)], options);
+}
+
+
+/* Resets a graph back to it's original zoom level
+ */
+function resetZoom(streamId)
+{
+    var overviewData = overviewPlots[streamId].getData();
+    var ranges = {
+        xaxis: {
+            from: overviewData[0].xaxis.min,
+            to: overviewData[0].xaxis.max
+        }
+    };
+    delete overviewData[0]['lines'];
+    delete overviewData[0]['shadowSize'];
+    renderGraph(overviewData[0], ranges, false);
 }
 
 /*Responsible for keeping all graphs in sync (timewise) upon a date range
@@ -360,6 +377,7 @@ function zoom_all_graphs(ranges)
     }
 }//end zoom_all_graphs
 
+/*
 function update_all_overviews(ranges)
 {
     divs = $(".portcullis-graph");
@@ -370,6 +388,7 @@ function update_all_overviews(ranges)
         update_overview(ranges,datastream_id);
     }
 }//end update_all_overviews
+*/
 
 //update link to this specific view
 function update_link()
