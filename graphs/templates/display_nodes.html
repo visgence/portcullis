@@ -76,6 +76,7 @@
         </div><!--end csv div-->
         <br>
         <input type="button" value="Zoom Reset" onClick="resetZoom('{{stream.id}}');"/>
+        <input type="checkbox" id="zoom_sync_{{stream.id}}" value="{{stream.id}}" class="stream_zoom" checked="checked"/> Zoom Sync
     {% endfor %}
 
    <div id="debug"></div>
