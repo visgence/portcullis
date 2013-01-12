@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 #Django environment setup
 import os,sys
 sys.path.insert(0, os.path.expanduser('./'))
@@ -10,9 +12,10 @@ import math
 import time
 
 ds = DataStream.objects.get(id=1)
-startTime = int(time.time())
-for t in range(startTime, startTime + 60*60*24*6, 1000):
-    for i in range(t, t + 1000):
+startTime = int(time.mktime(time.strptime("2013-01-01", "%Y-%m-%d")))
+for t in range(startTime, startTime + 60*60*24*31, 1000*60):
+    print "Time = %s" % time.localtime(t)
+    for i in range(t, t + 1000*60, 60):
         insert_reading(ds, 50 * math.sin(i*math.pi/(86400)), i)
     time.sleep(1)
 
