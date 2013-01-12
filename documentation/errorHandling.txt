@@ -1,0 +1,26 @@
+Portcullis Error Handling
+Authors:
+     Jeremiah Davis
+Last Modified:
+     January 11, 2013
+Revision History:
+     January 11, 2013 - Initial version
+
+This document specifies how application errors should be handled internally and reported to clients.
+
+Error returned to clients:
+     Any externally reported errors shall be reported in an http response.  The server shall send a json
+     dictionary response, containing the type of error (such as "Error" or "Warning", the exception thrown, 
+     as well as an explanatory message.
+
+     In addition, the server shall send the json data with status 5xx and message.  The 5xx code shall be greater
+     than 505, and shall correspond to a specific exception or class of exceptions.  In this way a client
+     device need not render the json data to understand and handle the error.
+
+     HTTP Status definitions:
+     	  To be determined.
+
+Internal Exception handling:
+     Externally reported errors shall use custom Exceptions that have a descriptive name and message.
+     The custom exceptions shall be defined in /portcullis/customExceptions.py
+     The exceptions should be caught in views and reported via the http response described above.
