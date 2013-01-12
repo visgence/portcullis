@@ -2,12 +2,13 @@
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse
 from django.utils import simplejson
+from django.core.exceptions import ObjectDoesNotExist
 import time
 import urllib
 
 #Local Imports
 from portcullis.models import DataStream, SensorReading, Key
-
+from portcullis.customExceptions import SensorReadingCollision
 
 @csrf_exempt
 def add_reading(request):
@@ -204,15 +205,31 @@ def add_reading_bulk(request):
         return HttpResponse(error_string)
 
 
-def insert_reading(datastream, raw_sensor_value):
+def insert_reading(datastream, raw_sensor_value, timestamp = None):
+    ''' Insert a sensor reading into the database.
+    ' This method will insert the given values into the given datastream.
+    ' If there is already an entry for the given timestamp, it will throw
+    ' an exception.
+    '
+    ' Keyword Args:
+    '   datastream - The DataStream object this reading cooresponds to.
+    '''
+
+    if timestamp is None:
+        timestamp = int(time.time())
+        
+    id = str(datastream.id) + '_' + str(timestamp)
+    # Make sure that we are not causing a collision in the table.  
     try:
-	now = int(time.time())
-        reading = SensorReading(id = (str(datastream.id) + '_' + str(now)), datastream = datastream, sensor_value = raw_sensor_value, date_entered = now)
-        reading.save()
-    except:
-        return HttpResponse('An error occured while trying to save a reading.')
-
-
+        sr = SensorReading.objects.get(id = id)
+        raise SensorReadingCollision('Sensor Reading with id \'%s\' already exists.' % id)
+    except ObjectDoesNotExist:
+        pass
+    
+    reading = SensorReading(id = id, datastream = datastream, sensor_value = raw_sensor_value, 
+                            date_entered = timestamp )
+    reading.save()
+    
 def validate_stream(stream_id, node_id, port_id):
     '''
         Checks to make sure a given stream exists or not. It either checks by using the streams id or by checking the node/port id pairing.
