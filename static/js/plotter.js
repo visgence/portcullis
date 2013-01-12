@@ -18,8 +18,10 @@ function create_plot_select_handler(datastream_id)
 { 
     return function(event,ranges) 
     { 
-        zoom_graph(ranges, datastream_id);
-        //zoom_all_graphs(ranges);
+        if($("#zoom_sync_"+datastream_id).is(':checked'))         
+            zoom_all_graphs(ranges);
+        else
+            zoom_graph(ranges, datastream_id);
         var start = new Date(ranges.xaxis.from + timezone_offset);
         var end= new Date(ranges.xaxis.to + timezone_offset);
 
@@ -375,22 +377,10 @@ function zoom_all_graphs(ranges)
     for (var i = 0; i < divs.length; i++) 
     {
         var datastream_id = divs[i].id;
-        zoom_graph(ranges, datastream_id);
+        if($("#zoom_sync_"+datastream_id).is(':checked'))         
+            zoom_graph(ranges, datastream_id);
     }
 }//end zoom_all_graphs
-
-/*
-function update_all_overviews(ranges)
-{
-    divs = $(".portcullis-graph");
-
-    for (var i = 0; i < divs.length; i++) 
-    {
-        var datastream_id = divs[i].id;
-        update_overview(ranges,datastream_id);
-    }
-}//end update_all_overviews
-*/
 
 //update link to this specific view
 function update_link()
