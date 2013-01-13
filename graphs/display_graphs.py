@@ -11,7 +11,7 @@ import json
 #Local Imports
 from portcullis.models import DataStream, SensorReading, ScalingFunction 
 from check_access import check_access
-import data_reduction
+from data_reduction import reduceData
 
 def display_graphs(request):
     '''
@@ -115,21 +115,29 @@ def render_graph(request):
         #Check if there are less points in timeframe then granularity
         readings = SensorReading.objects.filter(date_entered__gte = start, date_entered__lte = end, datastream = datastream_id).order_by('date_entered')
         numReadings = readings.count()
-        data = []
 
         if(numReadings < granularity):
-
             #loop through and add all points to data
-            for reading in readings:
-                data.append([reading.date_entered,float(reading.sensor_value)])
+            data = [ [x[0],float(x[1])] for x in reading ]
 
         else:
-            increment = numReadings/granularity
-            rawData = list(readings.values_list('date_entered', 'sensor_value'))
-
+            data = reduceData(list(readings.values_list('date_entered', 'sensor_value')), granularity, 'mean')
+            #increment = numReadings/granularity
+            #rawData = list(readings.values_list('date_entered', 'sensor_value'))
+            '''
+            aveTime = np.convolve([t[0] for t in rawData], np.ones(increment)/float(increment), 'same')
+            aveData = np.convolve([float(x[1]) for x in rawData], np.ones(increment)/float(increment),'same')
             for i in range(0, numReadings, increment):
-                data.append(data_reduction.reduce_data(rawData[i:i+increment]))
-            
+                data.append([aveTime[i], aveData[i]])
+
+            del(data[-1])
+            del(data[0])
+            '''
+            #for i in range(0, numReadings, increment):
+                #data.append(data_reduction.reduce_data(rawData[i:i+increment]))
+                #data.append([rawData[i][0], float(rawData[i][1])])
+                
+
         stream_info.data = data
         json = to_json(stream_info)
 
