@@ -57,7 +57,7 @@ if len(sys.argv) > 2:
 else:
     nMonths = 1
     
-for t in range(startTime, startTime + 60*60*24*31*6, 1000*60):
+for t in range(startTime, startTime + 60*60*24*31*nMonths, 1000*60):
     print "Time = %s" % time.localtime(t)
 
     for i in range(t, t + 1000*60, 60):
