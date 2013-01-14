@@ -2,13 +2,9 @@ import math
 
 def reduceData(rawData, size, red = 'mean'):
     increment = len(rawData)/size
-    data = [None]*(size + len(rawData)%size/increment)
-    j = 0
-    print 'len(rawData) = %d' % len(rawData)
+    data = []
     for i in range(0, len(rawData), increment):
-        print 'j = %d' % j
-        data[j] = reductFunc[red](rawData[i:i+increment])
-        j += 1
+        data.append( (reductFunc[red](rawData[i:i+increment])))
         
     return data
 
