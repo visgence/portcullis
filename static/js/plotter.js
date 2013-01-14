@@ -33,11 +33,7 @@ function create_plot_select_handler(datastream_id)
 $("document").ready(function ()
 {
     var d = new Date();
-    //print out utc date/time    
-    //$("#utc_stamp").html(d.toUTCString());//DEBUG
-    
     var range = (48 * 60 * 60);    
-    //var timezone_offset = (d.getTimezoneOffset()/60) * 60 *60 * 1000;
     var epoch_start;
     var epoch_end;
     var start = new Date($("#start").val());
@@ -60,9 +56,10 @@ $("document").ready(function ()
         d= new Date(end);
         $("#end").val(d.toLocaleString());
     }
-        epoch_start = start.getTime() - timezone_offset;
-        epoch_end = end.getTime() - timezone_offset;
 
+    epoch_start = start.getTime() - timezone_offset;
+    epoch_end = end.getTime() - timezone_offset;
+    
     //check for granularity from server
     if(!$("#granularity").val()) 
     {
@@ -118,7 +115,8 @@ function plot_graph(data,options,div)
                         });
         //inform the user that there is no data for this sensor 
         var offset = empty_plot.pointOffset({ x: 4, y: 5});
-        $(div).append('<div style="position:absolute;width:800px;text-align:center;top:' + offset.top + 'px;color:#666;font-size:smaller">You do not have permission to view '+ data.label + '</div>');
+        $(div).append('<div style="position:absolute;width:800px;text-align:center;top:' + offset.top + 
+                      'px;color:#666;font-size:smaller">You do not have permission to view '+ data.label + '</div>');
 
     }
     //If no data then say so inside empty graph
@@ -133,7 +131,8 @@ function plot_graph(data,options,div)
                         });
         //inform the user that there is no data for this sensor 
         var offset = empty_plot.pointOffset({ x: 4, y: 5});
-        $(div).append('<div style="position:absolute;width:800px;text-align:center;top:' + offset.top + 'px;color:#666;font-size:smaller">No Data for '+ data.label + ' in this range</div>');
+        $(div).append('<div style="position:absolute;width:800px;text-align:center;top:' + offset.top + 
+                      'px;color:#666;font-size:smaller">No Data for '+ data.label + ' in this range</div>');
     } 
     else
     {
@@ -146,8 +145,11 @@ function plot_graph(data,options,div)
             csv += data['data'][i][1]+",";
             csv += scaled_data['data'][i][1]+"\n";
         }   
-        $(div+"_csv").html(csv);
+
+        scaled_data['raw_data'] = data['data'];
         var plot = $.plot($(div), [scaled_data], options);
+        $(div+"_csv").html(csv);
+
         return plot;
     }
 }//end plot_graph
@@ -198,7 +200,6 @@ function zoom_graph(ranges, datastream_id)
     {
         //set the graphs title
         $("#graph_title" + datastream_id).text(data.label + " - Node " + data.node_id + " - Stream " + datastream_id );
-
         overviewPlots[datastream_id].setSelection({xaxis: {from: ranges.xaxis.from, to: ranges.xaxis.to}}, true);
         options.yaxis = {min:data.min_value, max:data.max_value, axisLabel: data.units};
         var plot =  plot_graph(data,options,"#sensor" + datastream_id);
@@ -208,7 +209,10 @@ function zoom_graph(ranges, datastream_id)
     //request data for the new timeframe
     $.ajax(    
     {
-        url:"/render_graph/?json=true&start=" + Math.round(ranges.xaxis.from/1000 + timezone_offset/1000 )  + "&end=" + Math.round(ranges.xaxis.to/1000 + timezone_offset/1000) + "&granularity=" + $("#granularity").val() + "&datastream_id=" + datastream_id,
+        url:"/render_graph/?json=true&start=" + Math.round(ranges.xaxis.from/1000 + timezone_offset/1000 )  + 
+                                      "&end=" + Math.round(ranges.xaxis.to/1000 + timezone_offset/1000) + 
+                              "&granularity=" + $("#granularity").val() + 
+                            "&datastream_id=" + datastream_id,
         method: 'GET',
         dataType: 'json',
         success: on_data_recieved
@@ -216,56 +220,6 @@ function zoom_graph(ranges, datastream_id)
 
     return result;
 }//end zoom_graph
-
-/*
-function update_overview(ranges, datastream_id)
-{
-    function setup_overview(data) 
-    {
-        options =
-        {
-            legend: { show:false },
-            series:     
-            {
-                lines: { show: true, lineWidth: 1 },
-                shadowSize: 0   
-            },
-            grid: { color: "#999" },
-            xaxis: 
-            {     
-                mode: "time", 
-                timeformat: "%d-%m %h:%M %p",
-                ticks: 5 ,
-                min: ranges.xaxis.from,
-                max: ranges.xaxis.to
-
-            },
-            selection: { mode: "x" }
-        };
-
-        if(data.min_value == null && data.max_value == null )
-        {
-            options.yaxis = {min:data.min_value, max:data.max_value};
-        }
-        else
-        {
-            options.yaxis = {min:data.min_value, max:data.max_value,ticks:[data.min_value, data.max_value]};
-        }
-
-        $.plot($("#overview" + datastream_id),[scale_data(data)],options);
-    }//end setup_overview
-
-    //send request for overview
-    $.ajax(    
-    {
-        url:"/render_graph/?json=true&start=" + Math.round(ranges.xaxis.from/1000 + timezone_offset/1000) + "&end=" + Math.round(ranges.xaxis.to/1000 + timezone_offset/1000) + "&granularity=" + $("#granularity").val() + "&datastream_id=" + datastream_id,
-        method: 'GET',
-        dataType: 'json',
-        success: setup_overview
-    });
-
-}//end update_overview
-*/
 
 function loadAllGraphs(ranges)
 {
@@ -278,7 +232,10 @@ function loadAllGraphs(ranges)
         var datastream_id = divs[i].id;
         $.ajax(    
         {
-            url:"/render_graph/?json=true&start=" + Math.round(ranges.xaxis.from/1000 + timezone_offset/1000) + "&end=" + Math.round(ranges.xaxis.to/1000 + timezone_offset/1000) + "&granularity=" + granularity + "&datastream_id=" + datastream_id,
+            url:"/render_graph/?json=true&start=" + Math.round(ranges.xaxis.from/1000 + timezone_offset/1000) + 
+                                          "&end=" + Math.round(ranges.xaxis.to/1000 + timezone_offset/1000) + 
+                                  "&granularity=" + granularity + 
+                                "&datastream_id=" + datastream_id,
             method: 'GET',
             dataType: 'json',
             success: function(data) {
@@ -309,7 +266,7 @@ function renderGraph(data, ranges, shouldScale)
         },
         selection: {mode: "x"}
     };
-
+    
     //set the graphs title
     $("#graph_title" + dataStreamId).text(data.label + " - Node " + data.node_id + " - Stream " + dataStreamId);
     options.yaxis = {min:data.min_value, max:data.max_value, axisLabel: data.units};
@@ -317,7 +274,14 @@ function renderGraph(data, ranges, shouldScale)
     if(shouldScale)
         plot = plot_graph(data,options,"#sensor" + dataStreamId);
     else
+    {
         plot = $.plot($("#sensor" + dataStreamId), [data], options);
+        if(data['data'].length > 0)
+        {
+            $("#sensor"+dataStreamId+"_csv").attr('name', 'data');
+            $("#sensor"+dataStreamId+"_timespan").attr('name', 'data');
+        }
+    }
     result.resolve(plot);//sent back for binding
 }
 
@@ -396,33 +360,31 @@ function update_link()
         streams += '&view=' + divs[i].id
     }
 
-    $("#share_link").attr("href","/graphs/?start="+ start.toLocaleString()+"&end="+end.toLocaleString()+"&granularity="+$("#granularity").val() + streams);
+    $("#share_link").attr("href","/graphs/?start="+ start.toLocaleString()+
+                                           "&end="+end.toLocaleString()+
+                                   "&granularity="+$("#granularity").val() + streams);
 }//end update_link
 
-function toggle(div)
+function setupDownload(datastreamId)
 {
-   $("#"+div).toggle();
-}//end toggle
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        $('#downloadify'+datastreamId).downloadify({
+        filename: function(){
+            return 'datastream_'+datastreamId+'\.csv'; 
+        },
+        data: function(){ 
+            return document.getElementById('sensor'+datastreamId+'_csv').value;
+        },
+        onComplete: function(){ //console.log("File with csv data for data stream "+datastreamId+" saved to disk."); //DEBUG },
+        onCancel: function(){ //console.log("File with csv data for data stream "+datastreamId+" cancelled."); //DEBUG },
+        onError: function(){ alert('You must put something in the File Contents or there will be nothing to save!'); },
+        transparent: false,
+        swf: '/static/media/downloadify.swf',
+        downloadImage: '/static/images/download.png',
+        width: 100,
+        height: 30,
+        transparent: true,
+        append: false
+    });
+}
 
 
