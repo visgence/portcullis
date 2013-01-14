@@ -118,7 +118,7 @@ def render_graph(request):
 
         if(numReadings < granularity):
             #loop through and add all points to data
-            data = [ [x[0],float(x[1])] for x in reading ]
+            data = [ [x[0],float(x[1])] for x in readings ]
 
         else:
             data = reduceData(list(readings.values_list('date_entered', 'sensor_value')), granularity, 'mean')
