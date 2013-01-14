@@ -374,9 +374,15 @@ function setupDownload(datastreamId)
         data: function(){ 
             return document.getElementById('sensor'+datastreamId+'_csv').value;
         },
-        onComplete: function(){ //console.log("File with csv data for data stream "+datastreamId+" saved to disk."); //DEBUG },
-        onCancel: function(){ //console.log("File with csv data for data stream "+datastreamId+" cancelled."); //DEBUG },
-        onError: function(){ alert('You must put something in the File Contents or there will be nothing to save!'); },
+        onComplete: function() { 
+            //console.log("File with csv data for data stream "+datastreamId+" saved to disk."); //DEBUG 
+        },
+        onCancel: function() { 
+            //console.log("File with csv data for data stream "+datastreamId+" cancelled."); //DEBUG 
+        },
+        onError: function() { 
+            alert('You must put something in the File Contents or there will be nothing to save!'); 
+        },
         transparent: false,
         swf: '/static/media/downloadify.swf',
         downloadImage: '/static/images/download.png',

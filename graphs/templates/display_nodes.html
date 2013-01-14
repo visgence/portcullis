@@ -61,6 +61,7 @@
 
     <!-- Create a placeholder for each datastream -->
     {% for stream in streams%}
+    <div id="graph_container_{{stream.id}}" class="graph_container">
         <h4>Node:{{stream.node_id}} Port:{{stream.port_id}}</h4>
         <b id = "graph_title{{stream.id}}">  </b>
         <!--actions menu -->
@@ -82,6 +83,7 @@
         <script>
             setupDownload("{{stream.id}}");
         </script>
+    </div>
     {% endfor %}
 
     <div id="debug"></div>
