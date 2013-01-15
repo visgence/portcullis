@@ -135,6 +135,7 @@ function plot_graph(data,options,div)
                       'px;color:#666;font-size:smaller">No Data for '+ data.label + ' in this range</div>');
 
         $('#datapoints_'+data.datastream_id).text('0');
+        $('#actual_datapoints_'+data.datastream_id).text('0');
     } 
     else
     {
@@ -152,6 +153,7 @@ function plot_graph(data,options,div)
         var plot = $.plot($(div), [scaled_data], options);
         $(div+"_csv").html(csv);
         $('#datapoints_'+data.datastream_id).text(data.num_readings);
+        $('#actual_datapoints_'+data.datastream_id).text(scaled_data['data'].length);
         return plot;
     }
 }//end plot_graph
@@ -280,6 +282,7 @@ function renderGraph(data, ranges, shouldScale)
         plot = $.plot($("#sensor" + dataStreamId), [data], options);
         console.log(data);
         $('#datapoints_'+dataStreamId).text(data.num_readings);
+        $('#actual_datapoints_'+dataStreamId).text(data.data.length);
     }
     result.resolve(plot);//sent back for binding
 }

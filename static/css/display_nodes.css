@@ -20,7 +20,7 @@
 {
     float: left;
     display: block;
-    width: 10em;
+    width: 20em;
 }
 
 .stream_data_container ul
@@ -30,8 +30,8 @@
 
 .stream_controls_container
 {
-    width: 12em;
-    margin-right: 3em;
+    width: 15em;
+    margin-right: 1em;
     float: right;
     display: block;
 }

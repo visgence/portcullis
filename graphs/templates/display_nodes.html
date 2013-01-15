@@ -75,9 +75,10 @@
 
         <div id="stream_data_container_{{stream.id}}" class="stream_data_container">
             <ul>
-                <li>Node - {{stream.node_id}}</li>
-                <li>Port - {{stream.port_id}}</li>
-                <li>Data Points - <span id="datapoints_{{stream.id}}"><!-- Hook for number of data points for given stream--></span></li>
+                <li>Node: {{stream.node_id}}</li>
+                <li>Port: {{stream.port_id}}</li>
+                <li>Data In Range: <span id="datapoints_{{stream.id}}"><!-- Hook for number of data points for given range--></span></li>
+                <li>Actual Data Shown: <span id="actual_datapoints_{{stream.id}}"><!-- Hook for number of data points for given graph--></span></li>
             </ul>
         </div>
         
