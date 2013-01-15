@@ -7,6 +7,13 @@
 .ui-datepicker { display: none; }
 
 
+
+#share_link div
+{
+    display: inline;
+    width: 7em;
+}
+
 /*********** Graphs ***********/
 
 .graph_container
