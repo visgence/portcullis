@@ -5,7 +5,7 @@
 "
 " This module contains the definitions of the custom exceptions reported to clients.
 "
-" (c) 2013 Visgence, Inc., RegionIX Education Cooperative
+" (c) 2012 Visgence, Inc.
 """
 
 class SensorReadingCollision(Exception):
