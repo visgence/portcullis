@@ -6,6 +6,44 @@
 .ui-tpicker-grid-label { background: none; border: none; margin: 0; padding: 0; }
 .ui-datepicker { display: none; }
 
+
+/*********** Graphs ***********/
+
+.graph_container
+{
+    padding-top: 2em;
+    position: relative;
+    overflow: hidden;
+}
+
+.stream_data_container
+{
+    float: left;
+    display: block;
+    width: 10em;
+}
+
+.stream_data_container ul
+{
+    list-style: none; 
+}
+
+.stream_controls_container
+{
+    width: 12em;
+    margin-right: 3em;
+    float: right;
+    display: block;
+}
+
+.graph_container
+{
+    border: solid 3px gray;
+    margin-top: 3em;
+    padding-left: 2em;
+    width: 855px;
+}
+
 .portcullis_graph { height:400px }
 
 .sensor_graph

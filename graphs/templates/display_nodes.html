@@ -4,6 +4,8 @@
     <script language="javascript" type="text/javascript" src="/static/js/jquery.flot.js"></script>
     <script language="javascript" type="text/javascript" src="/static/js/jquery.flot.selection.min.js"></script>
     <script language="javascript" type="text/javascript" src="/static/js/json2.js"></script>
+    <script language="javascript" type="text/javascript" src="/static/js/downloadify.min.js"></script>
+    <script language="javascript" type="text/javascript" src="/static/js/swfobject.js"></script>
     <script type="text/javascript" src="/static/js/jquery-ui-1.8.18.custom.min.js"></script>
     <script type="text/javascript" src="/static/js/jquery-ui-timepicker-addon.js"></script>
     <script type="text/javascript" src="/static/js/jquery-ui-sliderAccess.js"></script>
@@ -59,25 +61,37 @@
 
     <!-- Create a placeholder for each datastream -->
     {% for stream in streams%}
-        <h4>Node:{{stream.node_id}} Port:{{stream.port_id}}</h4>
-        <b id = "graph_title{{stream.id}}">  </b>
-        <!--actions menu -->
-        <ul>
-            <li class="ui-state-default ui-corner-all" style="width: 20px" title="Show CSV" onclick="toggle('{{stream.id}}_csv_container')">
-                <span class="ui-icon ui-icon-script">&nbsp;</span>
-            </li>
-        </ul>
+    <div id="graph_container_{{stream.id}}" class="graph_container"> 
+        <b id = "graph_title{{stream.id}}" class="graph_title"> </b>
+
         <div id ="{{stream.id}}" class="portcullis-graph">
             <div id="sensor{{stream.id}}" class="sensor_graph" ></div>
             <div id="overview{{stream.id}}" class = "overview_graph"></div>
         </div><!--end graph div-->
+
         <div id="{{stream.id}}_csv_container" style="display: none"><!--csv div-->
             <textarea id="sensor{{stream.id}}_csv"></textarea>
         </div><!--end csv div-->
-        <br>
-        <input type="button" value="Zoom Reset" onClick="resetZoom('{{stream.id}}');"/>
-        <input type="checkbox" id="zoom_sync_{{stream.id}}" value="{{stream.id}}" class="stream_zoom" checked="checked"/> Zoom Sync
+
+        <div id="stream_data_container_{{stream.id}}" class="stream_data_container">
+            <ul>
+                <li>Node - {{stream.node_id}}</li>
+                <li>Port - {{stream.port_id}}</li>
+                <li>Data Points - <span id="datapoints_{{stream.id}}"><!-- Hook for number of data points for given stream--></span></li>
+            </ul>
+        </div>
+        
+        <div id="stream_controls_container_{{stream.id}}" class="stream_controls_container">
+            <input type="button" value="Zoom Reset" onClick="resetZoom('{{stream.id}}');"/>
+            <input type="checkbox" id="zoom_sync_{{stream.id}}" value="{{stream.id}}" class="stream_zoom" checked="checked"/> Zoom Sync
+            <p id="downloadify{{stream.id}}"><!--Place holder for download button--></p>
+        </div>
+
+        <script>
+            setupDownload("{{stream.id}}");
+        </script>
+    </div>
     {% endfor %}
 
-   <div id="debug"></div>
+    <div id="debug"></div>
 </body>

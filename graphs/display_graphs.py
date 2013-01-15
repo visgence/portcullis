@@ -123,6 +123,7 @@ def render_graph(request):
         else:
             data = reduceData(list(readings.values_list('date_entered', 'sensor_value')), granularity, 'mean')
 
+        stream_info.num_readings = numReadings
         stream_info.data = data
         json = to_json(stream_info)
 
@@ -148,6 +149,7 @@ def to_json(stream):
                    "label":stream.name,
                    "port_id":int(stream.port_id),
                    "data":stream.data,
+                   "num_readings":stream.num_readings,
                    "max_value":max_value,
                    "min_value":min_value,
                    "description":stream.description,
