@@ -318,17 +318,41 @@ function renderOverview(data, ranges)
  */
 function resetZoom(streamId)
 {
-    overviewPlots[streamId].clearSelection(true);
-    var overviewData = overviewPlots[streamId].getData();
-    var ranges = {
-        xaxis: {
-            from: overviewData[0].xaxis.min,
-            to: overviewData[0].xaxis.max
+    if($("#zoom_sync_"+streamId).is(':checked'))         
+    {
+        divs = $(".portcullis-graph");
+        for (var i = 0; i < divs.length; i++) 
+        {
+            var datastream_id = divs[i].id;
+            if($("#zoom_sync_"+datastream_id).is(':checked'))         
+            {
+                overviewPlots[datastream_id].clearSelection(true);
+                var overviewData = overviewPlots[datastream_id].getData();
+                var ranges = {
+                    xaxis: {
+                        from: overviewData[0].xaxis.min,
+                        to: overviewData[0].xaxis.max
+                    }
+                };
+                delete overviewData[0]['lines'];
+                delete overviewData[0]['shadowSize'];
+                renderGraph(overviewData[0], ranges, false);
+            }
         }
-    };
-    delete overviewData[0]['lines'];
-    delete overviewData[0]['shadowSize'];
-    renderGraph(overviewData[0], ranges, false);
+    }
+    else {
+        overviewPlots[streamId].clearSelection(true);
+        var overviewData = overviewPlots[streamId].getData();
+        var ranges = {
+            xaxis: {
+                from: overviewData[0].xaxis.min,
+                to: overviewData[0].xaxis.max
+            }
+        };
+        delete overviewData[0]['lines'];
+        delete overviewData[0]['shadowSize'];
+        renderGraph(overviewData[0], ranges, false);
+    }
 }
 
 /*Responsible for keeping all graphs in sync (timewise) upon a date range
@@ -336,7 +360,6 @@ function resetZoom(streamId)
 function zoom_all_graphs(ranges)
 {
     divs = $(".portcullis-graph");
-
     for (var i = 0; i < divs.length; i++) 
     {
         var datastream_id = divs[i].id;
