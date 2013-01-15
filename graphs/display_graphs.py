@@ -118,25 +118,10 @@ def render_graph(request):
 
         if(numReadings < granularity):
             #loop through and add all points to data
-            data = [ [x[0],float(x[1])] for x in readings ]
+            data = [ [x.date_entered,float(x.sensor_value)] for x in readings ]
 
         else:
             data = reduceData(list(readings.values_list('date_entered', 'sensor_value')), granularity, 'mean')
-            #increment = numReadings/granularity
-            #rawData = list(readings.values_list('date_entered', 'sensor_value'))
-            '''
-            aveTime = np.convolve([t[0] for t in rawData], np.ones(increment)/float(increment), 'same')
-            aveData = np.convolve([float(x[1]) for x in rawData], np.ones(increment)/float(increment),'same')
-            for i in range(0, numReadings, increment):
-                data.append([aveTime[i], aveData[i]])
-
-            del(data[-1])
-            del(data[0])
-            '''
-            #for i in range(0, numReadings, increment):
-                #data.append(data_reduction.reduce_data(rawData[i:i+increment]))
-                #data.append([rawData[i][0], float(rawData[i][1])])
-                
 
         stream_info.data = data
         json = to_json(stream_info)
