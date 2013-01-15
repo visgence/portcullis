@@ -9,13 +9,38 @@
 
 /*********** Graphs ***********/
 
+.graph_container
+{
+    padding-top: 2em;
+    position: relative;
+    overflow: hidden;
+}
+
+.stream_data_container
+{
+    float: left;
+    display: block;
+    width: 10em;
+}
+
+.stream_data_container ul
+{
+    list-style: none; 
+}
+
+.stream_controls_container
+{
+    width: 12em;
+    margin-right: 3em;
+    float: right;
+    display: block;
+}
 
 .graph_container
 {
     border: solid 3px gray;
     margin-top: 3em;
     padding-left: 2em;
-    padding-bottom: 1em;
     width: 855px;
 }
 

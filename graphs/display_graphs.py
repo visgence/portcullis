@@ -129,7 +129,8 @@ def render_graph(request):
 
             for i in range(0, numReadings, increment):
                 data.append(data_reduction.reduce_data(rawData[i:i+increment]))
-            
+        
+        stream_info.num_readings = numReadings
         stream_info.data = data
         json = to_json(stream_info)
 
@@ -155,6 +156,7 @@ def to_json(stream):
                    "label":stream.name,
                    "port_id":int(stream.port_id),
                    "data":stream.data,
+                   "num_readings":stream.num_readings,
                    "max_value":max_value,
                    "min_value":min_value,
                    "description":stream.description,

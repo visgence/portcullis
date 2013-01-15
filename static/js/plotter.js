@@ -133,6 +133,8 @@ function plot_graph(data,options,div)
         var offset = empty_plot.pointOffset({ x: 4, y: 5});
         $(div).append('<div style="position:absolute;width:800px;text-align:center;top:' + offset.top + 
                       'px;color:#666;font-size:smaller">No Data for '+ data.label + ' in this range</div>');
+
+        $('#datapoints_'+data.datastream_id).text('0');
     } 
     else
     {
@@ -149,7 +151,7 @@ function plot_graph(data,options,div)
         scaled_data['raw_data'] = data['data'];
         var plot = $.plot($(div), [scaled_data], options);
         $(div+"_csv").html(csv);
-
+        $('#datapoints_'+data.datastream_id).text(data.num_readings);
         return plot;
     }
 }//end plot_graph
@@ -268,7 +270,7 @@ function renderGraph(data, ranges, shouldScale)
     };
     
     //set the graphs title
-    $("#graph_title" + dataStreamId).text(data.label + " - Node " + data.node_id + " - Stream " + dataStreamId);
+    $("#graph_title" + dataStreamId).text(data.label);
     options.yaxis = {min:data.min_value, max:data.max_value, axisLabel: data.units};
     var plot;
     if(shouldScale)
@@ -276,11 +278,8 @@ function renderGraph(data, ranges, shouldScale)
     else
     {
         plot = $.plot($("#sensor" + dataStreamId), [data], options);
-        if(data['data'].length > 0)
-        {
-            $("#sensor"+dataStreamId+"_csv").attr('name', 'data');
-            $("#sensor"+dataStreamId+"_timespan").attr('name', 'data');
-        }
+        console.log(data);
+        $('#datapoints_'+dataStreamId).text(data.num_readings);
     }
     result.resolve(plot);//sent back for binding
 }
