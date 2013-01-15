@@ -10,8 +10,8 @@ class ScalingFunctionManager(models.Manager):
         return self.get(name = name)
 
 class ScalingFunction(models.Model):
-    name = models.CharField(max_length=32, unique=True, blank=True)
-    definition = models.CharField(max_length=1000, blank=True)
+    name = models.CharField(max_length=32, unique=True)
+    definition = models.CharField(max_length=1000)
     objects = ScalingFunctionManager()
 
     def __unicode__(self):
@@ -27,8 +27,8 @@ class KeyManager(models.Manager):
             return None
 
 class Key(models.Model):
-    key = models.CharField(primary_key=True, max_length=64)
-    description = models.TextField(null = True, blank = True)
+    key = models.CharField(primary_key=True, max_length=1024)
+    description = models.TextField(blank = True)
     owner = models.ForeignKey(User)
     objects = KeyManager()
 
@@ -45,8 +45,8 @@ class DeviceManager(models.Manager):
 
 class Device(models.Model):
     name = models.CharField(max_length=64)
-    description = models.TextField(null = True, blank = True)
-    ip_address = models.CharField(null = True, blank = True, max_length=18)
+    description = models.TextField(blank = True)
+    ip_address = models.CharField(blank = True, max_length=18)
     key = models.OneToOneField(Key, null = True, blank = True)
     owner = models.ForeignKey(User)
     objects = DeviceManager()
@@ -59,6 +59,12 @@ class Device(models.Model):
 
 
 
+from graphs.data_reduction import reductFunc
+def reduction_type_choices():
+    choice_list = []
+    for red_type in reductFunc.iterkeys():
+        choice_list.append((red_type, red_type.title()))
+    return choice_list
 
 class DataStreamManager(models.Manager):
 
@@ -72,14 +78,14 @@ class DataStreamManager(models.Manager):
 class DataStream(models.Model):
     node_id = models.IntegerField(null=True, blank=True)
     port_id = models.IntegerField(null=True, blank=True)
-    units = models.CharField(max_length=32, null = True, blank=True)
+    units = models.CharField(max_length=32, blank=True)
     name = models.CharField(max_length=64)
-    description = models.CharField(max_length=64, null = True, blank=True)
-    color = models.CharField(max_length=32, null = True, blank=True)
+    description = models.CharField(max_length=64, blank=True)
+    color = models.CharField(max_length=32, blank=True)
     min_value = models.DecimalField(null=True, max_digits=20, decimal_places=6, blank=True)
     max_value = models.DecimalField(null=True, max_digits=20,decimal_places=6, blank=True)
-    scaling_function = models.ForeignKey(ScalingFunction, null=True, db_column='scaling_function', blank=True)
-    reduction_type = models.CharField(max_length=32, null = True, blank=True)
+    scaling_function = models.ForeignKey(ScalingFunction)
+    reduction_type = models.CharField(max_length=32, default='mean', choices = reduction_type_choices())
     is_public = models.BooleanField()
     users = models.ManyToManyField(User, through='UserPermission')
     devices = models.ManyToManyField(Device, through='DevicePermission')
@@ -96,10 +102,17 @@ class DataStream(models.Model):
 
 class SensorReading(models.Model):
     id = models.CharField(primary_key=True,max_length=32)
-    datastream = models.ForeignKey(DataStream)
-    sensor_value = models.DecimalField(db_index = True, max_digits=20, decimal_places=6)
-    date_entered = models.IntegerField(db_index = True)
+    datastream = models.ForeignKey(DataStream, db_index = True)
+    value = models.DecimalField(max_digits=20, decimal_places=6)
+    timestamp = models.IntegerField(db_index = True)
 
+    class Meta:
+        unique_together = ('datastream', 'timestamp')
+
+    def save(self, *args, **kwargs):
+        self.id = str(self.datastream.id) + '_' + str(self.timestamp)
+        super(SensorReading, self).save(*args, **kwargs)
+        
 
     def __unicode__(self):
         return self.datastream.name + ", Value: %s," % self.sensor_value + " Date Entered: %s" % self.date_entered
