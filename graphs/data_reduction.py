@@ -13,7 +13,7 @@ def reduceData(rawData, size, red = 'mean'):
     ' a sensor reading, and reduce this list to about size datapoints, using different methods.
     ' 
     ' Keyword arguments:
-    '  rawData - List of 2-tuples containing (SensorReading.date_entered, SensorReading.sensorValue)
+    '  rawData - List of 2-tuples containing (SensorReading.timestamp, SensorReading.sensorValue)
     '  size - The number of datapoints to which to reduce the list. (will not be exact)
     '  red - The reduction method.  Can be 'mean', 'sample', etc.
     '''

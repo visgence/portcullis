@@ -2,7 +2,7 @@
 Time,Raw,Scaled
 
 {%for reading in readings%}
-{{reading.date_entered}},{{reading.sensor_value}},{{reading.sensor_value}}</br>
+{{reading.timestamp}},{{reading.value}},{{reading.value}}</br>
 {% endfor %}
 
 

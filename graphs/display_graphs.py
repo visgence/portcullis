@@ -113,15 +113,15 @@ def render_graph(request):
             return HttpResponse(json)
 
         #Check if there are less points in timeframe then granularity
-        readings = SensorReading.objects.filter(date_entered__gte = start, date_entered__lte = end, datastream = datastream_id).order_by('date_entered')
+        readings = SensorReading.objects.filter(timestamp = start, timestamp = end, datastream = datastream_id).order_by('timestamp')
         numReadings = readings.count()
 
         if(numReadings < granularity):
             #loop through and add all points to data
-            data = [ [x.date_entered,float(x.sensor_value)] for x in readings ]
+            data = [ [x.timestamp,float(x.value)] for x in readings ]
 
         else:
-            data = reduceData(list(readings.values_list('date_entered', 'sensor_value')), granularity, 'mean')
+            data = reduceData(list(readings.values_list('timestamp', 'value')), granularity, 'mean')
 
         stream_info.num_readings = numReadings
         stream_info.data = data

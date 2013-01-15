@@ -115,7 +115,7 @@ class SensorReading(models.Model):
         
 
     def __unicode__(self):
-        return self.datastream.name + ", Value: %s," % self.sensor_value + " Date Entered: %s" % self.date_entered
+        return self.datastream.name + ", Value: %s," % self.value + " Date Entered: %s" % self.timestamp
 
 
 

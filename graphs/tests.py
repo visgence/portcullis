@@ -22,7 +22,7 @@ class renderGraphTest(TestCase):
         myStream = DataStream.objects.create(node_id = 0, port_id = 0)
 
         for i in range(100000):
-            SensorReading.objects.create(datastream = myStream, date_entered = 1339789049 + i, sensor_value = 32)
+            SensorReading.objects.create(datastream = myStream, timestamp = 1339789049 + i, value = 32)
 
         user = User.objects.create_user('fakename', 'fake@pukkared.com', 'mypassword')
         UserPermission.objects.create(datastream = myStream, user = user, owner = False)

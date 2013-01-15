@@ -30,7 +30,7 @@ def csv(request):
 
         data_stream = DataStream.objects.get(id = stream_id)
 
-        readings = SensorReading.objects.filter(date_entered__gte = start, date_entered__lte = end, datastream = data_stream).order_by('date_entered')
+        readings = SensorReading.objects.filter(timestamp__gte = start, timestamp__lte = end, datastream = data_stream).order_by('timestamp')
 
 
         data = {
