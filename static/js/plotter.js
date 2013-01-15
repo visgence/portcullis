@@ -406,7 +406,7 @@ function setupDownload(datastreamId)
             //console.log("File with csv data for data stream "+datastreamId+" cancelled."); //DEBUG 
         },
         onError: function() { 
-            alert('You must put something in the File Contents or there will be nothing to save!'); 
+            alert('You must have actual data points or there is nothing to save!'); 
         },
         transparent: false,
         swf: '/static/media/downloadify.swf',
