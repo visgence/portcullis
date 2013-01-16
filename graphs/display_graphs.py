@@ -9,9 +9,9 @@ from django.shortcuts import render
 import json
 
 #Local Imports
-from portcullis.models import DataStream, SensorReading, ScalingFunction 
+from portcullis.models import DataStream, SensorReading
 from check_access import check_access
-from data_reduction import reduceData
+from data_reduction import reduceData, reductFunc
 
 def display_graphs(request):
     '''
@@ -41,6 +41,8 @@ def display_graphs(request):
                     'start':start,
                     'end':end,
                     'streams':DataStream.objects.none(),
+                    # Make sure to pass the reduction functions that can be used.
+                    'reductions': reductFunc.keys()
                }
         
         if(granularity != None):
@@ -92,9 +94,13 @@ def render_graph(request):
         total_time = end - start
         stream_data = []
 
+        reduction_type = request.GET.get('reduction', 'mean')
+        if reduction_type is None or reduction_type == '':
+            reduction_type = 'mean'
+
         if(granularity == None):
             granularity = 300
-   
+    
         #Pull the data for this stream
         stream_info = DataStream.objects.get(id = datastream_id)
 
@@ -121,7 +127,7 @@ def render_graph(request):
             data = [ [x.date_entered,float(x.sensor_value)] for x in readings ]
 
         else:
-            data = reduceData(list(readings.values_list('date_entered', 'sensor_value')), granularity, 'mean')
+            data = reduceData(list(readings.values_list('date_entered', 'sensor_value')), granularity, reduction_type)
 
         stream_info.num_readings = numReadings
         stream_info.data = data
@@ -160,7 +166,8 @@ def to_json(stream):
                    "xmin":stream.xmin,
                    "xmax":stream.xmax,
                    "units":stream.units,
-                   "permission":stream.permission}
+                   "permission":stream.permission,
+                   }
 
     return json.dumps(stream_data)
 

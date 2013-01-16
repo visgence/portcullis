@@ -17,6 +17,8 @@ def reduceData(rawData, size, red = 'mean'):
     '  size - The number of datapoints to which to reduce the list. (will not be exact)
     '  red - The reduction method.  Can be 'mean', 'sample', etc.
     '''
+    #TODO: Custom exception for bad redution type.
+
     increment = len(rawData)/size
     data = []
     for i in range(0, len(rawData), increment):
