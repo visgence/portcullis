@@ -7,6 +7,13 @@
 .ui-datepicker { display: none; }
 
 
+
+#share_link div
+{
+    display: inline;
+    width: 7em;
+}
+
 /*********** Graphs ***********/
 
 .graph_container
@@ -20,7 +27,7 @@
 {
     float: left;
     display: block;
-    width: 10em;
+    width: 20em;
 }
 
 .stream_data_container ul
@@ -30,8 +37,8 @@
 
 .stream_controls_container
 {
-    width: 12em;
-    margin-right: 3em;
+    width: 15em;
+    margin-right: 1em;
     float: right;
     display: block;
 }
@@ -65,3 +72,8 @@
 }
 
 .date_form{margin-top:50px; }
+
+.reduction_select
+{
+    margin-top: .5em;
+}

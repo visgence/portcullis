@@ -31,7 +31,7 @@ function create_plot_select_handler(datastream_id)
 
 //On load function will search for any 'portcullis-graph' divs on the page.
 $("document").ready(function ()
-{
+{ /*
     var d = new Date();
     var range = (48 * 60 * 60);    
     var epoch_start;
@@ -59,6 +59,7 @@ $("document").ready(function ()
 
     epoch_start = start.getTime() - timezone_offset;
     epoch_end = end.getTime() - timezone_offset;
+    */
     
     //check for granularity from server
     if(!$("#granularity").val()) 
@@ -82,10 +83,42 @@ $("document").ready(function ()
     }//end for
 
     //Creating range object for query
-    var ranges = { xaxis: { from: epoch_start, to: epoch_end }};
-    loadAllGraphs(ranges);    
+    //var ranges = { xaxis: { from: epoch_start, to: epoch_end }};
+    loadAllGraphs(getRanges());    
     update_link();
 });//end on_load
+
+function getRanges() {
+    var d = new Date();
+    var range = (48 * 60 * 60);    
+    var epoch_start;
+    var epoch_end;
+    var start = new Date($("#start").val());
+    var end = new Date($("#end").val());
+
+    //check for start/end time from server
+    if(!$("#start").val() && !$("#end").val())
+    {    
+        start = new Date(d.getTime() - range*1000);
+        end= new Date(d.getTime());
+ 
+        //display to user in localtime
+        $("#start").val(start.toLocaleString());
+        $("#end").val(end.toLocaleString());
+    }
+    else if($("#start").val() && !$("#end").val())
+    {
+        start = new Date($("#start").val());
+        end= d.getTime();  
+        d= new Date(end);
+        $("#end").val(d.toLocaleString());
+    }
+
+    epoch_start = start.getTime() - timezone_offset;
+    epoch_end = end.getTime() - timezone_offset;
+
+    return { xaxis: { from: epoch_start, to: epoch_end }};
+}
 
 // scale incoming data
 function scale_data(data)
@@ -135,6 +168,7 @@ function plot_graph(data,options,div)
                       'px;color:#666;font-size:smaller">No Data for '+ data.label + ' in this range</div>');
 
         $('#datapoints_'+data.datastream_id).text('0');
+        $('#actual_datapoints_'+data.datastream_id).text('0');
     } 
     else
     {
@@ -152,6 +186,7 @@ function plot_graph(data,options,div)
         var plot = $.plot($(div), [scaled_data], options);
         $(div+"_csv").html(csv);
         $('#datapoints_'+data.datastream_id).text(data.num_readings);
+        $('#actual_datapoints_'+data.datastream_id).text(scaled_data['data'].length);
         return plot;
     }
 }//end plot_graph
@@ -209,16 +244,7 @@ function zoom_graph(ranges, datastream_id)
     }//end on data_recieved
 
     //request data for the new timeframe
-    $.ajax(    
-    {
-        url:"/render_graph/?json=true&start=" + Math.round(ranges.xaxis.from/1000 + timezone_offset/1000 )  + 
-                                      "&end=" + Math.round(ranges.xaxis.to/1000 + timezone_offset/1000) + 
-                              "&granularity=" + $("#granularity").val() + 
-                            "&datastream_id=" + datastream_id,
-        method: 'GET',
-        dataType: 'json',
-        success: on_data_recieved
-    });
+    loadGraph(datastream_id, $("#granularity").val(), ranges, on_data_recieved);
 
     return result;
 }//end zoom_graph
@@ -231,24 +257,32 @@ function loadAllGraphs(ranges)
     //Cycle though all graphs and fetch data from server
     for (var i = 0; i < divs.length; i++) 
     {
-        var datastream_id = divs[i].id;
-        $.ajax(    
+        loadGraph(divs[i].id, granularity, ranges, graph_overview_callback(ranges));
+    }
+}
+
+function graph_overview_callback(ranges) {
+    return function (data) {
+                
+        //Make a full copy of the data since the two graphs need their own copy to work.
+        var dData = $.extend(true, {}, data);
+        renderGraph(data, ranges, true);
+        renderOverview(dData, ranges);
+    }
+}
+
+function loadGraph(datastream_id, granularity, ranges, callback) {
+    $.ajax(    
         {
             url:"/render_graph/?json=true&start=" + Math.round(ranges.xaxis.from/1000 + timezone_offset/1000) + 
-                                          "&end=" + Math.round(ranges.xaxis.to/1000 + timezone_offset/1000) + 
-                                  "&granularity=" + granularity + 
-                                "&datastream_id=" + datastream_id,
+                "&end=" + Math.round(ranges.xaxis.to/1000 + timezone_offset/1000) + 
+                "&granularity=" + granularity + 
+                "&datastream_id=" + datastream_id +
+                "&reduction=" + $('#reduction_select_' + datastream_id).val(),
             method: 'GET',
             dataType: 'json',
-            success: function(data) {
-
-                //Make a full copy of the data since the two graphs need their own copy to work.
-                var dData = $.extend(true, {}, data);
-                renderGraph(data, ranges, true);
-                renderOverview(dData, ranges);
-            }
+            success: callback
         });
-    }
 }
 
 function renderGraph(data, ranges, shouldScale)
@@ -280,6 +314,7 @@ function renderGraph(data, ranges, shouldScale)
         plot = $.plot($("#sensor" + dataStreamId), [data], options);
         console.log(data);
         $('#datapoints_'+dataStreamId).text(data.num_readings);
+        $('#actual_datapoints_'+dataStreamId).text(data.data.length);
     }
     result.resolve(plot);//sent back for binding
 }
@@ -403,7 +438,7 @@ function setupDownload(datastreamId)
             //console.log("File with csv data for data stream "+datastreamId+" cancelled."); //DEBUG 
         },
         onError: function() { 
-            alert('You must put something in the File Contents or there will be nothing to save!'); 
+            alert('You must have actual data points or there is nothing to save!'); 
         },
         transparent: false,
         swf: '/static/media/downloadify.swf',
