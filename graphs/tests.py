@@ -7,11 +7,10 @@ Replace this with more appropriate tests for your application.
 #System imports
 from django.test import TestCase
 from django.test.client import Client
-from django.contrib.auth.models import User
 import time
 
 #Local imports
-from portcullis.models import DataStream, SensorReading, UserPermission
+from portcullis.models import DataStream, SensorReading, PortcullisUser
 
 
 class renderGraphTest(TestCase):
@@ -24,8 +23,8 @@ class renderGraphTest(TestCase):
         for i in range(100000):
             SensorReading.objects.create(datastream = myStream, timestamp = 1339789049 + i, value = 32)
 
-        user = User.objects.create_user('fakename', 'fake@pukkared.com', 'mypassword')
-        UserPermission.objects.create(datastream = myStream, user = user, owner = False)
+        user = PortcullisUser.objects.create_user('fakename', 'fake@pukkared.com', 'mypassword')
+        #UserPermission.objects.create(datastream = myStream, user = user, owner = False)
 
     '''
     def test_no_permission(self):

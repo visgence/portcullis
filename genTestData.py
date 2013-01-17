@@ -7,7 +7,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE",'settings')
 
 from django.core.exceptions import ObjectDoesNotExist
 
-from portcullis.models import DataStream, ScalingFunction
+from portcullis.models import DataStream, ScalingFunction, PortcullisUser
 from collector.data_loader import insert_reading
 
 import math
@@ -28,22 +28,25 @@ except ObjectDoesNotExist:
 try:
     ds1 = DataStream.objects.get(id=1)
 except ObjectDoesNotExist:
-    ds1 = DataStream(node_id = 1, port_id = 1, name = 'Test data 1', description = 'Simple Sign curve',
-                     color = 'purple', min_value = -50.0, max_value = 50.0, scaling_function = scaleF)
+    ds1 = DataStream(id = 1, node_id = 1, port_id = 1, name = 'Test data 1', description = 'Simple Sign curve',
+                     color = 'purple', min_value = -50.0, max_value = 50.0, scaling_function = scaleF, 
+                     owner = PortcullisUser.objects.get(username = 'portcullis'))
     ds1.save()
 
 try:
     ds2 = DataStream.objects.get(id=2)
 except ObjectDoesNotExist:
-    ds2 = DataStream(node_id = 2, port_id = 2, name = 'Test data 2', description = 'Amplitude modulated sin curve.',
-                     color = 'red   ', min_value = -50.0, max_value = 50.0, scaling_function = scaleF)
+    ds2 = DataStream(id=2, node_id = 2, port_id = 2, name = 'Test data 2', description = 'Amplitude modulated sin curve.',
+                     color = 'red   ', min_value = -50.0, max_value = 50.0, scaling_function = scaleF,
+                     owner = PortcullisUser.objects.get(username = 'portcullis'))
     ds2.save()
 
 try:
     ds3 = DataStream.objects.get(id=3)
 except ObjectDoesNotExist:
-    ds3 = DataStream(node_id = 3, port_id = 3, name = 'Test data 3', description = 'Random amplitude modulation',
-                     color = 'blue', min_value = -50.0, max_value = 50.0, scaling_function = scaleF)
+    ds3 = DataStream(id=3, node_id = 3, port_id = 3, name = 'Test data 3', description = 'Random amplitude modulation',
+                     color = 'blue', min_value = -50.0, max_value = 50.0, scaling_function = scaleF,
+                     owner = PortcullisUser.objects.get(username = 'portcullis'))
     ds3.save()
 
 if len(sys.argv) > 1:

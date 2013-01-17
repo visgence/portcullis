@@ -82,3 +82,12 @@ reductFunc = {'mean': incrementMean,
               'min': incrementMin,
               }
 
+def reduction_type_choices():
+    '''
+    ' Return a list of tuples of the reduction function dictionary to use
+    ' as a choice list in the models.
+    '''
+    choice_list = []
+    for red_type in reductFunc.iterkeys():
+        choice_list.append((red_type, red_type.title()))
+    return choice_list

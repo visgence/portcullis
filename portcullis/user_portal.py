@@ -4,7 +4,7 @@ from django.template import Context, loader
 from django.core.context_processors import csrf
 
 #Local Imports
-from models import DataStream, UserPermission
+from models import DataStream
 from check_access import check_access
 
 def user_streams(request):
@@ -19,10 +19,10 @@ def user_streams(request):
 
     if request.method == 'GET':
         #Pull streams that are owned by this user.
-        owned_streams = DataStream.objects.filter(userpermission__user = request.user, userpermission__owner = True) 
+        owned_streams = DataStream.objects.filter(owner__username = request.user.username) 
         
         #Pull streams that are viewable by this user.
-        viewable_streams = DataStream.objects.filter(userpermission__user = request.user, userpermission__read = True).exclude(id__in=owned_streams)
+        viewable_streams = DataStream.objects.filter(can_read__owner__username = request.user.username).exclude(id__in=owned_streams)
 
         #Pull any public streams as well
         public_streams = DataStream.objects.filter(is_public = True).exclude(id__in=viewable_streams).exclude(id__in=owned_streams)

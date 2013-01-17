@@ -1,6 +1,5 @@
 from django.test import TestCase
-from django.contrib.auth.models import User
-from portcullis.models import DataStream, ScalingFunction, Device, DevicePermission, Key
+from portcullis.models import DataStream, ScalingFunction, Device, Key #DevicePermission
 
 class PermissionTest(TestCase):
     fixtures = ['portcullis.xml']

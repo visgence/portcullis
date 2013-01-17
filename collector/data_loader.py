@@ -223,8 +223,8 @@ def insert_reading(datastream, raw_sensor_value, timestamp = None):
         
     # Make sure that we are not causing a collision in the table.  
     try:
-        sr = SensorReading.objects.get(id = id)
-        raise SensorReadingCollision('Sensor Reading with id \'%s\' already exists.' % id)
+        sr = SensorReading.objects.get(timestamp = timestamp, datastream = datastream)
+        raise SensorReadingCollision('Sensor Reading with id \'%s\' already exists.' % str(sr.id))
     except ObjectDoesNotExist:
         pass
     
