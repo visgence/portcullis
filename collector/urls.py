@@ -1,7 +1,7 @@
 from django.conf.urls.defaults import patterns, url
 
-urlpatterns = patterns('collector.data_loader',
-    url(r'^add_reading/$','add_reading'),
-    url(r'^add_reading_bulk/$','add_reading_bulk'),
-    url(r'^add_reading_bulk_hash/$','add_reading_bulk_hash'),
+urlpatterns = patterns('collector.views',
+    url(r'^add_reading/$','data_loader.add_reading'),
+    url(r'^add_reading_bulk/$','data_loader.add_reading_bulk'),
+    url(r'^add_reading_bulk_hash/$','data_loader.add_reading_bulk_hash'),
 )
