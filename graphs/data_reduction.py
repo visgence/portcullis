@@ -6,7 +6,6 @@
 " (c) 2012 Visgence, Inc.
 """
 
-import numpy as np
 
 def reduceData(rawData, size, red = 'mean'):
     ''' Take a a list of tuples containing at [0] a timeStamp and at [1] a raw data value from
@@ -76,12 +75,37 @@ def incrementMin(data):
     timeCenter = (data[0][0] + data[len(data)-1][0])/2
     return [timeCenter, min([float(x[1]) for x in data])]
 
+def incrementMode(data):
+    '''Return the timeCenter of the increment and the mode of the data_values within the increment.
+    '' Returns a list of 2 values.
+    '' We want the timeCenter of the increment because we want the time for the interval over which the
+    '' variation occurs.
+    '''
+    timeCenter = (data[0][0] + data[len(data)-1][0])/2
+    data_values = [float(x[1]) for x in data]
+    unique_values = {}
+    for d in data_values:
+        if d in unique_values:
+            unique_values[d] += 1
+        else:
+            unique_values[d] = 1
+
+    max_count = data_values[0]
+    for d, count in unique_values.items():
+        if count == unique_values[max_count] and d < max_count:
+            max_count = d
+        elif count > unique_values[max_count]:
+            max_count = d
+            
+    return [timeCenter, max_count]
+
 '''This dictionary stores the function pointers for each of the reduction methods'''
 reductFunc = {'mean': incrementMean,
               'sample': incrementSample,
               'median': incrementMedianSorted,
               'max': incrementMax,
               'min': incrementMin,
+              'mode': incrementMode
               }
 
 def reduction_type_choices():
