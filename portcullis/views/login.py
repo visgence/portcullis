@@ -1,4 +1,4 @@
-from models import *
+
 from django.http import HttpResponseRedirect, HttpResponse
 from django.core import serializers
 from django.template import Context, loader
@@ -6,6 +6,11 @@ from django.core.context_processors import csrf
 from django.contrib.auth import authenticate, login
 from django.contrib.auth import logout as auth_logout
 import urlparse
+
+
+# Local imports
+#from portcullis.models import 
+
 
 def user_login(request):
 

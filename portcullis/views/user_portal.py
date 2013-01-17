@@ -4,7 +4,7 @@ from django.template import Context, loader
 from django.core.context_processors import csrf
 
 #Local Imports
-from models import DataStream
+from portcullis.models import DataStream
 from check_access import check_access
 
 def user_streams(request):

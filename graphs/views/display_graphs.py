@@ -11,7 +11,7 @@ import json
 #Local Imports
 from portcullis.models import DataStream, SensorReading, PortcullisUser
 from check_access import check_access
-from data_reduction import reduceData, reductFunc
+from graphs.data_reduction import reduceData, reductFunc
 
 def display_graphs(request):
     '''

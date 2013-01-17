@@ -274,7 +274,7 @@ function graph_overview_callback(ranges) {
 function loadGraph(datastream_id, granularity, ranges, callback) {
     $.ajax(    
         {
-            url:"/render_graph/?json=true&start=" + Math.round(ranges.xaxis.from/1000 + timezone_offset/1000) + 
+            url:"/graphs/render_graph/?json=true&start=" + Math.round(ranges.xaxis.from/1000 + timezone_offset/1000) + 
                 "&end=" + Math.round(ranges.xaxis.to/1000 + timezone_offset/1000) + 
                 "&granularity=" + granularity + 
                 "&datastream_id=" + datastream_id +
