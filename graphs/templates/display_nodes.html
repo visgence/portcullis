@@ -110,7 +110,7 @@
             <label for="reduction_select_{{stream.id}}">Reduction Type:</label>
             <select id="reduction_select_{{stream.id}}" class="reduction_select" 
                     onchange="loadGraph('{{stream.id}}', 
-                              $('#granularity').val(), 
+                              get_granularity(), 
                               getRanges(), 
                               graph_overview_callback(getRanges()));">
                 {% for red in reductions %}
