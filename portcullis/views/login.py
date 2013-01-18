@@ -1,7 +1,7 @@
 
 from django.http import HttpResponseRedirect, HttpResponse
 from django.core import serializers
-from django.template import Context, loader
+from django.template import RequestContext, loader
 from django.core.context_processors import csrf
 from django.contrib.auth import authenticate, login
 from django.contrib.auth import logout as auth_logout
@@ -35,7 +35,7 @@ def user_login(request):
 
 
     t = loader.get_template('login.html');
-    c = Context({'user':request.user,'error':error,"redirect_to":redirect_to})
+    c = RequestContext(request, {'user':request.user,'error':error,"redirect_to":redirect_to})
     c.update(csrf(request));
     return HttpResponse(t.render(c))
 

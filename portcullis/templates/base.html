@@ -12,11 +12,8 @@
     </head>
     <body>
         <div id="greeting">
-            {% if user %}
             {% if user.first_name %}
-            Hello {{user.first_name}} {{user.last_name}} 
-            {% endif %}
-            (<a href="/portcullis/logout/">logout</a>)
+            Hello {{user.first_name}} {{user.last_name}} (<a href="/portcullis/logout/">logout</a>)
             {% endif %}
         </div><!--end greeting-->
         
