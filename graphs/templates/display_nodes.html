@@ -1,20 +1,24 @@
 <head>
     {% load static from staticfiles %}
-    <script language="javascript" type="text/javascript" src="/static/js/jquery-1.7.1.min.js"></script>
-    <script language="javascript" type="text/javascript" src="/static/js/jquery.flot.js"></script>
-    <script language="javascript" type="text/javascript" src="/static/js/jquery.flot.selection.min.js"></script>
-    <script language="javascript" type="text/javascript" src="/static/js/json2.js"></script>
-    <script language="javascript" type="text/javascript" src="/static/js/downloadify.min.js"></script>
-    <script language="javascript" type="text/javascript" src="/static/js/swfobject.js"></script>
-    <script type="text/javascript" src="/static/js/jquery-ui-1.8.18.custom.min.js"></script>
-    <script type="text/javascript" src="/static/js/jquery-ui-timepicker-addon.js"></script>
-    <script type="text/javascript" src="/static/js/jquery-ui-sliderAccess.js"></script>
-    <script type="text/javascript" src="/static/js/plotter.js"></script>
+    <script type="text/javascript" src="{{STATIC_URL}}js/jquery-1.7.1.min.js"></script>
+    <script type="text/javascript" src="{{STATIC_URL}}js/flot/jquery.flot.min.js"></script>
+    <script type="text/javascript" src="{{STATIC_URL}}js/flot/jquery.flot.selection.min.js"></script>
+    <script type="text/javascript" src="{{STATIC_URL}}js/json2.js"></script>
+    <script type="text/javascript" src="{{STATIC_URL}}js/downloadify.min.js"></script>
+    <script type="text/javascript" src="{{STATIC_URL}}js/swfobject.js"></script>
+    <script type="text/javascript" src="{{STATIC_URL}}js/jquery-ui-1.8.18.custom.min.js"></script>
+    <script type="text/javascript" src="{{STATIC_URL}}js/jquery-ui-timepicker-addon.js"></script>
+    <script type="text/javascript" src="{{STATIC_URL}}js/jquery-ui-sliderAccess.js"></script>
+    <script type="text/javascript" src="{{STATIC_URL}}js/plotter.js"></script>
     <script type="text/javascript" src="scaling_functions.js/"></script>
-    <script type="text/javascript" src="/static/js/jquery.flot.axislabels.js"></script>
-    <script type="text/javascript" src="/static/js/date_picker.js"></script>
-    <link rel="stylesheet" media="all" type="text/css" href="/static/css/ui-lightness/jquery-ui-1.7.3.custom.css" />
-    <link rel="stylesheet" media="all" type="text/css" href="/static/css/display_nodes.css" />
+
+    {# Do we use this? #}
+    <script type="text/javascript" src="{{STATIC_URL}}js/jquery.flot.axislabels.js"></script>
+    
+    <script type="text/javascript" src="{{STATIC_URL}}js/date_picker.js"></script>
+    
+    <link rel="stylesheet" media="all" type="text/css" href="{{STATIC_URL}}css/ui-lightness/jquery-ui-1.7.3.custom.css" />
+    <link rel="stylesheet" media="all" type="text/css" href="{{STATIC_URL}}css/display_nodes.css" />
 </head>
 <body>
 
