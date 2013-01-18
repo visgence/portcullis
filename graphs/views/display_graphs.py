@@ -31,21 +31,20 @@ def display_graphs(request):
     if(request.method == 'GET'):
         node = request.GET.get('node')
         port = request.GET.get('port')
-        start = request.GET.get('start')
-        end = request.GET.get('end')
-        granularity = request.GET.get('granularity')
+        start = request.GET.get('start', '')
+        end = request.GET.get('end', '')
+        granularity = request.GET.get('granularity', '300')
         show_public= request.GET.get('show_public')
 
         data = {
-                    'granularity':granularity,
-                    'start':start,
-                    'end':end,
-                    'streams':DataStream.objects.none(),
-                    # Make sure to pass the reduction functions that can be used.
-                    'reductions': reductFunc.keys()
-               }
+            'granularity':granularity,
+            'start':start,
+            'end':end,
+            'streams':DataStream.objects.none(),
+            'reductions': reductFunc.keys()
+        }
         
-        if(granularity != None):
+        if(granularity != None and granularity != ''):
             data['granularity'] = int(granularity)
 
         #Grab all read-able streams
@@ -77,7 +76,7 @@ def display_graphs(request):
             data['streams'] = DataStream.objects.filter(node_id = int(node), can_read__owner = request.user)
         else:
             data['streams'] = DataStream.objects.filter(can_read__owner = request.user)
-
+        
         return render(request,'display_nodes.html', data, context_instance=RequestContext(request))        
 
 
@@ -85,7 +84,7 @@ def render_graph(request):
     '''
     Takes a single datastream id and a time frame and generates json for the data.
     '''
-
+    
     if(request.method == 'GET'):
         start = int(request.GET.get('start'))
         end = int(request.GET.get('end'))
@@ -151,7 +150,7 @@ def to_json(stream):
 
     stream_data = {"reduction_type":stream.reduction_type,
                    "label":stream.name,
-                   "port_id":int(stream.port_id),
+                   "port_id":stream.port_id,
                    "data":stream.data,
                    "num_readings":stream.num_readings,
                    "max_value":max_value,

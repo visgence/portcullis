@@ -14,6 +14,31 @@
     width: 7em;
 }
 
+#graph_page_controls ul
+{
+    list-style: none;
+}
+
+.range_text
+{
+    margin-left: 9em;
+}
+
+#graph_page_controls input[type=radio]
+{
+    margin-left: 1em;
+}
+
+#start
+{
+    width: 12em;
+}
+
+#end
+{
+    width: 12em;
+}
+
 /*********** Graphs ***********/
 
 .graph_container
