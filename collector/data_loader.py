@@ -213,21 +213,22 @@ def insert_reading(datastream, raw_sensor_value, timestamp = None):
     '
     ' Keyword Args:
     '   datastream - The DataStream object this reading cooresponds to.
+    '   raw_sensor_value - The data value for this sensor reading.
+    '   timestamp - The time of the sensor reading.  Deault None.  If no time is
+    '               given, this method will stamp it with the current time.
     '''
 
     if timestamp is None:
         timestamp = int(time.time())
         
-    id = str(datastream.id) + '_' + str(timestamp)
     # Make sure that we are not causing a collision in the table.  
     try:
-        sr = SensorReading.objects.get(id = id)
-        raise SensorReadingCollision('Sensor Reading with id \'%s\' already exists.' % id)
+        sr = SensorReading.objects.get(timestamp = timestamp, datastream = datastream)
+        raise SensorReadingCollision('Sensor Reading with id \'%s\' already exists.' % str(sr.id))
     except ObjectDoesNotExist:
         pass
     
-    reading = SensorReading(id = id, datastream = datastream, sensor_value = raw_sensor_value, 
-                            date_entered = timestamp )
+    reading = SensorReading(datastream = datastream, value = raw_sensor_value, timestamp = timestamp )
     reading.save()
     
 def validate_stream(stream_id, node_id, port_id):

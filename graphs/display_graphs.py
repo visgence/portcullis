@@ -9,7 +9,7 @@ from django.shortcuts import render
 import json
 
 #Local Imports
-from portcullis.models import DataStream, SensorReading
+from portcullis.models import DataStream, SensorReading, PortcullisUser
 from check_access import check_access
 from data_reduction import reduceData, reductFunc
 
@@ -71,11 +71,11 @@ def display_graphs(request):
 
         #If we have a node or node/port pair then pull streams for those otherwise pull streams
         if(node != None and port != None):
-           data['streams'] = DataStream.objects.filter(node_id = int(node), port_id = int(port), users = request.user)
+           data['streams'] = DataStream.objects.filter(node_id = int(node), port_id = int(port), can_read__owner = request.user)
         elif(node != None):
-            data['streams'] = DataStream.objects.filter(node_id = int(node), users = request.user)
+            data['streams'] = DataStream.objects.filter(node_id = int(node), can_read__owner = request.user)
         else:
-            data['streams'] = DataStream.objects.filter(users = request.user)
+            data['streams'] = DataStream.objects.filter(can_read__owner = request.user)
         
         return render(request,'display_nodes.html', data, context_instance=RequestContext(request))        
 
@@ -109,7 +109,7 @@ def render_graph(request):
 
         #Check for read and public permissions.  Set a flag, true or false.
         try:
-            if(stream_info.is_public == True or stream_info.userpermission_set.get(read = True, user = request.user)):
+            if PortcullisUser(username = request.user).can_read_stream(stream_info):
                 stream_info.permission = "true"
         except ObjectDoesNotExist:
             stream_info.data = []
@@ -118,15 +118,15 @@ def render_graph(request):
             return HttpResponse(json)
 
         #Check if there are less points in timeframe then granularity
-        readings = SensorReading.objects.filter(date_entered__gte = start, date_entered__lte = end, datastream = datastream_id).order_by('date_entered')
+        readings = SensorReading.objects.filter(timestamp__gte = start, timestamp__lte = end, datastream = datastream_id).order_by('timestamp')
         numReadings = readings.count()
 
         if(numReadings < granularity):
             #loop through and add all points to data
-            data = [ [x.date_entered,float(x.sensor_value)] for x in readings ]
+            data = [ [x.timestamp,float(x.value)] for x in readings ]
 
         else:
-            data = reduceData(list(readings.values_list('date_entered', 'sensor_value')), granularity, reduction_type)
+            data = reduceData(list(readings.values_list('timestamp', 'value')), granularity, reduction_type)
 
         stream_info.num_readings = numReadings
         stream_info.data = data
@@ -163,8 +163,9 @@ def to_json(stream):
                    "xmin":stream.xmin,
                    "xmax":stream.xmax,
                    "units":stream.units,
-                   "permission":stream.permission,
+                   "permission":True
                    }
+
 
     return json.dumps(stream_data)
 
