@@ -1,22 +1,7 @@
-<head>
-    {% load static from staticfiles %}
-    <script language="javascript" type="text/javascript" src="/static/js/jquery-1.7.1.min.js"></script>
-    <script language="javascript" type="text/javascript" src="/static/js/json2.js"></script>
-    <script language="javascript" type="text/javascript" src="/static/js/checkbox.js"></script>
-    <script type="text/javascript" src="/static/js/jquery-ui-1.8.18.custom.min.js"></script>
-    <link rel="stylesheet" media="all" type="text/css" href="/static/css/ui-lightness/jquery-ui-1.7.3.custom.css" />
-</head>
-<body>
+{% extends "base.html" %}
 
 {%block content%}
-
-<div>
-    {% if user.first_name %}
-        Hello {{user.first_name}} {{user.last_name}} (<a href="/portcullis/logout/">logout</a>)
-    {% endif %}     
-</div>
-
-</br>
+<script language="javascript" type="text/javascript" src="/static/js/checkbox.js"></script>
 
 <form action="/graphs/" >
 
@@ -54,7 +39,5 @@
     <input type="submit" value="Submit"/>
 </form>
 
-   <div id="debug"></div>
-</body>
 {%endblock%}
 

@@ -1,6 +1,6 @@
 #System Imports
 from django.http import HttpResponse
-from django.template import Context, loader
+from django.template import RequestContext, loader
 from django.core.context_processors import csrf
 
 #Local Imports
@@ -29,7 +29,7 @@ def user_streams(request):
 
 
         t = loader.get_template('user_streams.html')
-        c = Context({'user':request.user,'owned_streams':owned_streams, 'public_streams':public_streams,'viewable_streams':viewable_streams})
+        c = RequestContext(request, {'user':request.user,'owned_streams':owned_streams, 'public_streams':public_streams,'viewable_streams':viewable_streams})
         c.update(csrf(request))
         return HttpResponse(t.render(c))
 
