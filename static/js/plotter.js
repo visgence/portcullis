@@ -31,36 +31,7 @@ function create_plot_select_handler(datastream_id)
 
 //On load function will search for any 'portcullis-graph' divs on the page.
 $("document").ready(function ()
-{ /*
-    var d = new Date();
-    var range = (48 * 60 * 60);    
-    var epoch_start;
-    var epoch_end;
-    var start = new Date($("#start").val());
-    var end = new Date($("#end").val());
-
-    //check for start/end time from server
-    if(!$("#start").val() && !$("#end").val())
-    {    
-        start = new Date(d.getTime() - range*1000);
-        end= new Date(d.getTime());
- 
-        //display to user in localtime
-        $("#start").val(start.toLocaleString());
-        $("#end").val(end.toLocaleString());
-    }
-    else if($("#start").val() && !$("#end").val())
-    {
-        start = new Date($("#start").val());
-        end= d.getTime();  
-        d= new Date(end);
-        $("#end").val(d.toLocaleString());
-    }
-
-    epoch_start = start.getTime() - timezone_offset;
-    epoch_end = end.getTime() - timezone_offset;
-    */
-    
+{
     //check for granularity from server
     if(!$("#granularity").val()) 
     {
@@ -88,6 +59,25 @@ $("document").ready(function ()
     update_link();
 });//end on_load
 
+function modify_date(date, date_range, subtract)
+{
+    var edit_amount = 1;
+    var new_date = new Date(date.toLocaleString());
+
+    if(date_range == "One Week")
+        edit_amount = 7;
+    
+    if(subtract)
+        edit_amount = -edit_amount;
+
+    if(date_range == "One Month")
+        new_date.setMonth(new_date.getMonth() + edit_amount);
+    else
+        new_date.setDate(new_date.getDate() + edit_amount);
+
+    return new_date;
+}
+
 function getRanges() {
     var d = new Date();
     var range = (48 * 60 * 60);    
@@ -96,28 +86,45 @@ function getRanges() {
     var start = new Date($("#start").val());
     var end = new Date($("#end").val());
 
-    //check for start/end time from server
-    if(!$("#start").val() && !$("#end").val())
+    var start_radio_text = $('.start_radio:checked').next().text();
+    var end_radio_text = $('.end_radio:checked').next().text();  
+    
+    if((start_radio_text != "None" && end_radio_text == "None" && !$("#end").val()) ||
+       ($("#start").val() && !$("#end").val()))
+    {
+        end = new Date(d.getTime());
+        $("#end").val(end.toLocaleString());
+    }
+    else if((end_radio_text != "None" && start_radio_text == "None" && !$("#start").val()) ||
+            (!$("#start").val() && $("#end").val()))
+    {
+        start = new Date(d.getTime() - range*1000);
+        $("#start").val(start.toLocaleString());
+    }
+    else if(!$("#start").val() && !$("#end").val())
     {    
         start = new Date(d.getTime() - range*1000);
         end= new Date(d.getTime());
  
-        //display to user in localtime
         $("#start").val(start.toLocaleString());
         $("#end").val(end.toLocaleString());
     }
-    else if($("#start").val() && !$("#end").val())
-    {
-        start = new Date($("#start").val());
-        end= d.getTime();  
-        d= new Date(end);
-        $("#end").val(d.toLocaleString());
-    }
+
+    if(start_radio_text != "None")
+        start = modify_date(end, start_radio_text, true);
+    else if(end_radio_text != "None")
+        end = modify_date(start, end_radio_text, false);
 
     epoch_start = start.getTime() - timezone_offset;
     epoch_end = end.getTime() - timezone_offset;
-
-    return { xaxis: { from: epoch_start, to: epoch_end }};
+    
+    var range_data = { 
+        xaxis: { 
+                  from: epoch_start, 
+                    to: epoch_end,
+        }
+    };
+    return range_data;
 }
 
 // scale incoming data
@@ -196,7 +203,7 @@ function submit_form(datastream_id)
 {   
     var start = new Date($("#start").val());
     var end = new Date($("#end").val());
-    
+
     if($("#granularity").val() == '')
         $("#granularity").val(300) 
 
@@ -207,7 +214,7 @@ function submit_form(datastream_id)
     epoch_end -= timezone_offset;
 
     var ranges = { xaxis: { from: epoch_start , to: epoch_end }};
-    loadAllGraphs(ranges);
+    loadAllGraphs(getRanges());
     update_link();
 }//end submit_form
 
@@ -271,7 +278,7 @@ function graph_overview_callback(ranges) {
     }
 }
 
-function loadGraph(datastream_id, granularity, ranges, callback) {
+function loadGraph(datastream_id, granularity, ranges, callback) { 
     $.ajax(    
         {
             url:"/render_graph/?json=true&start=" + Math.round(ranges.xaxis.from/1000 + timezone_offset/1000) + 
@@ -312,7 +319,6 @@ function renderGraph(data, ranges, shouldScale)
     else
     {
         plot = $.plot($("#sensor" + dataStreamId), [data], options);
-        console.log(data);
         $('#datapoints_'+dataStreamId).text(data.num_readings);
         $('#actual_datapoints_'+dataStreamId).text(data.data.length);
     }
@@ -450,4 +456,19 @@ function setupDownload(datastreamId)
     });
 }
 
-
+function toggleDateRange(radio_input, date_input_id, mutable_radio_class)
+{
+    var date_field = $("#"+date_input_id);
+    var span_text = $(radio_input).next().text();
+    
+    if(span_text != "None")
+    {
+        date_field.attr('disabled', 'disabled');
+        $('.'+mutable_radio_class).attr('disabled', 'disabled');
+    }
+    else
+    {
+        date_field.removeAttr('disabled');
+        $('.'+mutable_radio_class).removeAttr('disabled');
+    }
+}
