@@ -33,7 +33,7 @@ def display_graphs(request):
         port = request.GET.get('port')
         start = request.GET.get('start', '')
         end = request.GET.get('end', '')
-        granularity = request.GET.get('granularity', '300')
+        granularity = request.GET.get('granularity', '')
         show_public= request.GET.get('show_public')
 
         data = {
@@ -44,7 +44,7 @@ def display_graphs(request):
             'reductions': reductFunc.keys()
         }
         
-        if(granularity != None and granularity != ''):
+        if(granularity != ''):
             data['granularity'] = int(granularity)
 
         #Grab all read-able streams
@@ -97,9 +97,6 @@ def render_graph(request):
         if reduction_type is None or reduction_type == '':
             reduction_type = 'mean'
 
-        if(granularity == None):
-            granularity = 300
-    
         #Pull the data for this stream
         stream_info = DataStream.objects.get(id = datastream_id)
 

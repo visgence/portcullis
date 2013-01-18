@@ -32,11 +32,8 @@ function create_plot_select_handler(datastream_id)
 //On load function will search for any 'portcullis-graph' divs on the page.
 $("document").ready(function ()
 {
-    //check for granularity from server
     if(!$("#granularity").val()) 
-    {
-        $("#granularity").val(300);//default
-    }
+        get_granularity()
  
     //Find all portcullis graph divs
     divs = $(".portcullis-graph");
@@ -59,8 +56,17 @@ $("document").ready(function ()
     update_link();
 });//end on_load
 
-function modify_date(date, date_range, subtract)
-{
+
+function modify_date(date, date_range, subtract) {
+    /* Takes a Date object and adds/subtracts a range of time from it based on the date_range passed in.
+     *
+     * date       - Date object to modify.
+     * date_range - The range to to modify the date by. "One Day", "One Week", "One Month".
+     * subtract   - Boolean to tell if we're subtracting the range from the date or not.
+     *
+     * Returns    - New Date object modified according to the parameters
+     */
+
     var edit_amount = 1;
     var new_date = new Date(date.toLocaleString());
 
@@ -76,6 +82,24 @@ function modify_date(date, date_range, subtract)
         new_date.setDate(new_date.getDate() + edit_amount);
 
     return new_date;
+}
+
+function get_granularity() {
+    /* Gets the granularity currently set on the page. If it doesn't yet exist then a default is set and returned.
+     *
+     * Returns - Integer that is the currently set granularity.
+     */
+
+    //Try and make default width of first graph otherwise default to 300
+    var first_graph = $('.graph_container:first .sensor_graph');
+    var default_granularity = first_graph.width();
+    if(!default_granularity)
+        default_granularity = 300;
+
+    if($("#granularity").val() == '')
+        $("#granularity").val(default_granularity) 
+
+    return $("#granularity").val();
 }
 
 function getRanges() {
@@ -204,9 +228,8 @@ function submit_form(datastream_id)
     var start = new Date($("#start").val());
     var end = new Date($("#end").val());
 
-    if($("#granularity").val() == '')
-        $("#granularity").val(300) 
-
+    get_granularity();
+    
     epoch_start = start.getTime();
     epoch_end= end.getTime();  
     
@@ -251,7 +274,7 @@ function zoom_graph(ranges, datastream_id)
     }//end on data_recieved
 
     //request data for the new timeframe
-    loadGraph(datastream_id, $("#granularity").val(), ranges, on_data_recieved);
+    loadGraph(datastream_id, get_granularity(), ranges, on_data_recieved);
 
     return result;
 }//end zoom_graph
@@ -259,7 +282,7 @@ function zoom_graph(ranges, datastream_id)
 function loadAllGraphs(ranges)
 {
     divs = $(".portcullis-graph");
-    var granularity = $("#granularity").val();
+    var granularity = get_granularity()
 
     //Cycle though all graphs and fetch data from server
     for (var i = 0; i < divs.length; i++) 
@@ -425,7 +448,7 @@ function update_link()
 
     $("#share_link").attr("href","/graphs/?start="+ start.toLocaleString()+
                                            "&end="+end.toLocaleString()+
-                                   "&granularity="+$("#granularity").val() + streams);
+                                   "&granularity="+get_granularity() + streams);
 }//end update_link
 
 function setupDownload(datastreamId)
