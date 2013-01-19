@@ -20,12 +20,10 @@ class SensorReadingCollision(PortcullisException):
     ''' This exception is thrown when attempting to insert a value into the SensorReading table
     ' and a value already exists for that sensor at that timestamp.
     '''
-    def __init__(self):
-        self._code = 507
+    _code = 507
 
 class InvalidDataStream(PortcullisException):
     '''
     ' This exception is thrown when attempting to insert a value into a datastream that doesn't exist.
     '''
-    def __init__(self):
-        self._code = 508
+    _code = 508
