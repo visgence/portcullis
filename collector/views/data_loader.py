@@ -17,6 +17,8 @@ def add_reading(request):
     '''
 
     datastream_id = request.REQUEST.get('datastream_id')
+    node_id = request.REQUEST.get('node_id')
+    port_id = request.REQUEST.get('port_id')
     auth_token = request.REQUEST.get('auth_token')
     raw_sensor_value = request.REQUEST.get('value')
 
@@ -28,9 +30,17 @@ def add_reading(request):
         return HttpResponse("No data was passed for insertion! Please be sure to pass some data. Example: value=233")
     # Get the data stream to insert to.
     try:
+        # First try to use the datastream_id
         datastream = DataStream.objects.get(id = datastream_id)
+    except ObjectDoesNotExist: try:
+        # If that fails, try the node/port combination.  This is for backwards compatability,
+        # but since these fields are not unique together, it is dangerous.
+        datastream = DataStream.objects.get(node_id = node_id, port_id = port_id)
     except ObjectDoesNotExist:
         return HttpResponse('Invalid Datastream')
+    except MultipleObjectsReturned:
+        return HttpResponse('Multiple Objects Returned.  Node/Port are no longer unique together.  Please ' +
+                            'use a DataStream id.')
     #Insert
     insert_reading(datastream, raw_sensor_value)
     return HttpResponse('Successfully inserted record')
