@@ -118,10 +118,11 @@ def add_reading_bulk_hash(request):
 
 
 @csrf_exempt
-def add_reading_bulk(request):
+def add_list(request):
     '''
-    Adds multiple readings at "once". If for any reading there is a port, node, and sensor value then we
-    insert the reading otherwise we record an error and continue with the other readings.
+    Adds multiple readings to the database from a list of lists.  Might it be better to use a list of 
+    dictionaries?  This has been renamed from add_bulk_readings so that the old add_bulk_readings can be
+    add back for backwards compatability.
     '''
 
     auth_token = request.REQUEST.get('auth_token')
@@ -146,10 +147,6 @@ def add_reading_bulk(request):
 
         insertion_attempts += 1
         
-        print
-        print reading
-        print
-
         try:
             ds_id = reading[0]
             raw_sensor_value = reading[1]
