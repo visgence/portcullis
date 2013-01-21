@@ -23,23 +23,23 @@ else:
 
 
 params = {'auth_token': 'I want my baby back ribs.'}
-for t in range(startTime, startTime + 60*60*24*31*nMonths, 1000*60):
+for t in range(startTime, startTime + 60*60*24*31*nMonths, 10*60):
     print "Time = %s" % time.localtime(t)
 
     data = []
 
     for i in range(t, t + 10*60, 60):
-        ds_id = 1
+        node_id = 3
+        port_id = 3
         value =  50 * math.sin(i*math.pi/(86400))
-        data.append([ds_id, value, int(t)])
-                    
+        data.append([node_id, port_id, value])
 
     params['json'] = json.dumps(data)
 
     resp = urlopen('http://localhost:8000/collector/add_reading_bulk/?%s' % urlencode(params))
     print 'Http Response: '
-    print resp.readline()
+    print resp.read()
     print
-    time.sleep(.1)
+    time.sleep(1)
 
 print 'Done'
