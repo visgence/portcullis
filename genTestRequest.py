@@ -27,9 +27,9 @@ while (True):
     print "Time = %s" % time.localtime(i)
 
     #for i in range(t, t + 1000*60, 60):
-    #params['datastream_id'] = 1
-    params['node_id'] = 2
-    params['port_id'] = 2
+    params['datastream_id'] = 15
+    #params['node_id'] = 3
+    #params['port_id'] = 3
     params['value'] = 50 * math.sin(i*math.pi/(86400))
     resp = urlopen('http://localhost:8000/collector/add_reading/?%s' % urlencode(params))
     print 'Http Response: '
