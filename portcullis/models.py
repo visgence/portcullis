@@ -138,11 +138,11 @@ class DataStream(models.Model):
         if isinstance(obj, PortcullisUser):
             if obj == self.owner:
                 return True
-            elif obj in self.can_read.values_list('owner'):
+            elif obj.id in self.can_read.values_list('owner', flat = True):
                 return True
         
         if isinstance(obj, Key):
-            return obj in self.can_read
+            return obj in self.can_read.all()
 
         return False
 
@@ -160,11 +160,11 @@ class DataStream(models.Model):
         if isinstance(obj, PortcullisUser):
             if obj == self.owner:
                 return True
-            elif obj in self.can_post.values_list('owner'):
+            elif obj.id in self.can_post.values_list('owner', flat = True):
                 return True
         
         if isinstance(obj, Key):
-            return obj in self.can_post
+            return obj in self.can_post.all()
 
         return False
     
