@@ -9,7 +9,7 @@ from django.shortcuts import render
 import json
 
 #Local Imports
-from portcullis.models import DataStream, SensorReading, PortcullisUser
+from portcullis.models import DataStream, SensorReading, PortcullisUser, ScalingFunction
 from check_access import check_access
 from graphs.data_reduction import reduceData, reductFunc
 
@@ -97,23 +97,31 @@ def render_graph(request):
         if reduction_type is None or reduction_type == '':
             reduction_type = 'mean'
 
-        #Pull the data for this stream
-        stream_info = DataStream.objects.get(id = datastream_id)
+        try:
+            portcullisUser = request.user.portcullisuser
+        except ObjectDoesNotExist:
+            portcullisUser = None
+
+        # Get DataStream if it exists and we have permission
+        stream_info = DataStream.objects.get_ds_and_validate(datastream_id, portcullisUser, 'read')
+
+        if not isinstance(stream_info, DataStream):
+            print 'User verification failed: ' + stream_info
+            data = {'data':[],
+                    'permission':       False,
+                    'label':            stream_info,
+                    "datastream_id":    datastream_id,
+                    }
+            return HttpResponse(json.dumps(data), mimetype='application/json')                  
+
+        stream_info.permission = "true"
 
         #These fields could be used for graph settings client-side
         stream_info.xmin = start
         stream_info.xmax = end
 
-        #Check for read and public permissions.  Set a flag, true or false.
-        try:
-            if PortcullisUser(username = request.user).can_read_stream(stream_info):
-                stream_info.permission = "true"
-        except ObjectDoesNotExist:
-            stream_info.data = []
-            stream_info.permission = "false"
-            json = to_json(stream_info)
-            return HttpResponse(json)
 
+        #Pull the data for this stream
         #Check if there are less points in timeframe then granularity
         readings = SensorReading.objects.filter(timestamp__gte = start, timestamp__lte = end, datastream = datastream_id).order_by('timestamp')
         numReadings = readings.count()
@@ -127,9 +135,9 @@ def render_graph(request):
 
         stream_info.num_readings = numReadings
         stream_info.data = data
-        json = to_json(stream_info)
+        json_data = to_json(stream_info)
 
-        return HttpResponse(json)
+        return HttpResponse(json_data, mimetype='application/json')
 
         
 def to_json(stream):
