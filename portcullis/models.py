@@ -12,23 +12,7 @@ class PortcullisUser(User):
     '''
     # TODO: Add custom user fields/methods
 
-    # This method needs to be removed and replaced with the DataStream.canRead()
-    def can_read_stream(self, stream):
-        '''The user instance has read permission on the given data stream.
-        ' Keyword args:
-        '  stream - The DataStream object checking permission for.
-        '''
-        if stream.is_public:
-            return True
-
-        if self == stream.owner:
-            return True
-        
-        if self in stream.can_read.values_list('owner'):
-            return True
-    
-        return False;
-
+    pass
 
     
 class ScalingFunctionManager(models.Manager):
