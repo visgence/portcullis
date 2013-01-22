@@ -22,7 +22,8 @@ def add_reading(request):
     auth_token = request.REQUEST.get('auth_token')
     raw_sensor_value = request.REQUEST.get('value')
 
-    if(key = Key.objects.validate(auth_token)) == None:
+    key = Key.objects.validate(auth_token)
+    if key is None:
         return HttpResponse('Incorrect Authentication!')
 
     #Is there even any data?
@@ -60,7 +61,8 @@ def add_reading_bulk_hash(request):
     auth_token = request.GET.get('auth_token')
     json_text = urllib.unquote(request.GET.get('json'))
 
-    if (key = Key.objects.validate(auth_token)) == None:
+    key = Key.objects.validate(auth_token)
+    if key is None:
         return HttpResponse('Incorrect Authentication!')
 
     if(json_text is None): 
@@ -149,7 +151,8 @@ def add_reading_bulk(request):
     except:
         return HttpResponse("No json received. Please send a serialized array of arrays in the form [[node_id1,port_id1,value1],[node_id2,port_id2,value2]]")
 
-    if(key = Key.objects.validate(auth_token)) == None:
+    key = Key.objects.validate(auth_token)
+    if key is None:
         return HttpResponse('Incorrect Authentication!')
 
     readings = simplejson.loads(json_text)
@@ -221,7 +224,8 @@ def add_list(request):
     except:
         return HttpResponse("No json received. Please send a serialized array of arrays in the form [[datastream_id,value1,time1],[datastream_id,value2,time2]].  time is optional.")
 
-    if (key = Key.objects.validate(auth_token)) == None:
+    key = Key.objects.validate(auth_token)
+    if key is None:
         return HttpResponse('Incorrect Authentication!')
 
     readings = simplejson.loads(json_text)

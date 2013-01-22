@@ -115,8 +115,7 @@ class DataStreamManager(models.Manager):
             except ObjectDoesNotExist:
                 return 'Invalid node/port combination.'
             except MultipleObjectsReturned:
-                return 'Multiple Objects Returned.  Node/Port are no longer unique together.  ' +
-                                    'Please use a DataStream id.'
+                return 'Multiple Objects Returned.  Node/Port are no longer unique together.  Please use a DataStream id.'
 
         else:
             try:
@@ -126,10 +125,10 @@ class DataStreamManager(models.Manager):
                 return 'Invalid DataStream!'
 
         if perm == 'read':
-            if not ds.canRead(obj)):
+            if not ds.canRead(obj):
                 return '%s cannot read this DataStream!' % str(obj)
         elif perm == 'post':
-            if not ds.canPost(obj)):
+            if not ds.canPost(obj):
                 return '%s cannot post to this DataStream' % str(obj)
         else:
             return '%s is an invalid permission type.' % str(perm)
