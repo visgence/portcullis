@@ -57,7 +57,7 @@ class Key(models.Model):
 
 
     def __unicode__(self):
-        return self.key + " Owned by %s" + self.owner.username
+        return self.key + " Owned by " + self.owner.username
 
 
 
@@ -85,11 +85,10 @@ class Device(models.Model):
 class DataStreamManager(models.Manager):
 
     def get_writable_by_device(self, device):
-        return DataStream.objects.filter(can_write = device.key)
+        return DataStream.objects.filter(can_post = device.key)
 
     def get_writable_by_key(self, key):
-        device = Device.objects.get_by_key(key)
-        return DataStream.objects.filter(can_write = device.key)
+        return DataStream.objects.filter(can_post = key)
 
 class DataStream(models.Model):
     node_id = models.IntegerField(null=True, blank=True)
@@ -116,7 +115,7 @@ class DataStream(models.Model):
     def __unicode__(self):
         return "Stream_ID: %s" % self.id  + " Node: %s," % self.node_id + " Port: %s," % self.port_id + " Name: " + self.name
 
-
+    #def 
     
 class SensorReading(models.Model):
     id = models.CharField(primary_key=True,max_length=32)
