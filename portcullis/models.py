@@ -4,6 +4,10 @@ from django.db.models import Q
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.utils import timezone
+import hashlib
+import random
+import string
+from datetime import timedelta
 
 # Local Imports
 from graphs.data_reduction import reduction_type_choices
@@ -44,6 +48,40 @@ class KeyManager(models.Manager):
             key.use()
             return key
         return None
+
+    def generateKey(self, user, description = '', expiration = None, uses = -1, readL = None, postL = None):
+        '''
+        ' Create a new (hopefully) unique key for the specified user, and return it.
+        '
+        ' Keyword Arguments:
+        '  user - The PortcullisUser to create this key for.
+        '  description - Short description of the purpose of this key.
+        '  expiration - Datetime object that determines when this key is no longer valid.
+        '               the default is None, which means it does not have an expiration date.
+        '  uses - The number of times this key can be used before it expires.  0 means this key has no
+        '         more uses.  -1 means it has infinite uses.  The default is -1.
+        '  readL - The list of DataStream (or possibly other) objects that can be read with this key.
+        '          The default is None.
+        '  postL - The list of DataStream (or other) objects that can be posted to with this key.
+        '          The default is None.
+        '''
+        md5 = hashlib.md5()
+        randomStr = ''.join(random.choice(string.printable) for x in range(20))
+        md5.update(str(timezone.now()))
+        md5.update(user.username)
+        md5.update(randomStr)
+        token = md5.digest().encode('base64_codec')
+        key = Key.objects.create(key=token, owner=user, expiration=expiration, num_uses = uses)
+
+        if readL is not None:
+            for ds in readL:
+                ds.can_read.add(key)
+
+        if postL is not None:
+            for ds in postL:
+                ds.can_post.add(key)
+
+        return key
 
 class Key(models.Model):
     key = models.CharField(primary_key=True, max_length=1024)
