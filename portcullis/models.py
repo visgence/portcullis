@@ -7,6 +7,9 @@ from django.core.exceptions import ObjectDoesNotExist
 from graphs.data_reduction import reduction_type_choices
 
 class PortcullisUser(User):
+    '''
+    ' The class that defines users of the system.
+    '''
     # TODO: Add custom user fields/methods
 
     def can_read_stream(self, stream):
@@ -25,6 +28,8 @@ class PortcullisUser(User):
     
         return False;
 
+
+    
 class ScalingFunctionManager(models.Manager):
     def get_by_natural_key(self, name):
         return self.get(name = name)
@@ -115,7 +120,53 @@ class DataStream(models.Model):
     def __unicode__(self):
         return "Stream_ID: %s" % self.id  + " Node: %s," % self.node_id + " Port: %s," % self.port_id + " Name: " + self.name
 
-    #def 
+    def canRead(self, obj):
+        '''
+        ' Return True if the obj has permission to read this DataStream, False otherwise.
+        '
+        ' Keyword args:
+        '    obj - The object to check for permission to read for.
+        '          Any object can read a public datastream.
+        '          Providing a key in the can_read M2M field will return true.
+        '          Providing a PortcullisUser that either owns the datastream or
+        '           owns a key that is in the can_read M2M field will return true.
+        '          Returns false otherwise.
+        '''
+        if self.is_public == True:
+            return True
+
+        if isinstance(obj, PortcullisUser):
+            if obj == self.owner:
+                return True
+            elif obj in self.can_read.values_list('owner'):
+                return True
+        
+        if isinstance(obj, Key):
+            return obj in self.can_read
+
+        return False
+
+    def canPost(self, obj):
+        '''
+        ' Return True if the obj has permission to post to this DataStream, False otherwise.
+        '
+        ' Keyword args:
+        '    obj - The object to check for permission to post for.
+        '          Providing a key in the can_post M2M field will return true.
+        '          Providing a PortcullisUser that either owns the datastream or
+        '           owns a key that is in the can_post M2M field will return true.
+        '          Returns false otherwise.
+        '''
+        if isinstance(obj, PortcullisUser):
+            if obj == self.owner:
+                return True
+            elif obj in self.can_post.values_list('owner'):
+                return True
+        
+        if isinstance(obj, Key):
+            return obj in self.can_post
+
+        return False
     
 class SensorReading(models.Model):
     id = models.CharField(primary_key=True,max_length=32)
