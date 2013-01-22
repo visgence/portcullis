@@ -1,7 +1,9 @@
 #System Imports
 from django.db import models
+from django.db.models import Q
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
+from django.utils import timezone
 
 # Local Imports
 from graphs.data_reduction import reduction_type_choices
@@ -30,11 +32,18 @@ class ScalingFunction(models.Model):
 
 
 class KeyManager(models.Manager):
-    def validate(self, key):
+    def validate(self, token):
+        # TODO: decide whether or not to keep this method, or to replace it (within other validation)
+        # also whether to return different kinds of errors/etc.
         try:
-            return Key.objects.get(key = key)
+            key = Key.objects.get(key = token)
         except ObjectDoesNotExist:
             return None
+
+        if key.isCurrent():
+            key.use()
+            return key
+        return None
 
 class Key(models.Model):
     key = models.CharField(primary_key=True, max_length=1024)
@@ -45,6 +54,24 @@ class Key(models.Model):
     objects = KeyManager()
 
 
+    def isCurrent(self):
+        '''
+        ' Check expiration, return True if this key is current, false if expired.
+        ' There are 2 types of expiration.  The first is date.  The current date must be earlier than
+        ' the expiration date.  The other is the number of uses.  The number of uses must be nonzero.
+        ' A null expiration does not expire by date.
+        '''
+        if (self.expiration is None or timezone.now() < self.expiration) and self.num_uses != 0:
+            return True
+        return False
+
+    def use(self):
+        '''
+        ' When a key is used, decrement its num_uses by 1.
+        '''
+        if self.num_uses > 0:
+            self.num_uses -= 1
+            self.save()
 
     def __unicode__(self):
         return self.key + " Owned by " + self.owner.username
@@ -162,11 +189,15 @@ class DataStream(models.Model):
         if isinstance(obj, PortcullisUser):
             if obj == self.owner:
                 return True
-            elif obj.id in self.can_read.values_list('owner', flat = True):
+            elif obj.id in self.can_read.filter( (Q(expiration__gt = timezone.now()) | Q(expiration = None)) &
+                                                ~Q(num_uses = 0) ).values_list('owner', flat = True):
                 return True
         
         if isinstance(obj, Key):
-            return obj in self.can_read.all()
+            if obj.isCurrent():
+                return obj in self.can_read.all()
+            else:
+                return False
 
         return False
 
@@ -184,12 +215,18 @@ class DataStream(models.Model):
         if isinstance(obj, PortcullisUser):
             if obj == self.owner:
                 return True
-            elif obj.id in self.can_post.values_list('owner', flat = True):
+            elif obj.id in self.can_post.filter( (Q(expiration__gt = timezone.now()) | Q(expiration = None)) &
+                                                ~Q(num_uses = 0) ).values_list('owner', flat = True):
                 return True
+            else:
+                return False
         
         if isinstance(obj, Key):
-            return obj in self.can_post.all()
-
+            if obj.isCurrent():
+                return obj in self.can_post.all()
+            else:
+                return False
+            
         return False
     
 class SensorReading(models.Model):
