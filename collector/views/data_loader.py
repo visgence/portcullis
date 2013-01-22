@@ -22,28 +22,31 @@ def add_reading(request):
     auth_token = request.REQUEST.get('auth_token')
     raw_sensor_value = request.REQUEST.get('value')
 
-    if(Key.objects.validate(auth_token) == None):
+    if(key = Key.objects.validate(auth_token)) == None:
         return HttpResponse('Incorrect Authentication!')
 
     #Is there even any data?
     if(raw_sensor_value is None or raw_sensor_value == ""):
         return HttpResponse("No data was passed for insertion! Please be sure to pass some data. Example: value=233")
-    # Get the data stream to insert to.
-    try:
-        # First try to use the datastream_id
-        datastream = DataStream.objects.get(id = datastream_id)
-    except ObjectDoesNotExist:
-        try:
-            # If that fails, try the node/port combination.  This is for backwards compatability,
-            # but since these fields are not unique together, it is dangerous.
-            datastream = DataStream.objects.get(node_id = node_id, port_id = port_id)
-        except ObjectDoesNotExist:
-            return HttpResponse('Invalid Datastream')
-        except MultipleObjectsReturned:
-            return HttpResponse('Multiple Objects Returned.  Node/Port are no longer unique together.  Please ' +
-                                'use a DataStream id.')
+
+    if datastream_id is None or datastream_id == '':
+        if node_id is None or node_id == '' or port_id is None or port_id == '':
+            return HttpResponse('Cannot identify datastream, please give datastream_id or node_id/port_id.')
+        else:
+            datastream_id = (node_id, port_id)
+
+    # get and validate datastream permission
+    datastream = DataStream.objects.get_ds_and_validate(datastream_id, key, 'post')
+    # Assume if we don't get a DS object we get an error string.
+    if not isinstance(datastream, DataStream):
+        return HttpResponse(datastream)
+
     #Insert
-    insert_reading(datastream, raw_sensor_value)
+    try:
+        insert_reading(datastream, raw_sensor_value)
+
+    except SensorReadingCollision as e:
+        return HttpResponse(e)
     return HttpResponse('Successfully inserted record')
 
 def add_reading_bulk_hash(request):
@@ -57,7 +60,7 @@ def add_reading_bulk_hash(request):
     auth_token = request.GET.get('auth_token')
     json_text = urllib.unquote(request.GET.get('json'))
 
-    if(Key.objects.validate(auth_token) == None):
+    if (key = Key.objects.validate(auth_token)) == None:
         return HttpResponse('Incorrect Authentication!')
 
     if(json_text is None): 
@@ -109,8 +112,14 @@ def add_reading_bulk_hash(request):
                 if(stream_info['error']):
                     error_string += stream_info['error'] 
                 else:
-                    insert_reading(stream_info['datastream'], raw_sensor_value)
-                    insertion_successes += 1
+                    if stream_info['datastream'].canPost(key):
+                        try:
+                            insert_reading(stream_info['datastream'], raw_sensor_value)
+                            insertion_successes += 1
+                        except SensorReadingCollision:
+                            error_string += '\nSensorReadingCollision\n'
+                    else:
+                        error_string += '\nKey not authorized to post to DataStream\n'
             else:
                 error_string += "\nNot enough info to uniquely identify a data stream. The information that was sent was: \ntime=%(time)s\nnode_id=%(node)s\nport_id=%(port)s\ndata_stream=%(stream)s\nvalue=%(raw_sensor_value)s" % {'time':time, 'node':node_id, 'port':port_id, 'stream':data_stream, 'raw_sensor_value':raw_sensor_value};
 
@@ -140,7 +149,7 @@ def add_reading_bulk(request):
     except:
         return HttpResponse("No json received. Please send a serialized array of arrays in the form [[node_id1,port_id1,value1],[node_id2,port_id2,value2]]")
 
-    if(Key.objects.validate(auth_token) == None):
+    if(key = Key.objects.validate(auth_token)) == None:
         return HttpResponse('Incorrect Authentication!')
 
     readings = simplejson.loads(json_text)
@@ -173,11 +182,14 @@ def add_reading_bulk(request):
                 if(stream_info['error']):
                     error_string += stream_info['error'] 
                 else:
-                    try:
-                        insert_reading(stream_info['datastream'], raw_sensor_value)
-                        insertion_successes += 1
-                    except SensorReadingCollision:
-                        error_string += '\nSensorReadingCollision.\n'
+                    if stream_info['datastream'].canPost(key):
+                        try:
+                            insert_reading(stream_info['datastream'], raw_sensor_value)
+                            insertion_successes += 1
+                        except SensorReadingCollision:
+                            error_string += '\nSensorReadingCollision.\n'
+                    else:
+                        error_string += '\nKey not authorized to post to DataStream\n'
             else:
                 error_string += "\nNot enough info to uniquely identify a data stream.You must give both a node_id and a port_id.\n "
 
@@ -209,7 +221,7 @@ def add_list(request):
     except:
         return HttpResponse("No json received. Please send a serialized array of arrays in the form [[datastream_id,value1,time1],[datastream_id,value2,time2]].  time is optional.")
 
-    if(Key.objects.validate(auth_token) == None):
+    if (key = Key.objects.validate(auth_token)) == None:
         return HttpResponse('Incorrect Authentication!')
 
     readings = simplejson.loads(json_text)
@@ -235,16 +247,18 @@ def add_list(request):
         #If no sensor value then skip this reading
         if(raw_sensor_value is None or raw_sensor_value == ""):
             error_string += "\nNo data was passed for insertion! Please be sure to pass some data.\n"
+            continue
 
         # Get the datastream, if possible
-        try:
-            ds = DataStream.objects.get(id = ds_id)
-            insert_reading(ds, raw_sensor_value, timestamp)
-            insertion_successes += 1
-        except ObjectDoesNotExist:
-            error_string += "\nInvalid DataStream.\n"
-        except SensorReadingCollision as e:
-            error_string += '\n' + str(e) + '\n'
+        ds = DataStream.objects.get_ds_and_validate(ds_id, key, 'post')
+        if not isinstance(ds, DataStream):
+            error_string += '\n' + ds + '\n'
+        else:
+            try:
+                insert_reading(ds, raw_sensor_value, timestamp)
+                insertion_successes += 1
+            except SensorReadingCollision as e:
+                error_string += '\n' + str(e) + '\n'
 
     #Give a message based on number of insertions, attempts, errors etc
     if(error_string is '' and insertion_attempts != 0):

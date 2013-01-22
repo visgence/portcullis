@@ -1,7 +1,7 @@
 #System Imports
 from django.db import models
 from django.contrib.auth.models import User
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 
 # Local Imports
 from graphs.data_reduction import reduction_type_choices
@@ -12,6 +12,7 @@ class PortcullisUser(User):
     '''
     # TODO: Add custom user fields/methods
 
+    # This method needs to be removed and replaced with the DataStream.canRead()
     def can_read_stream(self, stream):
         '''The user instance has read permission on the given data stream.
         ' Keyword args:
@@ -94,6 +95,46 @@ class DataStreamManager(models.Manager):
 
     def get_writable_by_key(self, key):
         return DataStream.objects.filter(can_post = key)
+
+    def get_ds_and_validate(self, ds_id, obj, perm = 'read'):
+        '''
+        ' Return a DataStream that corresponds to the datastream id given if the obj has
+        ' the specified permision.
+        '
+        ' Keyword args:
+        '   ds_id - DataStream Id of the datastream wanted.  For purposes of backwards compatibility
+        '           this can also be a tuple of (node_id, port_id).
+        '   obj - The object asking for permission.  Should either be a Key or PorcullisUser.
+        '   perm - The permission wanted.  Current valid options are 'read' and 'post'.
+        '''
+        if isinstance(ds_id, tuple):
+            try:
+                # If that fails, try the node/port combination.  This is for backwards compatability,
+                # but since these fields are not unique together, it is dangerous.
+                ds = DataStream.objects.get(node_id = ds_id[0], port_id = ds_id[1])
+            except ObjectDoesNotExist:
+                return 'Invalid node/port combination.'
+            except MultipleObjectsReturned:
+                return 'Multiple Objects Returned.  Node/Port are no longer unique together.  ' +
+                                    'Please use a DataStream id.'
+
+        else:
+            try:
+                # First try to use the datastream_id
+                ds = DataStream.objects.get(id = ds_id)
+            except ObjectDoesNotExist:
+                return 'Invalid DataStream!'
+
+        if perm == 'read':
+            if not ds.canRead(obj)):
+                return '%s cannot read this DataStream!' % str(obj)
+        elif perm == 'post':
+            if not ds.canPost(obj)):
+                return '%s cannot post to this DataStream' % str(obj)
+        else:
+            return '%s is an invalid permission type.' % str(perm)
+            
+        return ds
 
 class DataStream(models.Model):
     node_id = models.IntegerField(null=True, blank=True)
