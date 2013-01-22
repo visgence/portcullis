@@ -173,8 +173,11 @@ def add_reading_bulk(request):
                 if(stream_info['error']):
                     error_string += stream_info['error'] 
                 else:
-                    insert_reading(stream_info['datastream'], raw_sensor_value)
-                    insertion_successes += 1
+                    try:
+                        insert_reading(stream_info['datastream'], raw_sensor_value)
+                        insertion_successes += 1
+                    except SensorReadingCollision:
+                        error_string += '\nSensorReadingCollision.\n'
             else:
                 error_string += "\nNot enough info to uniquely identify a data stream.You must give both a node_id and a port_id.\n "
 
