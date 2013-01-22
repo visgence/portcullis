@@ -135,6 +135,16 @@ class SensorReading(models.Model):
     def __unicode__(self):
         return self.datastream.name + ", Value: %s," % self.value + " Date Entered: %s" % self.timestamp
 
+
+#Place holder model to expand when we support more widgets than just graphs.
+class SavedWidget(models.Model):
+    pass
+
+
+class SavedView(models.Model):
+    key = models.ForeignKey(Key, primary_key=True)
+    widget = models.ManyToManyField(SavedWidget)
+
 '''
 class Organization(models.Model):
     name = models.CharField(max_length=64)
