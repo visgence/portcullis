@@ -16,7 +16,11 @@
             Hello {{user.first_name}} {{user.last_name}} (<a href="/portcullis/logout/">logout</a>)
             {% endif %}
         </div><!--end greeting-->
-        
+        <div id="header">
+            <a href="/" title="Return to Portcullis home page.">
+                <img id="header_image" src="{{STATIC_URL}}branding/header.png"/>
+            </a>
+        </div>
         <div class="content">
             {% block content %} {%endblock%}
         </div>
