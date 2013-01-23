@@ -1,30 +1,27 @@
 #System Imports
 from django.db import models
+from django.db.models import Q
 from django.contrib.auth.models import User
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
+from django.utils import timezone
+from base64 import urlsafe_b64encode as b64encode
+import hashlib
+import random
+import string
+from datetime import timedelta
 
 # Local Imports
 from graphs.data_reduction import reduction_type_choices
 
 class PortcullisUser(User):
+    '''
+    ' The class that defines users of the system.
+    '''
     # TODO: Add custom user fields/methods
 
-    def can_read_stream(self, stream):
-        '''The user instance has read permission on the given data stream.
-        ' Keyword args:
-        '  stream - The DataStream object checking permission for.
-        '''
-        if stream.is_public:
-            return True
+    pass
 
-        if self == stream.owner:
-            return True
-        
-        if self in stream.can_read.values_list('owner'):
-            return True
     
-        return False;
-
 class ScalingFunctionManager(models.Manager):
     def get_by_natural_key(self, name):
         return self.get(name = name)
@@ -40,11 +37,52 @@ class ScalingFunction(models.Model):
 
 
 class KeyManager(models.Manager):
-    def validate(self, key):
+    def validate(self, token):
+        # TODO: decide whether or not to keep this method, or to replace it (within other validation)
+        # also whether to return different kinds of errors/etc.
         try:
-            return Key.objects.get(key = key)
+            key = Key.objects.get(key = token)
         except ObjectDoesNotExist:
             return None
+
+        if key.isCurrent():
+            key.use()
+            return key
+        return None
+
+    def generateKey(self, user, description = '', expiration = None, uses = -1, readL = None, postL = None):
+        '''
+        ' Create a new (hopefully) unique key for the specified user, and return it.
+        '
+        ' Keyword Arguments:
+        '  user - The PortcullisUser to create this key for.
+        '  description - Short description of the purpose of this key.
+        '  expiration - Datetime object that determines when this key is no longer valid.
+        '               the default is None, which means it does not have an expiration date.
+        '  uses - The number of times this key can be used before it expires.  0 means this key has no
+        '         more uses.  -1 means it has infinite uses.  The default is -1.
+        '  readL - The list of DataStream (or possibly other) objects that can be read with this key.
+        '          The default is None.
+        '  postL - The list of DataStream (or other) objects that can be posted to with this key.
+        '          The default is None.
+        '''
+        md5 = hashlib.md5()
+        randomStr = ''.join(random.choice(string.printable) for x in range(20))
+        md5.update(str(timezone.now()))
+        md5.update(user.username)
+        md5.update(randomStr)
+        token = b64encode(md5.digest())
+        key = Key.objects.create(key=token, owner=user, description = description, expiration=expiration, num_uses = uses)
+
+        if readL is not None:
+            for ds in readL:
+                ds.can_read.add(key)
+
+        if postL is not None:
+            for ds in postL:
+                ds.can_post.add(key)
+
+        return key
 
 class Key(models.Model):
     key = models.CharField(primary_key=True, max_length=1024)
@@ -55,9 +93,27 @@ class Key(models.Model):
     objects = KeyManager()
 
 
+    def isCurrent(self):
+        '''
+        ' Check expiration, return True if this key is current, false if expired.
+        ' There are 2 types of expiration.  The first is date.  The current date must be earlier than
+        ' the expiration date.  The other is the number of uses.  The number of uses must be nonzero.
+        ' A null expiration does not expire by date.
+        '''
+        if (self.expiration is None or timezone.now() < self.expiration) and self.num_uses != 0:
+            return True
+        return False
+
+    def use(self):
+        '''
+        ' When a key is used, decrement its num_uses by 1.
+        '''
+        if self.num_uses > 0:
+            self.num_uses -= 1
+            self.save()
 
     def __unicode__(self):
-        return self.key + " Owned by %s" + self.owner.username
+        return self.key + " Owned by " + self.owner.username
 
 
 
@@ -85,11 +141,49 @@ class Device(models.Model):
 class DataStreamManager(models.Manager):
 
     def get_writable_by_device(self, device):
-        return DataStream.objects.filter(can_write = device.key)
+        return DataStream.objects.filter(can_post = device.key)
 
     def get_writable_by_key(self, key):
-        device = Device.objects.get_by_key(key)
-        return DataStream.objects.filter(can_write = device.key)
+        return DataStream.objects.filter(can_post = key)
+
+    def get_ds_and_validate(self, ds_id, obj, perm = 'read'):
+        '''
+        ' Return a DataStream that corresponds to the datastream id given if the obj has
+        ' the specified permision.
+        '
+        ' Keyword args:
+        '   ds_id - DataStream Id of the datastream wanted.  For purposes of backwards compatibility
+        '           this can also be a tuple of (node_id, port_id).
+        '   obj - The object asking for permission.  Should either be a Key or PorcullisUser.
+        '   perm - The permission wanted.  Current valid options are 'read' and 'post'.
+        '''
+        if isinstance(ds_id, tuple):
+            try:
+                # If that fails, try the node/port combination.  This is for backwards compatability,
+                # but since these fields are not unique together, it is dangerous.
+                ds = DataStream.objects.get(node_id = ds_id[0], port_id = ds_id[1])
+            except ObjectDoesNotExist:
+                return 'Invalid node/port combination.'
+            except MultipleObjectsReturned:
+                return 'Multiple Objects Returned.  Node/Port are no longer unique together.  Please use a DataStream id.'
+
+        else:
+            try:
+                # First try to use the datastream_id
+                ds = DataStream.objects.get(id = ds_id)
+            except ObjectDoesNotExist:
+                return 'Invalid DataStream!'
+
+        if perm == 'read':
+            if not ds.canRead(obj):
+                return '%s cannot read this DataStream!' % str(obj)
+        elif perm == 'post':
+            if not ds.canPost(obj):
+                return '%s cannot post to this DataStream' % str(obj)
+        else:
+            return '%s is an invalid permission type.' % str(perm)
+            
+        return ds
 
 class DataStream(models.Model):
     node_id = models.IntegerField(null=True, blank=True)
@@ -116,7 +210,63 @@ class DataStream(models.Model):
     def __unicode__(self):
         return "Stream_ID: %s" % self.id  + " Node: %s," % self.node_id + " Port: %s," % self.port_id + " Name: " + self.name
 
+    def canRead(self, obj):
+        '''
+        ' Return True if the obj has permission to read this DataStream, False otherwise.
+        '
+        ' Keyword args:
+        '    obj - The object to check for permission to read for.
+        '          Any object can read a public datastream.
+        '          Providing a key in the can_read M2M field will return true.
+        '          Providing a PortcullisUser that either owns the datastream or
+        '           owns a key that is in the can_read M2M field will return true.
+        '          Returns false otherwise.
+        '''
+        if self.is_public == True:
+            return True
 
+        if isinstance(obj, PortcullisUser):
+            if obj == self.owner:
+                return True
+            elif obj.id in self.can_read.filter( (Q(expiration__gt = timezone.now()) | Q(expiration = None)) &
+                                                ~Q(num_uses = 0) ).values_list('owner', flat = True):
+                return True
+        
+        if isinstance(obj, Key):
+            if obj.isCurrent():
+                return obj in self.can_read.all()
+            else:
+                return False
+
+        return False
+
+    def canPost(self, obj):
+        '''
+        ' Return True if the obj has permission to post to this DataStream, False otherwise.
+        '
+        ' Keyword args:
+        '    obj - The object to check for permission to post for.
+        '          Providing a key in the can_post M2M field will return true.
+        '          Providing a PortcullisUser that either owns the datastream or
+        '           owns a key that is in the can_post M2M field will return true.
+        '          Returns false otherwise.
+        '''
+        if isinstance(obj, PortcullisUser):
+            if obj == self.owner:
+                return True
+            elif obj.id in self.can_post.filter( (Q(expiration__gt = timezone.now()) | Q(expiration = None)) &
+                                                ~Q(num_uses = 0) ).values_list('owner', flat = True):
+                return True
+            else:
+                return False
+        
+        if isinstance(obj, Key):
+            if obj.isCurrent():
+                return obj in self.can_post.all()
+            else:
+                return False
+            
+        return False
     
 class SensorReading(models.Model):
     id = models.CharField(primary_key=True,max_length=32)
@@ -134,6 +284,16 @@ class SensorReading(models.Model):
 
     def __unicode__(self):
         return self.datastream.name + ", Value: %s," % self.value + " Date Entered: %s" % self.timestamp
+
+
+#Place holder model to expand when we support more widgets than just graphs.
+class SavedWidget(models.Model):
+    pass
+
+
+class SavedView(models.Model):
+    key = models.ForeignKey(Key, primary_key=True)
+    widget = models.ManyToManyField(SavedWidget)
 
 '''
 class Organization(models.Model):

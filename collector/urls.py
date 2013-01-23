@@ -4,4 +4,5 @@ urlpatterns = patterns('collector.views',
     url(r'^add_reading/$','data_loader.add_reading'),
     url(r'^add_reading_bulk/$','data_loader.add_reading_bulk'),
     url(r'^add_reading_bulk_hash/$','data_loader.add_reading_bulk_hash'),
+    url(r'^addList/$', 'data_loader.add_list'),
 )
