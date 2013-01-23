@@ -4,6 +4,7 @@ from django.db.models import Q
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.utils import timezone
+from base64 import urlsafe_b64encode as b64encode
 import hashlib
 import random
 import string
@@ -70,8 +71,8 @@ class KeyManager(models.Manager):
         md5.update(str(timezone.now()))
         md5.update(user.username)
         md5.update(randomStr)
-        token = md5.digest().encode('base64_codec')
-        key = Key.objects.create(key=token, owner=user, expiration=expiration, num_uses = uses)
+        token = b64encode(md5.digest())
+        key = Key.objects.create(key=token, owner=user, description = description, expiration=expiration, num_uses = uses)
 
         if readL is not None:
             for ds in readL:
