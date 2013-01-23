@@ -1,10 +1,6 @@
-{% extends "base.html" %}
-
-{%block content%}
-<script language="javascript" type="text/javascript" src="/static/js/checkbox.js"></script>
+<script language="javascript" type="text/javascript" src="{{STATIC_URL}}js/checkbox.js"></script>
 
 <form action="/graphs/" >
-
     {% if owned_streams %}
         <b> My Streams</b> </br>
         <!-- Create a checkbox for each datastream owned by this user-->
@@ -14,12 +10,12 @@
         <input type="checkbox" onClick="checkOwned(this)" /> Check All <br>
 
     {% endif %}
-
+    
     {% if viewable_streams%}
         <b>Viewable Streams</b> </br>
         <!-- Create a checkbox for each public datastream -->
         {% for stream in viewable_streams%}
-            <input type="checkbox" name="view" class="stream" value="{{stream.id}}" /> {{stream.name}} <br>
+             <input type="checkbox" name="view" class="stream" value="{{stream.id}}" /> {{stream.name}} <br>
         {% endfor %}
         <input type="checkbox" onClick="checkView(this)" /> Check All <br>
     {% endif %}
@@ -30,14 +26,10 @@
         {% for stream in public_streams%}
             <input type="checkbox" name="public" class="stream" value="{{stream.id}}" /> {{stream.name}} <br>
         {% endfor %}
-        <input type="checkbox" onClick="checkPublic(this)" /> Check All <br>
+         <input type="checkbox" onClick="checkPublic(this)" /> Check All <br>
 
-    {% endif %}
+     {% endif %}
 
     </br>
-
     <input type="submit" value="Submit"/>
 </form>
-
-{%endblock%}
-

@@ -28,9 +28,13 @@ def user_streams(request):
         public_streams = DataStream.objects.filter(is_public = True).exclude(id__in=viewable_streams).exclude(id__in=owned_streams)
 
 
-        t = loader.get_template('user_streams.html')
-        c = RequestContext(request, {'user':request.user,'owned_streams':owned_streams, 'public_streams':public_streams,'viewable_streams':viewable_streams})
-        c.update(csrf(request))
-        return HttpResponse(t.render(c))
+        streams_page = loader.get_template('user_streams.html')
+        streams_context = RequestContext(request, {'user':request.user,'owned_streams':owned_streams, 'public_streams':public_streams,'viewable_streams':viewable_streams})
+        streams_context.update(csrf(request))
+
+        main_page = loader.get_template('main_page.html')
+        main_context = RequestContext(request, {'user_streams': streams_page.render(streams_context)})
+
+        return HttpResponse(main_page.render(main_context))
 
 
