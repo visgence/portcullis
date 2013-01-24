@@ -49,33 +49,33 @@ function reset_graph_selection(datastream_id)
     $('#selected_time_'+datastream_id).text("");
 }
 
-//On load function will search for any 'portcullis-graph' divs on the page.
-$("document").ready(function ()
+/// This method should be called when graphs are loaded.
+function on_graphs_load()
 {
     if(!$("#granularity").val()) 
         get_granularity()
  
     //Find all portcullis graph divs
-    divs = $(".portcullis-graph");
+    $(".portcullis-graph").each(function(i) {
 
-    //bind each one
-    for (var i = 0; i < divs.length; i++) 
-    {
-        var datastream_id = divs[i].id;
-
+        var datastream_id = this.id;
+        
         //bind main graphs
         $("#sensor" + datastream_id).bind("plotselected",create_plot_select_handler(datastream_id));
         $("#sensor" + datastream_id).bind("plotclick",create_plot_click_handler(datastream_id));
          
         //bind  overview graph 
         $("#overview" + datastream_id).bind("plotselected",create_plot_select_handler(datastream_id));
-    }//end for
+
+        // setup the download link.
+        setupDownload(this.id);
+    });
 
     //Creating range object for query
     //var ranges = { xaxis: { from: epoch_start, to: epoch_end }};
     loadAllGraphs(getRanges());    
     update_link();
-});//end on_load
+}
 
 
 function modify_date(date, date_range, subtract) {
@@ -328,7 +328,6 @@ function graph_overview_callback(ranges) {
 }
 
 function loadGraph(datastream_id, granularity, ranges, callback) {
-    console.log("I'm trying to load a graph.");
     var getData = new Object();
     getData['start'] = Math.round(ranges.xaxis.from/1000 + timezone_offset/1000);
     getData['end'] = Math.round(ranges.xaxis.to/1000 + timezone_offset/1000);
@@ -479,6 +478,7 @@ function update_link()
                                            "&end="+end.toLocaleString()+
                                    "&granularity="+get_granularity() + streams);
 }//end update_link
+
 
 function setupDownload(datastreamId)
 {

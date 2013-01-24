@@ -1,13 +1,3 @@
-<script type="text/javascript" src="{{STATIC_URL}}js/flot/jquery.flot.min.js"></script>
-<script type="text/javascript" src="{{STATIC_URL}}js/flot/jquery.flot.selection.min.js"></script>
-<script type="text/javascript" src="{{STATIC_URL}}js/jquery.flot.axislabels.js"></script>
-
-<script type="text/javascript" src="{{STATIC_URL}}js/downloadify.min.js"></script>
-<script type="text/javascript" src="{{STATIC_URL}}js/swfobject.js"></script>
-
-<script type="text/javascript" src="{{STATIC_URL}}js/plotter.js"></script>
-<script type="text/javascript" src="/graphs/scaling_functions.js/"></script>
-
 <link rel="stylesheet" media="all" type="text/css" href="{{STATIC_URL}}css/display_nodes.css" />
 
 <h1> Sensor Readings</h1>
@@ -115,9 +105,10 @@
             <p id="downloadify{{stream.id}}"><!--Place holder for download button--></p>
         </div>
         
-        <script>
-            setupDownload("{{stream.id}}");
-        </script>
     </div><!--End graph_container_id -->
     {% endfor %}
+    <script>
+        //On load function will search for any 'portcullis-graph' divs on the page.
+        $("document").ready(on_graphs_load())
+    </script>
 </div><!--End graph_container -->
