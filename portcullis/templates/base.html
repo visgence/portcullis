@@ -7,16 +7,12 @@
         <script type="text/javascript" src="{{STATIC_URL}}js/jquery-ui-sliderAccess.js"></script>
 
         <script type="text/javascript" src="{{STATIC_URL}}js/date_picker.js"></script>
+        <script type="text/javascript" src="{{STATIC_URL}}js/login.js"></script>
 
         <link rel="stylesheet" media="all" type="text/css" href="{{STATIC_URL}}css/ui-lightness/jquery-ui-1.7.3.custom.css" />
         <link rel="stylesheet" media="all" type="text/css" href="{{STATIC_URL}}css/base.css" />
     </head>
     <body>
-        <div id="greeting">
-            {% if user.first_name %}
-            Hello {{user.first_name}} {{user.last_name}} (<a href="/portcullis/logout/">logout</a>)
-            {% endif %}
-        </div><!--end greeting-->
         <div id="header">
             <img id="header_image" src="{{STATIC_URL}}branding/header.png" usemap="#visgence_map"/>
             <map name="visgence_map">

@@ -3,8 +3,6 @@
     border: 2px solid black;
     height: 90%;
     width: 25em;
-    padding-left: 1em;
-    padding-top: 1em;
     position: absolute;
     top: 0;
     left: 0;
@@ -14,11 +12,26 @@
 {
     border: 2px solid black;
     height: 90%;
-    width: 72.5em;
+    width: 73.5em;
     padding-left: 1em;
     padding-top: 1em;
     position: absolute;
     top: 0;
     right: 0;
     overflow: scroll;
+}
+
+#greeting
+{
+    border-bottom: 1px solid black;
+    text-align:center;
+    height: 118px;
+    margin-top: auto;
+    margin-bottom: auto;
+}
+
+#login
+{
+    margin-top: 1em;
+    margin-bottom: 1em;
 }
