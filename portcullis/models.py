@@ -45,12 +45,29 @@ class KeyManager(models.Manager):
         except ObjectDoesNotExist:
             return None
 
+        key.use()
         if key.isCurrent():
-            key.use()
             return key
         return None
 
-    def generateKey(self, user, description = '', expiration = None, uses = -1, readL = None, postL = None):
+
+    def genKeyHash(self, username = ''):
+        '''
+        ' return a hashed string to use for a key
+        '
+        ' Keyword arg:
+        '   username - The user, if available, this string is for.  Does not have to be a
+        '              username, can be any string.
+        '''
+        md5 = hashlib.md5()
+        randomStr = ''.join(random.choice(string.printable) for x in range(20))
+        md5.update(str(timezone.now()))
+        md5.update(username)
+        md5.update(randomStr)
+        return b64encode(md5.digest())
+
+
+    def generateKey(self, user, description = '', expiration = None, uses = None, readL = None, postL = None):
         '''
         ' Create a new (hopefully) unique key for the specified user, and return it.
         '
@@ -60,19 +77,16 @@ class KeyManager(models.Manager):
         '  expiration - Datetime object that determines when this key is no longer valid.
         '               the default is None, which means it does not have an expiration date.
         '  uses - The number of times this key can be used before it expires.  0 means this key has no
-        '         more uses.  -1 means it has infinite uses.  The default is -1.
+        '         more uses.  None means it has infinite uses.  The default is None.
         '  readL - The list of DataStream (or possibly other) objects that can be read with this key.
         '          The default is None.
         '  postL - The list of DataStream (or other) objects that can be posted to with this key.
         '          The default is None.
         '''
-        md5 = hashlib.md5()
-        randomStr = ''.join(random.choice(string.printable) for x in range(20))
-        md5.update(str(timezone.now()))
-        md5.update(user.username)
-        md5.update(randomStr)
-        token = b64encode(md5.digest())
-        key = Key.objects.create(key=token, owner=user, description = description, expiration=expiration, num_uses = uses)
+
+        token = self.genKeyHash(user.username)
+        key = Key.objects.create(key=token, owner=user, description=description,
+                                 expiration=expiration, num_uses=uses)
 
         if readL is not None:
             for ds in readL:
@@ -85,7 +99,7 @@ class KeyManager(models.Manager):
         return key
 
 class Key(models.Model):
-    key = models.CharField(primary_key=True, max_length=1024)
+    key = models.CharField(primary_key=True, max_length=1024, blank = True)
     description = models.TextField(blank = True)
     owner = models.ForeignKey(PortcullisUser)
     expiration = models.DateTimeField(null = True, blank = True)
@@ -100,7 +114,8 @@ class Key(models.Model):
         ' the expiration date.  The other is the number of uses.  The number of uses must be nonzero.
         ' A null expiration does not expire by date.
         '''
-        if (self.expiration is None or timezone.now() < self.expiration) and self.num_uses != 0:
+        if ((self.expiration is None or timezone.now() < self.expiration) and
+            (self.num_uses is None or self.num_uses >= 0)):
             return True
         return False
 
@@ -108,9 +123,14 @@ class Key(models.Model):
         '''
         ' When a key is used, decrement its num_uses by 1.
         '''
-        if self.num_uses > 0:
+        if self.num_uses >= 0:
             self.num_uses -= 1
             self.save()
+
+    def save(self, *args, **kwargs):
+        if self.key is None or self.key == '':
+            self.key = Key.objects.genKeyHash('generic_user')
+        super(Key, self).save(*args, **kwargs)
 
     def __unicode__(self):
         return self.key + " Owned by " + self.owner.username
@@ -229,7 +249,8 @@ class DataStream(models.Model):
             if obj == self.owner:
                 return True
             elif obj.id in self.can_read.filter( (Q(expiration__gt = timezone.now()) | Q(expiration = None)) &
-                                                ~Q(num_uses = 0) ).values_list('owner', flat = True):
+                                                (Q(num_uses__gt = 0) | Q(num_uses = None))
+                                                 ).values_list('owner', flat = True):
                 return True
         
         if isinstance(obj, Key):
@@ -255,7 +276,8 @@ class DataStream(models.Model):
             if obj == self.owner:
                 return True
             elif obj.id in self.can_post.filter( (Q(expiration__gt = timezone.now()) | Q(expiration = None)) &
-                                                ~Q(num_uses = 0) ).values_list('owner', flat = True):
+                                                (Q(num_uses__gt = 0) | Q(num_uses = None) )
+                                                 ).values_list('owner', flat = True):
                 return True
             else:
                 return False
