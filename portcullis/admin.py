@@ -38,10 +38,14 @@ class SensorReadingAdmin(admin.ModelAdmin):
     def dataStream(self, obj):
         return 'ID %d: %s' % (obj.datastream.id, obj.datastream.name)
 
+class KeyAdmin(admin.ModelAdmin):
+    list_display = ('key', 'owner', 'description', 'expiration', 'num_uses')
+    list_filter = ('owner', 'expiration')
+
 admin.site.register(PortcullisUser)
 admin.site.register(DataStream, DataStreamAdmin)
 admin.site.register(SensorReading, SensorReadingAdmin)
 admin.site.register(ScalingFunction)
 #admin.site.register(Organization, OrganizationAdmin)
 admin.site.register(Device)
-admin.site.register(Key)
+admin.site.register(Key, KeyAdmin)
