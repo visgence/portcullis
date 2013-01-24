@@ -1,12 +1,13 @@
 #System Imports
 from django.template import RequestContext
-from django.http import HttpResponse
+from django.http import HttpResponse, Http404
 from django.template import Context, loader
 from django.contrib.auth import authenticate, login, logout
 from django.core import serializers
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render
-import json
+try: import simplejson as json
+except ImportError: import json
 
 #Local Imports
 from portcullis.models import DataStream, SensorReading, PortcullisUser, ScalingFunction
@@ -102,60 +103,64 @@ def render_graph(request):
     '''
     Takes a single datastream id and a time frame and generates json for the data.
     '''
+    jsonData = request.REQUEST.get('json_data', None)
+    if jsonData is None:
+        raise Http404
+
+    jsonData = json.loads(jsonData)
+
+    start = jsonData['start']
+    end = jsonData['end']
+    datastream_id = jsonData['datastream_id']
+    granularity = jsonData['granularity']
+    total_time = end - start
+    stream_data = []
+
+    reduction_type = request.GET.get('reduction', 'mean')
+    if reduction_type is None or reduction_type == '':
+        reduction_type = 'mean'
+
+    try:
+        portcullisUser = request.user.portcullisuser
+    except ObjectDoesNotExist:
+        portcullisUser = None
+
+    # Get DataStream if it exists and we have permission
+    stream_info = DataStream.objects.get_ds_and_validate(datastream_id, portcullisUser, 'read')
     
-    if(request.method == 'GET'):
-        start = int(request.GET.get('start'))
-        end = int(request.GET.get('end'))
-        datastream_id = int(request.GET.get('datastream_id'))
-        granularity = int(request.GET.get('granularity'))
-        total_time = end - start
-        stream_data = []
+    if not isinstance(stream_info, DataStream):
+        print 'User verification failed: ' + stream_info
+        data = {'data':[],
+                'permission':       False,
+                'label':            stream_info,
+                "datastream_id":    datastream_id,
+                }
+        return HttpResponse(json.dumps(data), mimetype='application/json')                  
 
-        reduction_type = request.GET.get('reduction', 'mean')
-        if reduction_type is None or reduction_type == '':
-            reduction_type = 'mean'
+    stream_info.permission = "true"
+    
+    #These fields could be used for graph settings client-side
+    stream_info.xmin = start
+    stream_info.xmax = end
 
-        try:
-            portcullisUser = request.user.portcullisuser
-        except ObjectDoesNotExist:
-            portcullisUser = None
+    
+    #Pull the data for this stream
+    #Check if there are less points in timeframe then granularity
+    readings = SensorReading.objects.filter(timestamp__gte = start, timestamp__lte = end, datastream = datastream_id).order_by('timestamp')
+    numReadings = readings.count()
 
-        # Get DataStream if it exists and we have permission
-        stream_info = DataStream.objects.get_ds_and_validate(datastream_id, portcullisUser, 'read')
+    if(numReadings < granularity):
+        #loop through and add all points to data
+        data = [ [x.timestamp,float(x.value)] for x in readings ]
 
-        if not isinstance(stream_info, DataStream):
-            print 'User verification failed: ' + stream_info
-            data = {'data':[],
-                    'permission':       False,
-                    'label':            stream_info,
-                    "datastream_id":    datastream_id,
-                    }
-            return HttpResponse(json.dumps(data), mimetype='application/json')                  
+    else:
+        data = reduceData(list(readings.values_list('timestamp', 'value')), granularity, reduction_type)
 
-        stream_info.permission = "true"
+    stream_info.num_readings = numReadings
+    stream_info.data = data
+    json_data = to_json(stream_info)
 
-        #These fields could be used for graph settings client-side
-        stream_info.xmin = start
-        stream_info.xmax = end
-
-
-        #Pull the data for this stream
-        #Check if there are less points in timeframe then granularity
-        readings = SensorReading.objects.filter(timestamp__gte = start, timestamp__lte = end, datastream = datastream_id).order_by('timestamp')
-        numReadings = readings.count()
-
-        if(numReadings < granularity):
-            #loop through and add all points to data
-            data = [ [x.timestamp,float(x.value)] for x in readings ]
-
-        else:
-            data = reduceData(list(readings.values_list('timestamp', 'value')), granularity, reduction_type)
-
-        stream_info.num_readings = numReadings
-        stream_info.data = data
-        json_data = to_json(stream_info)
-
-        return HttpResponse(json_data, mimetype='application/json')
+    return HttpResponse(json_data, mimetype='application/json')
 
         
 def to_json(stream):

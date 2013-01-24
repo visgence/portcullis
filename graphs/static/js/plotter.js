@@ -327,18 +327,17 @@ function graph_overview_callback(ranges) {
     }
 }
 
-function loadGraph(datastream_id, granularity, ranges, callback) { 
-    $.ajax(    
-        {
-            url:"/graphs/render_graph/?json=true&start=" + Math.round(ranges.xaxis.from/1000 + timezone_offset/1000) + 
-                "&end=" + Math.round(ranges.xaxis.to/1000 + timezone_offset/1000) + 
-                "&granularity=" + granularity + 
-                "&datastream_id=" + datastream_id +
-                "&reduction=" + $('#reduction_select_' + datastream_id).val(),
-            method: 'GET',
-            dataType: 'json',
-            success: callback
-        });
+function loadGraph(datastream_id, granularity, ranges, callback) {
+    console.log("I'm trying to load a graph.");
+    var getData = new Object();
+    getData['start'] = Math.round(ranges.xaxis.from/1000 + timezone_offset/1000);
+    getData['end'] = Math.round(ranges.xaxis.to/1000 + timezone_offset/1000);
+    getData['granularity'] =  granularity;
+    getData['datastream_id'] = datastream_id;
+    getData['reduction'] = $('#reduction_select_' + datastream_id).val();
+
+    json_data = JSON.stringify(getData);
+    $.get("/graphs/render_graph/", {'json_data': json_data}, callback);
 }
 
 function renderGraph(data, ranges, shouldScale)
@@ -483,7 +482,7 @@ function update_link()
 
 function setupDownload(datastreamId)
 {
-        $('#downloadify'+datastreamId).downloadify({
+    $('#downloadify'+datastreamId).downloadify({
         filename: function(){
             return 'datastream_'+datastreamId+'\.csv'; 
         },
