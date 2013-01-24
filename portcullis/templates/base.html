@@ -17,9 +17,10 @@
             {% endif %}
         </div><!--end greeting-->
         <div id="header">
-            <a href="/" title="Return to Portcullis home page.">
-                <img id="header_image" src="{{STATIC_URL}}branding/header.png"/>
-            </a>
+            <img id="header_image" src="{{STATIC_URL}}branding/header.png" usemap="#visgence_map"/>
+            <map name="visgence_map">
+                <area shape="rect" href="/" coords="60, 15, 320, 160" title="Go back to Portcullis home page."/>
+            </map>
         </div>
         
         <div class="content">

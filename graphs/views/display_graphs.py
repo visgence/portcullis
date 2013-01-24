@@ -29,12 +29,14 @@ def display_graphs(request):
         return response
 
     if(request.method == 'GET'):
-        node = request.GET.get('node')
-        port = request.GET.get('port')
-        start = request.GET.get('start', '')
-        end = request.GET.get('end', '')
-        granularity = request.GET.get('granularity', '')
-        show_public= request.GET.get('show_public')
+        json_data = json.loads(request.GET['json_data'])
+       
+        node = json_data.get('node', '')
+        port = json_data.get('port', '')
+        start = json_data.get('start', '')
+        end = json_data.get('end', '')
+        granularity = json_data.get('granularity', '')
+        show_public= json_data.get('show_public', '')
 
         data = {
             'granularity':granularity,
@@ -46,28 +48,29 @@ def display_graphs(request):
         
         if(granularity != ''):
             data['granularity'] = int(granularity)
-
+        
         #Grab all read-able streams
-        if(request.GET.getlist('view')):
-            for stream in request.GET.getlist('view'):
+        if(len(json_data['view']) > 0):
+            for stream in json_data['view']:
                 data['streams'] = data['streams'] | DataStream.objects.filter(id = stream) 
 
         #Grab all owned streams by this user
-        if(request.GET.getlist('owned')):
-            for stream in request.GET.getlist('owned'):
+        if(len(json_data['owned']) > 0):
+            for stream in json_data['owned']:
                 data['streams'] = data['streams'] | DataStream.objects.filter(id = stream) 
 
         #Grab all public streams
-        if(request.GET.getlist('public')):
-            for stream in request.GET.getlist('public'):
+        if(len(json_data['public']) > 0):
+            for stream in json_data['public']:
                 data['streams'] = data['streams'] | DataStream.objects.filter(id = stream) 
-
-        #TODO: Pull shared streams if the user requested them
 
         #It's possible for this to be empty so check then order the streams and return them
         if(data['streams']):
             data['streams'] = data['streams'].order_by('node_id', 'port_id', 'id')
-            return render(request,'display_nodes.html', data, context_instance=RequestContext(request))        
+            t = loader.get_template('display_nodes.html')
+            c = RequestContext(request, data)
+            #response = { "graphs": t.render(c) }
+            return HttpResponse(json.dumps(t.render(c)),mimetype="application/json")
 
         #If we have a node or node/port pair then pull streams for those otherwise pull streams
         if(node != None and port != None):
@@ -76,8 +79,11 @@ def display_graphs(request):
             data['streams'] = DataStream.objects.filter(node_id = int(node), can_read__owner = request.user)
         else:
             data['streams'] = DataStream.objects.filter(can_read__owner = request.user)
-        
-        return render(request,'display_nodes.html', data, context_instance=RequestContext(request))        
+      
+        t = loader.get_template('display_nodes.html')
+        c = RequestContext(request, data)
+        return json.dumps(t.render(c))
+        #return render(request,'display_nodes.html', data, context_instance=RequestContext(request))        
 
 
 def render_graph(request):

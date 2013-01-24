@@ -1,9 +1,31 @@
-#user_streams
+#main_page
+{
+    position: relative;
+    height: 100%;
+    width: 100em;;
+}
+
+#side_pane
 {
     border: 2px solid black;
     height: 100%;
-    width: 25%;
-    margin-top: 2em;
+    width: 25em;
     padding-left: 1em;
     padding-top: 1em;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+#content
+{
+    border: 2px solid black;
+    height: 100%;
+    width: 72.5em;
+    padding-left: 1em;
+    padding-top: 1em;
+    position: absolute;
+    top: 0;
+    right: 0;
+    overflow: scroll;
 }

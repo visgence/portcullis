@@ -3,12 +3,12 @@
 {% block content %}
 <link rel="stylesheet" media="all" type="text/css" href="{{STATIC_URL}}css/main_page.css" />
 
-<div id="user_streams">
-    {{user_streams}}
-</div>
+<div id="main_page">
+    <div id="side_pane">
+        {{side_pane}}
+    </div>
 
-<div id="content">
-    {{content}}
+    <div id="content"></div>
 </div>
 
 {% endblock content %}

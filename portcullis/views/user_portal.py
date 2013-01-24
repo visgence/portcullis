@@ -33,7 +33,7 @@ def user_streams(request):
         streams_context.update(csrf(request))
 
         main_page = loader.get_template('main_page.html')
-        main_context = RequestContext(request, {'user_streams': streams_page.render(streams_context)})
+        main_context = RequestContext(request, {'side_pane': streams_page.render(streams_context)})
 
         return HttpResponse(main_page.render(main_context))
 
