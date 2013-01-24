@@ -39,7 +39,31 @@
     width: 12em;
 }
 
+.controls_list
+{
+    margin-bottom: 1em;
+}
+
+#shared_graph_controls
+{
+    margin-left: 2em;
+    width: 600px;
+    position: absolute;
+}
+
+#graph_container
+{
+    position: relative;
+    margin-left: 8em;
+    margin-bottom: 3em;
+}
+
 /*********** Graphs ***********/
+
+#shared_graph_container
+{
+    margin-left: 700px;
+}
 
 .graph_container
 {

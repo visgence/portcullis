@@ -29,6 +29,26 @@ function create_plot_select_handler(datastream_id)
     } 
 }//end create_plot_select_handler
 
+function create_plot_click_handler(datastream_id) 
+{
+    return function (event, pos, item) {
+        if (item) {
+            var value = item['datapoint'][1];
+            var epoch = item['datapoint'][0];
+            var time = new Date(epoch + timezone_offset);
+
+            $('#selected_value_'+datastream_id).text(value);
+            $('#selected_time_'+datastream_id).text(time.toLocaleString());
+        }
+    };
+}
+
+function reset_graph_selection(datastream_id)
+{
+    $('#selected_value_'+datastream_id).text("");
+    $('#selected_time_'+datastream_id).text("");
+}
+
 //On load function will search for any 'portcullis-graph' divs on the page.
 $("document").ready(function ()
 {
@@ -45,7 +65,8 @@ $("document").ready(function ()
 
         //bind main graphs
         $("#sensor" + datastream_id).bind("plotselected",create_plot_select_handler(datastream_id));
-        
+        $("#sensor" + datastream_id).bind("plotclick",create_plot_click_handler(datastream_id));
+         
         //bind  overview graph 
         $("#overview" + datastream_id).bind("plotselected",create_plot_select_handler(datastream_id));
     }//end for
@@ -259,7 +280,10 @@ function zoom_graph(ranges, datastream_id)
             max: ranges.xaxis.to,
             ticks: 5
         },
-        selection: {mode: "x"}
+        selection: {mode: "x"},
+        grid: {
+            clickable: true
+        }
     };
 
     //plot the data that we receive
@@ -271,6 +295,8 @@ function zoom_graph(ranges, datastream_id)
         options.yaxis = {min:data.min_value, max:data.max_value, axisLabel: data.units};
         var plot =  plot_graph(data,options,"#sensor" + datastream_id);
         result.resolve(plot);//sent back for binding
+
+        reset_graph_selection(datastream_id);
     }//end on data_recieved
 
     //request data for the new timeframe
@@ -330,7 +356,10 @@ function renderGraph(data, ranges, shouldScale)
             max: ranges.xaxis.to,
             ticks: 5
         },
-        selection: {mode: "x"}
+        selection: {mode: "x"},
+        grid: {
+            clickable: true
+        }
     };
     
     //set the graphs title
@@ -417,6 +446,8 @@ function resetZoom(streamId)
         delete overviewData[0]['shadowSize'];
         renderGraph(overviewData[0], ranges, false);
     }
+
+    reset_graph_selection(streamId);
 }
 
 /*Responsible for keeping all graphs in sync (timewise) upon a date range
