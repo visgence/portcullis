@@ -50,6 +50,23 @@ class KeyManager(models.Manager):
             return key
         return None
 
+
+    def genKeyHash(self, username = ''):
+        '''
+        ' return a hashed string to use for a key
+        '
+        ' Keyword arg:
+        '   username - The user, if available, this string is for.  Does not have to be a
+        '              username, can be any string.
+        '''
+        md5 = hashlib.md5()
+        randomStr = ''.join(random.choice(string.printable) for x in range(20))
+        md5.update(str(timezone.now()))
+        md5.update(username)
+        md5.update(randomStr)
+        return b64encode(md5.digest())
+
+
     def generateKey(self, user, description = '', expiration = None, uses = None, readL = None, postL = None):
         '''
         ' Create a new (hopefully) unique key for the specified user, and return it.
@@ -66,13 +83,10 @@ class KeyManager(models.Manager):
         '  postL - The list of DataStream (or other) objects that can be posted to with this key.
         '          The default is None.
         '''
-        md5 = hashlib.md5()
-        randomStr = ''.join(random.choice(string.printable) for x in range(20))
-        md5.update(str(timezone.now()))
-        md5.update(user.username)
-        md5.update(randomStr)
-        token = b64encode(md5.digest())
-        key = Key.objects.create(key=token, owner=user, description = description, expiration=expiration, num_uses = uses)
+
+        token = self.genKeyHash(user.username)
+        key = Key.objects.create(key=token, owner=user, description=description,
+                                 expiration=expiration, num_uses=uses)
 
         if readL is not None:
             for ds in readL:
@@ -85,7 +99,7 @@ class KeyManager(models.Manager):
         return key
 
 class Key(models.Model):
-    key = models.CharField(primary_key=True, max_length=1024)
+    key = models.CharField(primary_key=True, max_length=1024, blank = True)
     description = models.TextField(blank = True)
     owner = models.ForeignKey(PortcullisUser)
     expiration = models.DateTimeField(null = True, blank = True)
@@ -112,6 +126,11 @@ class Key(models.Model):
         if self.num_uses >= 0:
             self.num_uses -= 1
             self.save()
+
+    def save(self, *args, **kwargs):
+        if self.key is None or self.key == '':
+            self.key = Key.objects.genKeyHash('generic_user')
+        super(Key, self).save(*args, **kwargs)
 
     def __unicode__(self):
         return self.key + " Owned by " + self.owner.username
