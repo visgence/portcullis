@@ -439,7 +439,6 @@ function update_link()
     var end = new Date($("#end").val());
     var streams = ''
 
-    //TODO find all graphs on this page and create share link
     divs = $(".portcullis-graph");
     for (var i = 0; i < divs.length; i++) 
     {

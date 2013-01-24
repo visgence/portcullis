@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block content %}
+<script type="text/javascript" src="{{STATIC_URL}}js/flot/jquery.flot.min.js"></script>
+<script type="text/javascript" src="{{STATIC_URL}}js/flot/jquery.flot.selection.min.js"></script>
+<script type="text/javascript" src="{{STATIC_URL}}js/jquery.flot.axislabels.js"></script>
+
+<script type="text/javascript" src="{{STATIC_URL}}js/downloadify.min.js"></script>
+<script type="text/javascript" src="{{STATIC_URL}}js/swfobject.js"></script>
+
+<script type="text/javascript" src="{{STATIC_URL}}js/plotter.js"></script>
+<script type="text/javascript" src="/graphs/scaling_functions.js/"></script>
+
+<link rel="stylesheet" media="all" type="text/css" href="{{STATIC_URL}}css/display_nodes.css" />
+
+<h1> Sensor Readings</h1>
+
+<h2 id="utc_stamp"></h2>
+
+<!-- Date range form -->
+<form class="date_form" >
+    {% csrf_token %}
+    
+    <div id="graph_page_controls">
+        <ul>
+            <li>
+                <b>Start Date</b>
+                <b class="range_text">Range Before End Date</b>
+            </li>
+            <li>
+                <input type="text" name ="start" id="start" value="{{start}}"/>
+                <input name="start_range" id="start_none" class="start_radio" type="radio" checked="checked" onchange="toggleDateRange(this, 'start', 'end_mutable');"/> 
+                <label for="start_none">None</label>
+                
+                <input name="start_range" id="start_day" class="start_radio start_mutable" type="radio" onchange="toggleDateRange(this, 'start', 'end_mutable');"/> 
+                <label for="start_day">One Day</label>
+                
+                <input name="start_range" id="start_week" class="start_radio start_mutable" type="radio" onchange="toggleDateRange(this, 'start', 'end_mutable');"/>
+                <label for="start_week">One Week</label>
+                
+                <input name="start_range" id="start_month" class="start_radio start_mutable" type="radio" onchange="toggleDateRange(this, 'start', 'end_mutable');"/>
+                <label for="start_month">One Month</label>
+            <li>
+                <b>End Date</b> 
+                <b class="range_text">Range After Start Date</b>
+            </li>
+            <li>
+                <input type="text" name ="end" id="end" value="{{end}}"/>
+                <input name="end_range" id="end_none" class="end_radio" type="radio" checked="checked" onchange="toggleDateRange(this, 'end', 'start_mutable');"/> 
+                <label for="end_none">None</label>
+
+                <input name="end_range" id="end_day" class="end_radio end_mutable" type="radio" onchange="toggleDateRange(this, 'end', 'start_mutable');"/> 
+                <label for="end_day">One Day</label>
+
+                <input name="end_range" id="end_week" class="end_radio end_mutable" type="radio" onchange="toggleDateRange(this, 'end', 'start_mutable');"/>
+                <label for="end_week">One Week</label>
+
+                <input name="end_range" id="end_month" class="end_radio end_mutable" type="radio" onchange="toggleDateRange(this, 'end', 'start_mutable');"/>
+                <label for="end_month">One Month</label>
+            </li>
+            <li>Number of datapoints: <input type="text" name = "granularity" id="granularity" value="{{granularity}}" /></li>
+        </ul>
+    </div>
+    
+    <input type="hidden" name = "to_epoch" value ="true" />
+    <input type="button" value="Submit" onClick="submit_form()" />
+</form>
+
+<a id="share_link" href="/" ></a>
+
+<!-- Create a placeholder for each datastream -->
+{% for stream in streams%}
+<div id="graph_container_{{stream.id}}" class="graph_container"> 
+    <b id = "graph_title{{stream.id}}" class="graph_title"> </b>
+    
+    <div id ="{{stream.id}}" class="portcullis-graph">
+        <div id="sensor{{stream.id}}" class="sensor_graph" ></div>
+        <div id="overview{{stream.id}}" class = "overview_graph"></div>
+    </div><!--end graph div-->
+    
+    <div id="{{stream.id}}_csv_container" style="display: none"><!--csv div-->
+        <textarea id="sensor{{stream.id}}_csv"></textarea>
+    </div><!--end csv div-->
+    
+    <div id="stream_data_container_{{stream.id}}" class="stream_data_container">
+        <ul>
+            <li>Node: {{stream.node_id}}</li>
+            <li>Port: {{stream.port_id}}</li>
+            <li>Data In Range: <span id="datapoints_{{stream.id}}"><!-- Hook for number of data points for given range--></span></li>
+            <li>Actual Data Shown: <span id="actual_datapoints_{{stream.id}}"><!-- Hook for number of data points for given graph--></span></li>
+        </ul>
+    </div>
+    
+    <div id="stream_controls_container_{{stream.id}}" class="stream_controls_container">
+        <input type="button" value="Zoom Reset" onClick="resetZoom('{{stream.id}}');"/>
+        <input type="checkbox" id="zoom_sync_{{stream.id}}" value="{{stream.id}}" class="stream_zoom" checked="checked"/> <label for="zoom_sync_{{stream.id}}">Zoom Sync</label>
+        <label for="reduction_select_{{stream.id}}">Reduction Type:</label>
+        <select id="reduction_select_{{stream.id}}" class="reduction_select" 
+                onchange="loadGraph('{{stream.id}}', 
+                          $('#granularity').val(), 
+                          getRanges(), 
+                          graph_overview_callback(getRanges()));">
+            {% for red in reductions %}
+            {% if red == "mean" %}
+            <option value="{{red}}" selected="selected">{{red|title}}</option>
+            {% else %}
+            <option value="{{red}}">{{red|title}}</option>
+            {% endif %}
+            {% endfor %}
+        </select>
+        <p id="downloadify{{stream.id}}"><!--Place holder for download button--></p>
+    </div>
+    
+    <script>
+        setupDownload("{{stream.id}}");
+    </script>
+</div>
+{% endfor %}
+
+
+{% endblock content %}

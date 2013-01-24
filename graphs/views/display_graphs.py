@@ -29,8 +29,17 @@ def display_graphs(request):
         return response
 
     if(request.method == 'GET'):
-        json_data = json.loads(request.GET['json_data'])
-       
+        if 'json_data' in request.GET:
+            json_data = json.loads(request.GET['json_data'])
+            view_streams = json_data.get('view', [])
+            owned_streams = json_data.get('owned', [])
+            public_streams = json_data.get('public', [])
+        else:
+            json_data = request.GET
+            view_streams = json_data.getlist('view', [])
+            owned_streams = json_data.getlist('owned', [])
+            public_streams = json_data.getlist('public', [])
+        
         node = json_data.get('node', '')
         port = json_data.get('port', '')
         start = json_data.get('start', '')
@@ -50,26 +59,29 @@ def display_graphs(request):
             data['granularity'] = int(granularity)
         
         #Grab all read-able streams
-        if(len(json_data['view']) > 0):
-            for stream in json_data['view']:
+        if(len(view_streams) > 0):
+            for stream in view_streams:
                 data['streams'] = data['streams'] | DataStream.objects.filter(id = stream) 
 
         #Grab all owned streams by this user
-        if(len(json_data['owned']) > 0):
-            for stream in json_data['owned']:
+        if(len(owned_streams) > 0):
+            for stream in owned_streams:
                 data['streams'] = data['streams'] | DataStream.objects.filter(id = stream) 
 
         #Grab all public streams
-        if(len(json_data['public']) > 0):
-            for stream in json_data['public']:
+        if(len(public_streams) > 0):
+            for stream in public_streams:
                 data['streams'] = data['streams'] | DataStream.objects.filter(id = stream) 
 
         #It's possible for this to be empty so check then order the streams and return them
         if(data['streams']):
             data['streams'] = data['streams'].order_by('node_id', 'port_id', 'id')
+
+            if 'json_data' not in request.GET: 
+                return render(request,'display_nodes_shared.html', data, context_instance=RequestContext(request))        
+
             t = loader.get_template('display_nodes.html')
             c = RequestContext(request, data)
-            #response = { "graphs": t.render(c) }
             return HttpResponse(json.dumps(t.render(c)),mimetype="application/json")
 
         #If we have a node or node/port pair then pull streams for those otherwise pull streams
