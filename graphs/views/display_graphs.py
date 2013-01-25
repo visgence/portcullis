@@ -2,8 +2,6 @@
 from django.template import RequestContext
 from django.http import HttpResponse, Http404
 from django.template import Context, loader
-from django.contrib.auth import authenticate, login, logout
-from django.core import serializers
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render
 try: import simplejson as json
@@ -107,92 +105,102 @@ def render_graph(request):
     if jsonData is None:
         raise Http404
 
-    jsonData = json.loads(jsonData)
-
-    start = jsonData['start']
-    end = jsonData['end']
-    datastream_id = jsonData['datastream_id']
-    granularity = jsonData['granularity']
-    total_time = end - start
-    stream_data = []
-
-    reduction_type = request.GET.get('reduction', 'mean')
-    if reduction_type is None or reduction_type == '':
-        reduction_type = 'mean'
-
     try:
         portcullisUser = request.user.portcullisuser
     except ObjectDoesNotExist:
         portcullisUser = None
 
-    # Get DataStream if it exists and we have permission
-    stream_info = DataStream.objects.get_ds_and_validate(datastream_id, portcullisUser, 'read')
+    return HttpResponse(getStreamData(json.loads(jsonData), portcullisUser), mimetype="application/json")
+
+def shared_graph(request, token, id):
+    '''
+    This function will use a key to send the jsonData for a shared graph.
+    '''
+
+    try:
+        # Get the key from the token
+        key = Key.objects.get(key = token)
+
+        # Get the graph from the id.
+        graph = SavedDSGraph.objects.get(id = id)
+    except ObjectDoesNotExist:
+        raise Http404('Graph %s/%s/ does not exist' % (token, str(id)))
+        
+    params = {
+        'start':         graph.start,
+        'end':           graph.end,
+        'reduction':     graph.reduction_type,
+        'granularity':   graph.granularity,
+        'datastream_id': graph.datastream.id
+        }
+    return HttpResponse(getStreamData(params, key), mimetype="application/json")
     
-    if not isinstance(stream_info, DataStream):
-        print 'User verification failed: ' + stream_info
-        data = {'data':[],
+
+def getStreamData(g_params, auth):
+    '''
+    ' This function will return streamData serialized to JSON for graphing.
+    '
+    ' g_params - A dictionary containing all the necessary information to get the stream data
+    '            for graphing.
+    '            Required keys:
+    '                start, end, ds_id, granularity
+    ' auth     - Used for authentication.  This can either be a portcullis user or a key
+    '''
+
+    start = g_params['start']
+    end = g_params['end']
+    ds_id = g_params['datastream_id']
+    granularity = g_params['granularity']
+    reduction_type = g_params['reduction']
+
+    
+    ds = DataStream.objects.get_ds_and_validate(ds_id, auth, 'read')
+    
+    if not isinstance(ds, DataStream):
+        print 'User verification failed: ' + ds
+        stream_data = {'data':[],
                 'permission':       False,
-                'label':            stream_info,
-                "datastream_id":    datastream_id,
+                'label':            ds,
+                "datastream_id":    ds_id,
                 }
-        return HttpResponse(json.dumps(data), mimetype='application/json')                  
-
-    stream_info.permission = "true"
-    
-    #These fields could be used for graph settings client-side
-    stream_info.xmin = start
-    stream_info.xmax = end
-
+        return json.dumps(stream_data)
     
     #Pull the data for this stream
     #Check if there are less points in timeframe then granularity
-    readings = SensorReading.objects.filter(timestamp__gte = start, timestamp__lte = end, datastream = datastream_id).order_by('timestamp')
+    readings = SensorReading.objects.filter(timestamp__gte = start, timestamp__lte = end,
+                                            datastream = ds).order_by('timestamp')
     numReadings = readings.count()
 
-    if(numReadings < granularity):
-        #loop through and add all points to data
-        data = [ [x.timestamp,float(x.value)] for x in readings ]
-
+    # if we have less readings than our granularity, put them in a list, otherwise reduce it
+    if(numReadings <= granularity):
+        data_points = [ [x.timestamp,float(x.value)] for x in readings ]
     else:
-        data = reduceData(list(readings.values_list('timestamp', 'value')), granularity, reduction_type)
+        data_points = reduceData(list(readings.values_list('timestamp', 'value')), granularity, reduction_type)
 
-    stream_info.num_readings = numReadings
-    stream_info.data = data
-    json_data = to_json(stream_info)
 
-    return HttpResponse(json_data, mimetype='application/json')
-
-        
-def to_json(stream):
-    '''
-    Takes a single stream and turns all of it's data into json and returns it.
-    '''
-
-    min_value = stream.min_value
+    min_value = ds.min_value
     if(min_value != None):
         min_value = float(min_value)
 
-    max_value = stream.max_value
+    max_value = ds.max_value
     if(max_value != None):
         max_value = float(max_value)
 
-    stream_data = {"reduction_type":stream.reduction_type,
-                   "label":stream.name,
-                   "port_id":stream.port_id,
-                   "data":stream.data,
-                   "num_readings":stream.num_readings,
-                   "max_value":max_value,
-                   "min_value":min_value,
-                   "description":stream.description,
-                   "scaling_function":stream.scaling_function.id,
-                   "datastream_id":stream.id,
-                   "color":stream.color,
-                   "node_id":int(stream.node_id),
-                   "xmin":stream.xmin,
-                   "xmax":stream.xmax,
-                   "units":stream.units,
-                   "permission":True
-                   }
+    stream_data = {
+        "label":            ds.name,
+        "port_id":          ds.port_id,
+        "data":             data_points,
+        "num_readings":     numReadings,
+        "max_value":        max_value,
+        "min_value":        min_value,
+        "description":      ds.description,
+        "scaling_function": ds.scaling_function.id,
+        "datastream_id":    ds.id,
+        "color":            ds.color,
+        "node_id":          ds.node_id,
+        "units":            ds.units,
+        "permission":       True
+        }
 
 
     return json.dumps(stream_data)

@@ -314,7 +314,7 @@ class SavedWidget(models.Model):
 
 
 class SavedView(models.Model):
-    key = models.ForeignKey(Key, primary_key=True)
+    key = models.OneToOne(Key, primary_key=True)
     widget = models.ManyToManyField(SavedWidget)
 
 '''
