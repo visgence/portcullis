@@ -80,9 +80,15 @@ def display_graphs(request):
             if 'json_data' not in request.GET: 
                 return render(request,'display_nodes_shared.html', data, context_instance=RequestContext(request))        
 
-            t = loader.get_template('display_nodes.html')
-            c = RequestContext(request, data)
-            return HttpResponse(json.dumps(t.render(c)),mimetype="application/json")
+            graphs_page = loader.get_template('display_nodes.html')
+            graphs_c = RequestContext(request, data)
+        
+            controls_page = loader.get_template('graph_controls.html')
+            controls_c = RequestContext(request, data)
+
+            template_data = {'graphs': graphs_page.render(graphs_c),
+                             'controls': controls_page.render(controls_c)}
+            return HttpResponse(json.dumps(template_data),mimetype="application/json")
 
         #If we have a node or node/port pair then pull streams for those otherwise pull streams
         if(node != None and port != None):
@@ -92,9 +98,16 @@ def display_graphs(request):
         else:
             data['streams'] = DataStream.objects.filter(can_read__owner = request.user)
       
-        t = loader.get_template('display_nodes.html')
-        c = RequestContext(request, data)
-        return json.dumps(t.render(c))
+        graphs_page = loader.get_template('display_nodes.html')
+        graphs_c = RequestContext(request, data)
+
+        controls_page = loader.get_template('graph_controls.html')
+        controls_c = RequestContext(request, data)
+
+        
+        template_data = {'graphs': graphs_page.render(graphs_c),
+                         'controls': controls_page.render(controls_c)}
+        return json.dumps(template_data)
         #return render(request,'display_nodes.html', data, context_instance=RequestContext(request))        
 
 

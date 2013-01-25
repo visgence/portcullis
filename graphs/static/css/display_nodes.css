@@ -14,7 +14,7 @@
     width: 7em;
 }
 
-#graph_page_controls ul
+#graph_time_controls ul
 {
     list-style: none;
 }
@@ -119,8 +119,6 @@
     height:100px;
     margin-bottom:20px;
 }
-
-.date_form{margin-top:50px; }
 
 .reduction_select
 {
