@@ -38,8 +38,8 @@ def sharedView(request, token):
     end = datetime.utcfromtimestamp(view.widget.all()[0].saveddsgraph.end)
     t = loader.get_template('sharedView.html')
     c = RequestContext(request, {'view': view,
-                                 'start': start.strftime(dateformat),
-                                 'end': end.strftime(dateformat),
+                                 'start': start,
+                                 'end': end,
                                  'granularity': view.widget.all()[0].saveddsgraph.granularity,
                                  'reductions': reductFunc.keys(),
                                  'token': token
