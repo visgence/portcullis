@@ -24,6 +24,7 @@ function load_user_graphs()
     var json_data = JSON.stringify(get_data);
 
     $.get('/graphs/', {'json_data': json_data}, function(data){
-        $('#content').html(data);
+        $('#side_pane_content').prepend(data.controls);
+        $('#content').html(data.graphs);
     });
 }

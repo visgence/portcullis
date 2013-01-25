@@ -1,24 +1,57 @@
+#side_pane_content
+{
+    margin-top: 1em;
+    margin-left: 1em;
+    margin-right: 1em;
+}
+
 #side_pane
 {
-    border: 2px solid black;
-    height: 90%;
-    width: 25em;
-    padding-left: 1em;
-    padding-top: 1em;
+    border: 3px solid black;
+    height: 95%;
+    width: 400px;
     position: absolute;
     top: 0;
     left: 0;
 }
 
+#side_pane h2
+{
+    text-align: center;
+}
+
 #content
 {
-    border: 2px solid black;
-    height: 90%;
-    width: 72.5em;
-    padding-left: 1em;
-    padding-top: 1em;
+    border: 3px solid black;
+    height: 95%;
+    width: 1192px;
     position: absolute;
     top: 0;
     right: 0;
     overflow: scroll;
+}
+
+#greeting
+{
+    border-bottom: 1px solid black;
+    text-align:center;
+    height: 118px;
+    margin-top: auto;
+    margin-bottom: auto;
+    position: relative;
+}
+
+#login
+{
+    margin-top: 1em;
+    margin-bottom: 1em;
+}
+
+#user_greeting
+{
+    height: 1em;
+    width: 100%;
+    position: absolute;
+    top: 50%;
+    margin-top: -.5em;
 }

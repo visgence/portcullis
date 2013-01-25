@@ -5,8 +5,22 @@
 
 <div id="main_page">
     <div id="side_pane">
-        {{side_pane}}
-    </div>
+
+        <div id="greeting">
+            {% if user.first_name %}
+                <div id="user_greeting">
+                    Hello {{user.first_name}} {{user.last_name}} (<a href="/portcullis/logout/">logout</a>)
+                </div>
+            {% else %}
+                {{greeting}}
+            {% endif %}
+        </div><!--end greeting-->
+
+        <div id="side_pane_content">
+            {{side_pane}}
+        </div>
+
+    </div><!--End side_pane-->
 
     <div id="content"></div>
 </div>
