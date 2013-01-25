@@ -9,5 +9,6 @@ urlpatterns = patterns('graphs.views',
     url(r'^render_graph/$', 'display_graphs.render_graph'),
     url(r'^favicon\.ico$', redirect_to, {'url': '/static/portcullis/favicon.ico'}),
     url(r'^scaling_functions.js/$', 'scaling_functions.scaling_functions'),
+    url(r'^sharedGraph/(?P<token>.+)/(?P<id>\d{1,4})/$', 'display_graphs.shared_graph'),
 )
 

@@ -24,7 +24,6 @@ function create_plot_select_handler(datastream_id)
             zoom_graph(ranges, datastream_id);
         var start = new Date(ranges.xaxis.from + timezone_offset);
         var end= new Date(ranges.xaxis.to + timezone_offset);
-
         update_link();
     } 
 }//end create_plot_select_handler
@@ -73,7 +72,6 @@ function on_graphs_load()
 
     //Creating range object for query
     //var ranges = { xaxis: { from: epoch_start, to: epoch_end }};
-    loadAllGraphs(getRanges());    
     update_link();
 }
 
@@ -304,6 +302,17 @@ function zoom_graph(ranges, datastream_id)
 
     return result;
 }//end zoom_graph
+
+
+function loadAllSharedGraphs(ranges)
+{
+    var granularity = get_granularity();
+    var token = $('#auth_token').val();
+    $('.portcullis-graph').each(function(i) {
+        var url = '/graphs/sharedGraph/' + token + '/' + $('#saved_graph_'+this.id).val() + '/';
+        $.get(url, graph_overview_callback(ranges));
+    });
+}
 
 function loadAllGraphs(ranges)
 {

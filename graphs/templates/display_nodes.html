@@ -109,6 +109,7 @@
     {% endfor %}
     <script>
         //On load function will search for any 'portcullis-graph' divs on the page.
-        $("document").ready(on_graphs_load())
+        $("document").ready(on_graphs_load());
+        loadAllGraphs(getRanges());
     </script>
 </div><!--End graph_container -->

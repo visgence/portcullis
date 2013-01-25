@@ -8,9 +8,10 @@ try: import simplejson as json
 except ImportError: import json
 
 #Local Imports
-from portcullis.models import DataStream, SensorReading, PortcullisUser, ScalingFunction
+from portcullis.models import DataStream, SensorReading, PortcullisUser, ScalingFunction, Key
 from check_access import check_access
 from graphs.data_reduction import reduceData, reductFunc
+from graphs.models import SavedDSGraph
 
 def display_graphs(request):
     '''
