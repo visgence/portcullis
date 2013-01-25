@@ -1,8 +1,14 @@
+#side_pane_content
+{
+    margin-top: 1em;
+    margin-left: 1em;
+}
+
 #side_pane
 {
-    border: 2px solid black;
-    height: 90%;
-    width: 25em;
+    border: 3px solid black;
+    height: 95%;
+    width: 400px;
     position: absolute;
     top: 0;
     left: 0;
@@ -10,11 +16,9 @@
 
 #content
 {
-    border: 2px solid black;
-    height: 90%;
-    width: 73.5em;
-    padding-left: 1em;
-    padding-top: 1em;
+    border: 3px solid black;
+    height: 95%;
+    width: 1192px;
     position: absolute;
     top: 0;
     right: 0;
@@ -28,10 +32,20 @@
     height: 118px;
     margin-top: auto;
     margin-bottom: auto;
+    position: relative;
 }
 
 #login
 {
     margin-top: 1em;
     margin-bottom: 1em;
+}
+
+#user_greeting
+{
+    height: 1em;
+    width: 100%;
+    position: absolute;
+    top: 50%;
+    margin-top: -.5em;
 }

@@ -1,36 +1,60 @@
 <script language="javascript" type="text/javascript" src="{{STATIC_URL}}js/checkbox.js"></script>
 <script language="javascript" type="text/javascript" src="{{STATIC_URL}}js/user_streams.js"></script>
 
+<link rel="stylesheet" media="all" type="text/css" href="{{STATIC_URL}}css/datastreams.css" />
+
 <div id="user_streams">
     {% if owned_streams %}
-        <b> My Streams</b> </br>
+        <b>My Streams</b>
         <!-- Create a checkbox for each datastream owned by this user-->
-        {% for stream in owned_streams%}
-            <input type="checkbox" name="owned" class="stream" value="{{stream.id}}" /> {{stream.name}} <br>
-        {% endfor %}
-        <input type="checkbox" onClick="checkOwned(this)" /> Check All <br>
+        <ul class="streams">
+            {% for stream in owned_streams%}
+            <li>
+                <input type="checkbox" name="owned" class="stream" id="owned_stream_{{stream.id}}" value="{{stream.id}}" /> 
+                <label for="owned_stream_{{stream.id}}">{{stream.name}}</label>
+            </li>
+            {% endfor %}
+            <li>
+                <input type="checkbox" id="owned_checkall" onClick="checkOwned(this)"/>
+                <label for="owned_checkall">Check All</label>
+            </li>
+        </ul>
 
     {% endif %}
     
     {% if viewable_streams%}
-        <b>Viewable Streams</b> </br>
+        <b>Viewable Streams</b>
         <!-- Create a checkbox for each public datastream -->
-        {% for stream in viewable_streams%}
-             <input type="checkbox" name="view" class="stream" value="{{stream.id}}" /> {{stream.name}} <br>
-        {% endfor %}
-        <input type="checkbox" onClick="checkView(this)" /> Check All <br>
+        <ul class="streams">
+            {% for stream in viewable_streams%}
+            <li>
+                <input type="checkbox" name="view" class="stream" id="view_stream_{{stream.id}}" value="{{stream.id}}"/>
+                <label for="view_stream_{{stream.id}}">{{stream.name}}</label>
+            </li>
+            {% endfor %}
+            <li>
+                <input type="checkbox" id="view_checkall" onClick="checkView(this)"/>
+                <label for="view_checkall">Check All</label>
+            </li>
+        </ul>
     {% endif %}
 
     {% if public_streams %}
-        <b>Public Streams</b> </br>
+        <b>Public Streams</b>
         <!-- Create a checkbox for each public datastream -->
-        {% for stream in public_streams%}
-            <input type="checkbox" name="public" class="stream" value="{{stream.id}}" /> {{stream.name}} <br>
-        {% endfor %}
-         <input type="checkbox" onClick="checkPublic(this)" /> Check All <br>
-
+        <ul class="streams">
+            {% for stream in public_streams%}
+            <li>
+                <input type="checkbox" name="public" class="stream" id="public_stream_{{stream.id}}" value="{{stream.id}}"/> 
+                <label for="public_stream_{{stream.id}}">{{stream.name}}</label>
+            </li>
+            {% endfor %}
+            <li>
+                <input type="checkbox" id="public_checkall" onClick="checkPublic(this)"/> 
+                <label for="public_checkall">Check All</label>
+            </li>
+        </ul>
      {% endif %}
 
-    </br>
     <input type="button" value="submit" onclick="load_user_graphs();"/>
 </div>

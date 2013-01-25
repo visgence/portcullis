@@ -8,7 +8,9 @@
 
         <div id="greeting">
             {% if user.first_name %}
-                Hello {{user.first_name}} {{user.last_name}} (<a href="/portcullis/logout/">logout</a>)
+                <div id="user_greeting">
+                    Hello {{user.first_name}} {{user.last_name}} (<a href="/portcullis/logout/">logout</a>)
+                </div>
             {% else %}
                 {{greeting}}
             {% endif %}
