@@ -14,15 +14,12 @@
     width: 7em;
 }
 
-#graph_time_controls ul
+#side_pane_content
 {
-    list-style: none;
+    overflow: auto;
 }
 
-.range_text
-{
-    margin-left: 9em;
-}
+/*********** Side Pane ***********/
 
 #graph_page_controls input[type=radio]
 {
@@ -37,11 +34,18 @@
 #end
 {
     width: 12em;
+    margin-top: 2em;
 }
 
 .controls_list
 {
     margin-bottom: 1em;
+}
+
+#graph_time_controls ul
+{
+    list-style: none;
+    padding-left: 0;
 }
 
 #shared_graph_controls
@@ -51,14 +55,22 @@
     position: absolute;
 }
 
+/*********** Graphs ***********/
+
+
 #graph_container
 {
     position: relative;
-    margin-left: 8em;
+    width: 900px;
+    margin-left: auto;
+    margin-right: auto;
     margin-bottom: 3em;
 }
 
-/*********** Graphs ***********/
+#graph_container_heading
+{
+    margin-left: 3em;
+}
 
 #shared_graph_container
 {

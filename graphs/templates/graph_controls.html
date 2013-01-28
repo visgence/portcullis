@@ -5,11 +5,13 @@
     <div id="graph_time_controls">
         <ul>
             <li>
-                <b>Start Date</b>
-                <b class="range_text">Range Before End Date</b>
-            </li>
-            <li class="controls_list">
+                <b>Start Date:</b>
                 <input type="text" name ="start" id="start" value="{{start}}"/>
+            </li>
+            <li>
+                <b>Range Before End Date:</b>
+            </li>
+            <li>
                 <input name="start_range" id="start_none" class="start_radio" type="radio" checked="checked" onchange="toggleDateRange(this, 'start', 'end_mutable');"/> 
                 <label for="start_none">None</label>
                 
@@ -21,12 +23,15 @@
                 
                 <input name="start_range" id="start_month" class="start_radio start_mutable" type="radio" onchange="toggleDateRange(this, 'start', 'end_mutable');"/>
                 <label for="start_month">One Month</label>
+            </li>
             <li>
-                <b>End Date</b> 
-                <b class="range_text">Range After Start Date</b>
+                <b>End Date:</b> 
+                <input type="text" name ="end" id="end" value="{{end}}"/>
+            </li>
+            <li>
+                <b>Range After Start Date:</b>
             </li>
             <li class="controls_list">
-                <input type="text" name ="end" id="end" value="{{end}}"/>
                 <input name="end_range" id="end_none" class="end_radio" type="radio" checked="checked" onchange="toggleDateRange(this, 'end', 'start_mutable');"/> 
                 <label for="end_none">None</label>
 
@@ -39,7 +44,10 @@
                 <input name="end_range" id="end_month" class="end_radio end_mutable" type="radio" onchange="toggleDateRange(this, 'end', 'start_mutable');"/>
                 <label for="end_month">One Month</label>
             </li>
-            <li>Number of datapoints: <input type="text" name = "granularity" id="granularity" value="{{granularity}}" /></li>
+            <li>
+                <b>Number of datapoints:</b> 
+                <input type="text" name = "granularity" id="granularity" value="{{granularity}}" />
+            </li>
         </ul>
     </div>
     

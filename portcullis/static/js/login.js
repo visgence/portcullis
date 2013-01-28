@@ -3,8 +3,8 @@ function login()
     var post_data = new Object();
     post_data['username'] = $('#username').val();    
     post_data['password'] = $('#password').val();    
-
-    if(username == '') {
+   
+    if(post_data['username'] == '') {
         $('#login_error').text('Please provide a user name.');
         return;
     }
@@ -21,8 +21,13 @@ function login()
 
 function post_login(data)
 {
-    $('#side_pane_content').html(data.streams_html);
-    $('#greeting').html(data.greeting);
+    if(data.error)
+        $('#login_error').text(data.error);
+    else {
+        $('#side_pane_content').html(data.streams_html);
+        $('#greeting').html(data.greeting);
+        $('#login_error').text('');
+    }
 }
 
 

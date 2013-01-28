@@ -11,9 +11,16 @@ from django.contrib.auth import logout as auth_logout
 import urlparse
 import json
 
-# Local imports
-#from portcullis.models import 
 
+def render_main_page(request):
+
+    greeting_temp = loader.get_template('login.html');
+    greeting_c = RequestContext(request, {'user': request.user})
+    greeting_c.update(csrf(request));
+
+    main_page = loader.get_template('main_page.html')
+    main_c = RequestContext(request, {'greeting': greeting_temp.render(greeting_c) })
+    return HttpResponse(main_page.render(main_c))
 
 def user_login(request):
 
@@ -23,7 +30,7 @@ def user_login(request):
     try:
         redirect_to = request.REQUEST["next"]
     except KeyError:
-        redirect_to = "/portcullis/user_streams/"
+        pass
 
     if request.method == 'POST':
         json_data = json.loads(request.POST['json_data'])
@@ -37,25 +44,21 @@ def user_login(request):
                 greeting_c = RequestContext(request, {})
 
                 streams_page = user_streams(request) 
-                data = {'streams_html': streams_page, 'greeting':greeting_page.render(greeting_c)}
-
+                data = {
+                    'streams_html': streams_page, 
+                    'greeting':greeting_page.render(greeting_c),
+                }
+            
                 return HttpResponse(json.dumps(data), mimetype="application/json")
             else:
-                error = "Account disabled"
+                error = "This account is disabled"
         else:
-            error = "Invalid login";
+            error = "Invalid username and/or password";
 
-
-    t = loader.get_template('login.html');
-    c = RequestContext(request, {'user':request.user,'error':error,"redirect_to":redirect_to})
-    c.update(csrf(request));
-
-    main_page = loader.get_template('main_page.html')
-    main_c = RequestContext(request, {'greeting': t.render(c) })
-
-    return HttpResponse(main_page.render(main_c))
+    return_data = {'error':error}
+    return HttpResponse(json.dumps(return_data), mimetype="application/json")
 
 def logout(request):
     auth_logout(request)
-    return HttpResponseRedirect("/portcullis/")
+    return HttpResponseRedirect("/portcullis/greeting/")
 
