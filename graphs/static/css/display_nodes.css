@@ -77,6 +77,16 @@
     margin-left: 700px;
 }
 
+.graph_selection span:first-child
+{
+    margin-right: 1em;
+}
+
+.graph_selection
+{
+    margin-left: 2.5em;
+}
+
 .graph_container
 {
     padding-top: 2em;

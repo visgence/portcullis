@@ -31,17 +31,16 @@
             <textarea id="sensor{{stream.id}}_csv"></textarea>
         </div><!--end csv div-->
         
+        <div id="graph_selection_{{stream.id}}" class="graph_selection" style="display: none;">
+            Time: <span id="selected_time_{{stream.id}}"></span>
+            Value: <span id="selected_value_{{stream.id}}"></span>
+        </div>
         <div id="stream_data_container_{{stream.id}}" class="stream_data_container">
             <ul>
                 <li>Node: {{stream.node_id}}</li>
                 <li>Port: {{stream.port_id}}</li>
                 <li>Data In Range: <span id="datapoints_{{stream.id}}"><!-- Hook for number of data points for given range--></span></li>
                 <li>Actual Data Shown: <span id="actual_datapoints_{{stream.id}}"><!-- Hook for number of data points for given graph--></span></li>
-                <li>Selected Datapoint</li>
-                <ul>
-                    <li>Value: <span id="selected_value_{{stream.id}}"></span></li>
-                    <li>Time: <span id="selected_time_{{stream.id}}"></span></li>
-                </ul>
             </ul>
         </div>
         
