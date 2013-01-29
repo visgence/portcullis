@@ -50,9 +50,20 @@
     position: absolute;
 }
 
+#graph_controls_advanced
+{
+    border: 1px solid gray;
+    text-align: center;
+}
+
 .date_range_seperator
 {
     text-indent: 5em;
+}
+
+#graph_options_submit
+{
+    margin-top: 1em;
 }
 
 /*********** Graphs ***********/

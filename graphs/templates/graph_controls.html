@@ -35,13 +35,15 @@
                     <option value="One Month">One Month</option>
                 </select>
             </li> 
-            <li>
-                <b>Number of datapoints:</b> 
-                <input type="text" name = "granularity" id="granularity" value="{{granularity}}" />
-            </li>
         </ul>
     </div>
     
+    <div id="graph_controls_advanced" class="section_toggle" onclick="toggle_form_section(event);">Advanced Options</div>
+    <div>
+        <b>Number of datapoints:</b> 
+        <input type="text" name = "granularity" id="granularity" value="{{granularity}}" />
+    </div>
+
     <input type="hidden" name = "to_epoch" value ="true" />
-    <input type="button" value="Submit" onClick="submit_form()" />
+    <input id="graph_options_submit" type="button" value="Submit" onClick="submit_form()" />
 </div>
