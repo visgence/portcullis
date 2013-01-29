@@ -2,6 +2,10 @@
 ###################
 *.pyc
 
+# Custom Devevlopment Files #
+#############################
+dev_*
+
 # Logs and Databases #
 ######################
 *.db

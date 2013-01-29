@@ -10,7 +10,7 @@
     border: 3px solid black;
     height: 95%;
     width: 400px;
-    position: absolute;
+    position: relative;
     top: 0;
     left: 0;
 }
@@ -29,29 +29,4 @@
     top: 0;
     right: 0;
     overflow: scroll;
-}
-
-#greeting
-{
-    border-bottom: 1px solid black;
-    text-align:center;
-    height: 118px;
-    margin-top: auto;
-    margin-bottom: auto;
-    position: relative;
-}
-
-#login
-{
-    margin-top: 1em;
-    margin-bottom: 1em;
-}
-
-#user_greeting
-{
-    height: 1em;
-    width: 100%;
-    position: absolute;
-    top: 50%;
-    margin-top: -.5em;
 }

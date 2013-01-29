@@ -8,10 +8,9 @@ from django.utils.http import urlquote
 def check_access(request):
 
     if(request.user.username == ''):
-        return HttpResponseRedirect("/portcullis/login/?next=%s" % urlquote(request.get_full_path()))
+        return HttpResponseRedirect("/portcullis/greeting/?next=%s" % urlquote(request.get_full_path()))
 
     t = loader.get_template('login.html');
-
 
     if(not request.user.is_active):
         c = Context({'user':request.user,'access_error':'User is not active'});

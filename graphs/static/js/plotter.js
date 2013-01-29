@@ -36,14 +36,18 @@ function create_plot_click_handler(datastream_id)
             var epoch = item['datapoint'][0];
             var time = new Date(epoch + timezone_offset);
 
+            $('#graph_selection_'+datastream_id).removeAttr('style');
             $('#selected_value_'+datastream_id).text(value);
             $('#selected_time_'+datastream_id).text(time.toLocaleString());
         }
+        else
+            reset_graph_selection(datastream_id);
     };
 }
 
 function reset_graph_selection(datastream_id)
 {
+    $('#graph_selection_'+datastream_id).attr('style', 'display: none;');
     $('#selected_value_'+datastream_id).text("");
     $('#selected_time_'+datastream_id).text("");
 }

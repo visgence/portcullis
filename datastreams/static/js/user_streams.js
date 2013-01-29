@@ -1,6 +1,9 @@
 function load_user_graphs()
 {
     var checked_streams = $('.stream:checked');
+    if(checked_streams.length == 0)
+        return;
+
     var owned_streams = [];
     var public_streams = [];
     var view_streams = [];
@@ -24,6 +27,10 @@ function load_user_graphs()
     var json_data = JSON.stringify(get_data);
 
     $.get('/graphs/', {'json_data': json_data}, function(data){
+        var previous_controls = $('#graph_controls');
+        if(previous_controls.length > 0)
+           previous_controls.remove();
+
         $('#side_pane_content').prepend(data.controls);
         $('#content').html(data.graphs);
     });
