@@ -77,9 +77,17 @@
     margin-left: 700px;
 }
 
-.graph_options.section_toggle
+.advanced_options
+{
+    margin-top: 1em;
+}
+
+.graph_toggle.section_toggle
 {
     border: 1px solid gray;
+    width: 893px;
+    margin-left: -33px;
+    text-align: center;
 }
 
 .graph_selection span:first-child

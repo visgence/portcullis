@@ -36,8 +36,8 @@
             Value: <span id="selected_value_{{stream.id}}"></span>
         </div>
 
-        <span class="section_toggle graph_options" onclick="toggle_form_section(event)">Advanced Options</span>
-        <div id="advanced_options_{{stream.id}}">
+        <div class="section_toggle graph_toggle" onclick="toggle_form_section(event)">Advanced Options</div>
+        <div id="advanced_options_{{stream.id}}" class="advanced_options">
             <div id="stream_data_container_{{stream.id}}" class="stream_data_container">
                 <ul>
                     <li>Node: {{stream.node_id}}</li>
