@@ -77,6 +77,11 @@
     margin-left: 700px;
 }
 
+.graph_options.section_toggle
+{
+    border: 1px solid gray;
+}
+
 .graph_selection span:first-child
 {
     margin-right: 1em;
@@ -85,6 +90,7 @@
 .graph_selection
 {
     margin-left: 2.5em;
+    margin-bottom: 1em;
 }
 
 .graph_container
