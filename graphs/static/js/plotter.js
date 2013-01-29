@@ -72,9 +72,8 @@ function on_graphs_load()
         // setup the download link.
         setupDownload(this.id);
     });
-
-    //Creating range object for query
-    //var ranges = { xaxis: { from: epoch_start, to: epoch_end }};
+    
+    ready_datepickers();
 }
 
 
@@ -130,7 +129,7 @@ function getRanges() {
     var epoch_end;
     var start = new Date($("#start").val());
     var end = new Date($("#end").val());
-
+    
     var start_range = $('#start_range').val();
     var end_range = $('#end_range').val();  
     
@@ -536,3 +535,31 @@ function saveView()
                $('#savedViewLink').html(data['html']);
            });
 }
+
+function ready_datepickers()
+{
+    $('#start').datetimepicker
+    ({
+        showSecond: true,
+        dateFormat: 'mm/dd/yy',
+        timeFormat: 'hh:mm:ss',
+        onSelect: function (selectedDateTime)
+        {
+            var start = $(this).datetimepicker('getDate');
+            $('#end').datetimepicker('option', 'minDate', new Date(start.getTime()));
+        }
+    });
+    $('#end').datetimepicker
+    ({
+        showSecond: true,
+        dateFormat: 'mm/dd/yy',
+        timeFormat: 'hh:mm:ss',
+        onSelect: function (selectedDateTime)
+        {
+            var end = $(this).datetimepicker('getDate');
+            $('#start').datetimepicker('option', 'maxDate', new Date(end.getTime()));
+        }
+    });
+
+}
+
