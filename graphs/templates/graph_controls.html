@@ -8,42 +8,33 @@
                 <b>Start Date:</b>
                 <input type="text" name ="start" id="start" value="{{start}}"/>
             </li>
+            <li class="date_range_seperator">
+                or
+            </li>
             <li>
                 <b>Range Before End Date:</b>
-            </li>
-            <li>
-                <input name="start_range" id="start_none" class="start_radio" type="radio" checked="checked" onchange="toggleDateRange(this, 'start', 'end_mutable');"/> 
-                <label for="start_none">None</label>
-                
-                <input name="start_range" id="start_day" class="start_radio start_mutable" type="radio" onchange="toggleDateRange(this, 'start', 'end_mutable');"/> 
-                <label for="start_day">One Day</label>
-                
-                <input name="start_range" id="start_week" class="start_radio start_mutable" type="radio" onchange="toggleDateRange(this, 'start', 'end_mutable');"/>
-                <label for="start_week">One Week</label>
-                
-                <input name="start_range" id="start_month" class="start_radio start_mutable" type="radio" onchange="toggleDateRange(this, 'start', 'end_mutable');"/>
-                <label for="start_month">One Month</label>
-            </li>
+                <select id="start_range" type="select" onchange="toggle_date_range(this, 'start', 'end_range');">
+                    <option value="None" selected="selected">None</option>
+                    <option value="One Day">One Day</option>
+                    <option value="One Week">One Week</option>
+                    <option value="One Month">One Month</option>
+                </select>
             <li>
                 <b>End Date:</b> 
                 <input type="text" name ="end" id="end" value="{{end}}"/>
             </li>
+            <li class="date_range_seperator">
+                or
+            </li>
             <li>
                 <b>Range After Start Date:</b>
-            </li>
-            <li class="controls_list">
-                <input name="end_range" id="end_none" class="end_radio" type="radio" checked="checked" onchange="toggleDateRange(this, 'end', 'start_mutable');"/> 
-                <label for="end_none">None</label>
-
-                <input name="end_range" id="end_day" class="end_radio end_mutable" type="radio" onchange="toggleDateRange(this, 'end', 'start_mutable');"/> 
-                <label for="end_day">One Day</label>
-
-                <input name="end_range" id="end_week" class="end_radio end_mutable" type="radio" onchange="toggleDateRange(this, 'end', 'start_mutable');"/>
-                <label for="end_week">One Week</label>
-
-                <input name="end_range" id="end_month" class="end_radio end_mutable" type="radio" onchange="toggleDateRange(this, 'end', 'start_mutable');"/>
-                <label for="end_month">One Month</label>
-            </li>
+                <select id="end_range" type="select" onchange="toggle_date_range(this, 'end', 'start_range');">
+                    <option value="None" selected="selected">None</option>
+                    <option value="One Day">One Day</option>
+                    <option value="One Week">One Week</option>
+                    <option value="One Month">One Month</option>
+                </select>
+            </li> 
             <li>
                 <b>Number of datapoints:</b> 
                 <input type="text" name = "granularity" id="granularity" value="{{granularity}}" />

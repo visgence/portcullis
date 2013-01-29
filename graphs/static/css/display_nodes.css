@@ -37,11 +37,6 @@
     margin-top: 2em;
 }
 
-.controls_list
-{
-    margin-bottom: 1em;
-}
-
 #graph_time_controls ul
 {
     list-style: none;
@@ -53,6 +48,11 @@
     margin-left: 2em;
     width: 600px;
     position: absolute;
+}
+
+.date_range_seperator
+{
+    text-indent: 5em;
 }
 
 /*********** Graphs ***********/

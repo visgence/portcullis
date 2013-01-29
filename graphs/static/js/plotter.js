@@ -131,16 +131,16 @@ function getRanges() {
     var start = new Date($("#start").val());
     var end = new Date($("#end").val());
 
-    var start_radio_text = $('.start_radio:checked').next().text();
-    var end_radio_text = $('.end_radio:checked').next().text();  
+    var start_range = $('#start_range').val();
+    var end_range = $('#end_range').val();  
     
-    if((start_radio_text != "None" && end_radio_text == "None" && !$("#end").val()) ||
+    if((start_range != "None" && end_range == "None" && !$("#end").val()) ||
        ($("#start").val() && !$("#end").val()))
     {
         end = new Date(d.getTime());
         $("#end").val(end.toLocaleString());
     }
-    else if((end_radio_text != "None" && start_radio_text == "None" && !$("#start").val()) ||
+    else if((end_range != "None" && start_range == "None" && !$("#start").val()) ||
             (!$("#start").val() && $("#end").val()))
     {
         start = new Date(d.getTime() - range*1000);
@@ -155,10 +155,10 @@ function getRanges() {
         $("#end").val(end.toLocaleString());
     }
 
-    if(start_radio_text != "None")
-        start = modify_date(end, start_radio_text, true);
-    else if(end_radio_text != "None")
-        end = modify_date(start, end_radio_text, false);
+    if(start_range != "None")
+        start = modify_date(end, start_range, true);
+    else if(end_range != "None")
+        end = modify_date(start, end_range, false);
 
     epoch_start = start.getTime() - timezone_offset;
     epoch_end = end.getTime() - timezone_offset;
@@ -244,20 +244,9 @@ function plot_graph(data,options,div)
 }//end plot_graph
 
 //queries for a time range(datepicker)
-function submit_form(datastream_id)
+function submit_form()
 {   
-    var start = new Date($("#start").val());
-    var end = new Date($("#end").val());
-
     get_granularity();
-    
-    epoch_start = start.getTime();
-    epoch_end= end.getTime();  
-    
-    epoch_start -= timezone_offset;
-    epoch_end -= timezone_offset;
-
-    var ranges = { xaxis: { from: epoch_start , to: epoch_end }};
     loadAllGraphs(getRanges());
 }//end submit_form
 
@@ -500,20 +489,20 @@ function setupDownload(datastreamId)
     });
 }
 
-function toggleDateRange(radio_input, date_input_id, mutable_radio_class)
+function toggle_date_range(select, date_id, mutable_select)
 {
-    var date_field = $("#"+date_input_id);
-    var span_text = $(radio_input).next().text();
+    var date_field = $("#"+date_id);
+    var selected = $(select).val();
     
-    if(span_text != "None")
+    if(selected != "None")
     {
         date_field.attr('disabled', 'disabled');
-        $('.'+mutable_radio_class).attr('disabled', 'disabled');
+        $('#'+mutable_select).attr('disabled', 'disabled');
     }
     else
     {
         date_field.removeAttr('disabled');
-        $('.'+mutable_radio_class).removeAttr('disabled');
+        $('#'+mutable_select).removeAttr('disabled');
     }
 }
 
