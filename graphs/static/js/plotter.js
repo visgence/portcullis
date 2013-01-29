@@ -24,7 +24,6 @@ function create_plot_select_handler(datastream_id)
             zoom_graph(ranges, datastream_id);
         var start = new Date(ranges.xaxis.from + timezone_offset);
         var end= new Date(ranges.xaxis.to + timezone_offset);
-        //update_link();
     } 
 }//end create_plot_select_handler
 
@@ -76,7 +75,6 @@ function on_graphs_load()
 
     //Creating range object for query
     //var ranges = { xaxis: { from: epoch_start, to: epoch_end }};
-    //update_link();
 }
 
 
@@ -261,7 +259,6 @@ function submit_form(datastream_id)
 
     var ranges = { xaxis: { from: epoch_start , to: epoch_end }};
     loadAllGraphs(getRanges());
-    //update_link();
 }//end submit_form
 
 /*queries for data for a single datastream and a specific time period
@@ -474,24 +471,6 @@ function zoom_all_graphs(ranges)
     }
 }//end zoom_all_graphs
 
-/*//update link to this specific view
-function update_link()
-{
-    var start = new Date($("#start").val());
-    var end = new Date($("#end").val());
-    var streams = ''
-
-    divs = $(".portcullis-graph");
-    for (var i = 0; i < divs.length; i++) 
-    {
-        streams += '&view=' + divs[i].id
-    }
-
-    $("#share_link").attr("href","/graphs/?start="+ start.toLocaleString()+
-                                           "&end="+end.toLocaleString()+
-                                   "&granularity="+get_granularity() + streams);
-}//end update_link
-*/
 
 function setupDownload(datastreamId)
 {

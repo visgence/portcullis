@@ -19,7 +19,7 @@
                 <b class="range_text">Range Before End Date</b>
             </li>
             <li class="controls_list">
-                <input type="text" name ="start" id="start" value="{{start|localtime|date:'Y/m/d H:i:s'}}"/>
+                <input type="text" name ="start" id="start" value=""/>
                 <input name="start_range" id="start_none" class="start_radio" type="radio" checked="checked" onchange="toggleDateRange(this, 'start', 'end_mutable');"/> 
                 <label for="start_none">None</label>
                 
@@ -36,7 +36,7 @@
                 <b class="range_text">Range After Start Date</b>
             </li>
             <li class="controls_list">
-                <input type="text" name ="end" id="end" value="{{end|localtime|date:'Y/m/d H:i:s'}}"/>
+                <input type="text" name ="end" id="end" value=""/>
                 <input name="end_range" id="end_none" class="end_radio" type="radio" checked="checked" onchange="toggleDateRange(this, 'end', 'start_mutable');"/> 
                 <label for="end_none">None</label>
 
