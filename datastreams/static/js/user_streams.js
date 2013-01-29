@@ -1,6 +1,9 @@
 function load_user_graphs()
 {
     var checked_streams = $('.stream:checked');
+    if(checked_streams.length == 0)
+        return;
+
     var owned_streams = [];
     var public_streams = [];
     var view_streams = [];
