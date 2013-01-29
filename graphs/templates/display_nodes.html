@@ -4,7 +4,9 @@
 
 <h2 id="utc_stamp"></h2>
 
-<a id="share_link" href="/" ><div>Share this view</div></a>
+
+<a id="share_link" onclick="saveView();" href="#" >Share this view</a>
+<div id="savedViewLink"></div>
 
 <div id="graph_container">
 
@@ -64,3 +66,5 @@
         loadAllGraphs(getRanges());
     </script>
 </div><!--End graph_container -->
+
+{% csrf_token %}

@@ -1,9 +1,9 @@
 /**
 *
-*plotter.js
+* plotter.js
 *
-*script: This script has two primary functions. First, to retrieve all correctly formatted
-*portcullis-graph divs from a page. Secondly, to query for data for the datastream ids.
+* script: This script has two primary functions. First, to retrieve all correctly formatted
+* portcullis-graph divs from a page. Secondly, to query for data for the datastream ids.
 *
 **/
 
@@ -24,7 +24,7 @@ function create_plot_select_handler(datastream_id)
             zoom_graph(ranges, datastream_id);
         var start = new Date(ranges.xaxis.from + timezone_offset);
         var end= new Date(ranges.xaxis.to + timezone_offset);
-        update_link();
+        //update_link();
     } 
 }//end create_plot_select_handler
 
@@ -72,7 +72,7 @@ function on_graphs_load()
 
     //Creating range object for query
     //var ranges = { xaxis: { from: epoch_start, to: epoch_end }};
-    update_link();
+    //update_link();
 }
 
 
@@ -257,7 +257,7 @@ function submit_form(datastream_id)
 
     var ranges = { xaxis: { from: epoch_start , to: epoch_end }};
     loadAllGraphs(getRanges());
-    update_link();
+    //update_link();
 }//end submit_form
 
 /*queries for data for a single datastream and a specific time period
@@ -453,7 +453,7 @@ function resetZoom(streamId)
         delete overviewData[0]['shadowSize'];
         renderGraph(overviewData[0], ranges, false);
     }
-
+    
     reset_graph_selection(streamId);
 }
 
@@ -470,7 +470,7 @@ function zoom_all_graphs(ranges)
     }
 }//end zoom_all_graphs
 
-//update link to this specific view
+/*//update link to this specific view
 function update_link()
 {
     var start = new Date($("#start").val());
@@ -487,7 +487,7 @@ function update_link()
                                            "&end="+end.toLocaleString()+
                                    "&granularity="+get_granularity() + streams);
 }//end update_link
-
+*/
 
 function setupDownload(datastreamId)
 {
@@ -532,4 +532,35 @@ function toggleDateRange(radio_input, date_input_id, mutable_radio_class)
         date_field.removeAttr('disabled');
         $('.'+mutable_radio_class).removeAttr('disabled');
     }
+}
+
+
+/// Save this view and give the link to it.
+/// TODO: Expand to save all widgets, not just graphs, maybe in another js file?
+///       Also, expand to include zoom info, and info per widget/graph instead of page wide
+function saveView()
+{
+    var view = new Object();
+    view['graphs'] = $.makeArray($('.portcullis-graph').map(function(index, domElement) {
+        var graph = new Object();
+        graph['ds_id'] = this.id;
+        graph['reduction'] = $('#reduction_select_'+this.id).val();
+        return graph;
+    }));
+
+    ranges = getRanges();
+    view['start'] = Math.round(ranges.xaxis.from/1000 + timezone_offset/1000);
+    view['end'] = Math.round(ranges.xaxis.to/1000 + timezone_offset/1000);
+    view['granularity'] = get_granularity();
+
+    csrf = $('input[name="csrfmiddlewaretoken"]').val()
+
+    console.log(view['graphs']);
+    console.log(JSON.stringify(view['graphs'][0]));
+    //    stuff = JSON.stringify(view);
+
+    $.post('/portcullis/createSavedView/', {'jsonData': JSON.stringify(view), 'csrfmiddlewaretoken': csrf},
+           function (data) {
+               $('#savedViewLink').html(data['html']);
+           });
 }

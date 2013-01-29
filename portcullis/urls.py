@@ -6,7 +6,8 @@ urlpatterns = patterns('portcullis.views',
      url(r'^login/$', 'login.user_login'),
      url(r'^logout/$', 'login.logout'),
      url(r'^user_streams/$', 'user_portal.user_streams'),
-     url(r'^shared_view/(?P<token>.+)/$', 'shared_view.sharedView')
+     url(r'^shared_view/(?P<token>.+)/$', 'shared_view.sharedView'),
+     url(r'^createSavedView/$', 'shared_view.createSavedView')
 )
 
 
