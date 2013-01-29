@@ -44,6 +44,15 @@ function create_plot_click_handler(datastream_id)
     };
 }
 
+function set_graph_range_labels(start, end, datastream_id)
+{
+    var start_date = new Date(start + timezone_offset);
+    var end_date = new Date(end  + timezone_offset);
+
+    $('#start_range_'+datastream_id).text(start_date.toLocaleString());
+    $('#end_range_'+datastream_id).text(end_date.toLocaleString());
+}
+
 function reset_graph_selection(datastream_id)
 {
     $('#graph_selection_'+datastream_id).attr('style', 'display: none;');
@@ -283,6 +292,7 @@ function zoom_graph(ranges, datastream_id)
         var plot =  plot_graph(data,options,"#sensor" + datastream_id);
         result.resolve(plot);//sent back for binding
 
+        set_graph_range_labels(ranges.xaxis.from, ranges.xaxis.to, datastream_id);
         reset_graph_selection(datastream_id);
     }//end on data_recieved
 
@@ -371,6 +381,7 @@ function renderGraph(data, ranges, shouldScale)
         $('#actual_datapoints_'+dataStreamId).text(data.data.length);
     }
     result.resolve(plot);//sent back for binding
+    set_graph_range_labels(ranges.xaxis.from, ranges.xaxis.to, dataStreamId);
 }
 
 function renderOverview(data, ranges)
