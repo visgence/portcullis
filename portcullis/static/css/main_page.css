@@ -1,3 +1,10 @@
+#main_page
+{
+    position: relative;
+    width: 90%;
+    margin-left: 5%;
+}
+
 #side_pane_content
 {
     margin-top: 1em;
@@ -5,14 +12,17 @@
     margin-right: 1em;
 }
 
+#side_pane.stick
+{
+    position: fixed;
+    top: .1em;
+}
+
 #side_pane
 {
-    border: 3px solid black;
     height: 95%;
     width: 400px;
-    position: relative;
-    top: 0;
-    left: 0;
+    float: left;
 }
 
 #side_pane h2
@@ -22,11 +32,5 @@
 
 #content
 {
-    border: 3px solid black;
-    height: 95%;
-    width: 1192px;
-    position: absolute;
-    top: 0;
-    right: 0;
-    overflow: scroll;
+    margin-left: 400px;
 }

@@ -4,9 +4,7 @@
     <input type="hidden" id="auth_token" value="{{token}}" />
     <h2 id="utc_stamp"></h2>
 </div>    
-
 <div id="graph_container">
-    
     <!-- Create a placeholder for each datastream -->
     {% for widget in view.widget.all %}
     <div id="graph_container_{{widget.saveddsgraph.datastream.id}}" class="graph_container">
