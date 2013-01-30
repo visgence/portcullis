@@ -174,7 +174,7 @@ def getStreamData(g_params, auth):
         print 'User verification failed: ' + ds
         stream_data = {'data':[],
                 'permission':       False,
-                'label':            ds,
+                'ds_label':            ds,
                 "datastream_id":    ds_id,
                 }
         return json.dumps(stream_data)
@@ -200,7 +200,7 @@ def getStreamData(g_params, auth):
         max_value = float(max_value)
 
     stream_data = {
-        "label":            ds.name,
+        "ds_label":            ds.name,
         "port_id":          ds.port_id,
         "data":             data_points,
         "num_readings":     numReadings,
