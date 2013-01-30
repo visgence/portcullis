@@ -1,21 +1,21 @@
 #System Imports
 from django.http import HttpResponse
 from django.template import RequestContext, loader
-from django.core.context_processors import csrf
 
 #Local Imports
 from portcullis.models import DataStream
 from check_access import check_access
 
-def user_streams(request):
+def streams(request):
     '''
     Grab all relevent streams to display as checkboxes in the user portal.  We make sure to remove any duplicate streams from each various section.
     Presedence is given to owner, then to readable, then to public for the duplicate removal.
     '''
 
-    response = check_access(request)
-    if(response):
-        return response
+    # Already filters what is available by username, so don't need to explicitly check access here.
+    #response = check_access(request)
+    #if(response):
+    #    return response
 
     #Pull streams that are owned by this user.
     owned_streams = DataStream.objects.filter(owner__username = request.user.username) 
@@ -26,15 +26,12 @@ def user_streams(request):
     #Pull any public streams as well
     public_streams = DataStream.objects.filter(is_public = True).exclude(id__in=viewable_streams).exclude(id__in=owned_streams)
 
-    streams_page = loader.get_template('user_streams.html')
-    streams_context = RequestContext(request, {'user':request.user,'owned_streams':owned_streams, 'public_streams':public_streams,'viewable_streams':viewable_streams})
-    streams_context.update(csrf(request))
-
-    if request.method == "GET":
-        main_page = loader.get_template('main_page.html')
-        main_context = RequestContext(request, {'side_pane': streams_page.render(streams_context)})
-        return HttpResponse(main_page.render(main_context))
-    else:
-        return streams_page.render(streams_context)
+    t = loader.get_template('user_streams.html')
+    c = RequestContext(request, {'user':request.user,
+                                 'owned_streams':owned_streams,
+                                 'public_streams':public_streams,
+                                 'viewable_streams':viewable_streams})
+    
+    return HttpResponse(t.render(c), mimetype='type/html')
 
 

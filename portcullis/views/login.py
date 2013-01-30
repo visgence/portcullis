@@ -3,24 +3,29 @@ from portcullis.views.user_portal import user_streams
 
 #System Imports
 from django.http import HttpResponseRedirect, HttpResponse
-from django.core import serializers
 from django.template import RequestContext, loader
 from django.core.context_processors import csrf
-from django.contrib.auth import authenticate, login
-from django.contrib.auth import logout as auth_logout
-import urlparse
-import json
+from django.core.urlresolvers import reverse
+from django.contrib.auth import authenticate, login, logout as auth_logout
+try: import simplejson as json
+except ImportError: import json
 
 
-def render_main_page(request):
+def greeting(request):
+    '''
+    ' Render the greeting or login html in the main page.
+    '''
 
-    greeting_temp = loader.get_template('login.html');
+    # TODO: When check_access is updated, may use it here.
+
+    if request.user.is_authenticated() and request.user.is_active:
+        greeting_temp = loader.get_template('greeting.html')
+    else:
+        greeting_temp = loader.get_template('login.html')
+        
     greeting_c = RequestContext(request, {'user': request.user})
     greeting_c.update(csrf(request));
-
-    main_page = loader.get_template('main_page.html')
-    main_c = RequestContext(request, {'greeting': greeting_temp.render(greeting_c) })
-    return HttpResponse(main_page.render(main_c))
+    return greeting_temp.render(greeting_c)
 
 def user_login(request):
 
@@ -60,5 +65,5 @@ def user_login(request):
 
 def logout(request):
     auth_logout(request)
-    return HttpResponseRedirect("/portcullis/greeting/")
+    return HttpResponseRedirect(reverse('portcullis-index'))
 

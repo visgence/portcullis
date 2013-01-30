@@ -6,7 +6,7 @@ from django.http import HttpResponseRedirect
 from django.utils.http import urlquote
 
 def check_access(request):
-
+# TODO: Make useful for a single page app.
     if(request.user.username == ''):
         return HttpResponseRedirect("/portcullis/greeting/?next=%s" % urlquote(request.get_full_path()))
 
