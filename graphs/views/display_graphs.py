@@ -164,7 +164,7 @@ def getStreamData(g_params, auth):
     start = g_params['start']
     end = g_params['end']
     ds_id = g_params['datastream_id']
-    granularity = g_params['granularity']
+    granularity = int(g_params['granularity'])
     reduction_type = g_params['reduction']
 
     
