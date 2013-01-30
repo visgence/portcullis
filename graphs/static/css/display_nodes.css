@@ -72,7 +72,7 @@
 #graph_container
 {
     position: relative;
-    width: 900px;
+    width: 90%;
     margin-left: auto;
     margin-right: auto;
     margin-bottom: 3em;
@@ -114,6 +114,10 @@
 
 .graph_container
 {
+    border: solid 3px gray;
+    margin-top: 3em;
+    padding-left: 2em;
+    width: 90%;
     padding-top: 2em;
     position: relative;
     overflow: hidden;
@@ -139,21 +143,13 @@
     display: block;
 }
 
-.graph_container
-{
-    border: solid 3px gray;
-    margin-top: 3em;
-    padding-left: 2em;
-    width: 855px;
-}
-
 .portcullis_graph { height:400px }
 
 .sensor_graph
 {
     margin-top:10px;
     margin-left:10px;
-    width:800px;
+    width:90%;
     height:300px;
 
 }
@@ -162,7 +158,7 @@
 {
     margin-left:10px;
     margin-top:20px;
-    width:800px;
+    width:90%;
     height:100px;
     margin-bottom:20px;
 }

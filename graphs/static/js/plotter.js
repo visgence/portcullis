@@ -295,6 +295,7 @@ function zoom_graph(ranges, datastream_id)
 
         set_graph_range_labels(ranges.xaxis.from, ranges.xaxis.to, datastream_id);
         reset_graph_selection(datastream_id);
+
     }//end on data_recieved
 
     //request data for the new timeframe

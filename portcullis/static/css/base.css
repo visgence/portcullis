@@ -2,8 +2,8 @@
 {
     position: relative;
     height: 100%;
-    width: 100em;
-    margin-left: 10em;
+    width: 90%;
+    margin-left: 5%;
 }
 
 #header, #greeting
@@ -11,4 +11,7 @@
     margin-left: 10em;
 }
 
-
+#base_content
+{
+    width: 100%;
+}

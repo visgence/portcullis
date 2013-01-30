@@ -11,6 +11,7 @@
 
         <script type="text/javascript" src="{{STATIC_URL}}js/flot/jquery.flot.min.js"></script>
         <script type="text/javascript" src="{{STATIC_URL}}js/flot/jquery.flot.selection.min.js"></script>
+        <script type="text/javascript" src="{{STATIC_URL}}js/flot/jquery.flot.resize.min.js"></script>
         <script type="text/javascript" src="{{STATIC_URL}}js/jquery.flot.axislabels.js"></script>
         
         <script type="text/javascript" src="{{STATIC_URL}}js/downloadify.min.js"></script>
@@ -40,7 +41,7 @@
             </map>
         </div>
         
-        <div class="content">
+        <div id="base_content">
             {% block content %} {%endblock%}
         </div>
     </body>
