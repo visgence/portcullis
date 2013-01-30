@@ -1,4 +1,7 @@
 
+<link rel="stylesheet" media="all" type="text/css" href="{{STATIC_URL}}plugins/mini-colors/jquery.minicolors.css" />
+<script type="text/javascript" src="{{STATIC_URL}}plugins/mini-colors/jquery.minicolors.js"></script>
+
 <div id="graph_container_heading">
     <h1> Sensor Readings</h1>
 
@@ -61,6 +64,7 @@
                     {% endfor %}
                 </select>
                 <p id="downloadify{{stream.id}}"><!--Place holder for download button--></p>
+                <input id="minicolor_{{stream.id}}" class="minicolors" type="text"/>
             </div>
         </div><!--End advanced_options_{{stream.id}}--> 
     </div><!--End graph_container_id -->

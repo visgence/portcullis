@@ -13,6 +13,7 @@
 var timezone_date = new Date();
 var timezone_offset = timezone_date.getTimezoneOffset()*60*1000//milliseconds
 var overviewPlots = {};
+var plots = {};
 
 function create_plot_select_handler(datastream_id) 
 { 
@@ -332,6 +333,7 @@ function graph_overview_callback(ranges) {
         var dData = $.extend(true, {}, data);
         renderGraph(data, ranges, true);
         renderOverview(dData, ranges);
+        ready_minicolors(data.datastream_id);
     }
 }
 
@@ -381,6 +383,7 @@ function renderGraph(data, ranges, shouldScale)
         $('#actual_datapoints_'+dataStreamId).text(data.data.length);
     }
     result.resolve(plot);//sent back for binding
+    plots[dataStreamId] = plot;
     set_graph_range_labels(ranges.xaxis.from, ranges.xaxis.to, dataStreamId);
 }
 
@@ -547,8 +550,60 @@ function saveView()
            });
 }
 
+function ready_minicolors(datastream_id)
+{ 
+    /*
+     * Creates the minicolor pickers inside each graphs advanced options space.
+     */
+
+    var graph_data = plots[datastream_id].getData();
+    var default_color = graph_data[0]['color'];
+
+    $('#minicolor_'+datastream_id).minicolors({
+        animationSpeed: 100,
+        animationEasing: 'swing',
+        change: null,
+        control: 'wheel',
+        defaultValue: default_color,
+        hide: function() {
+            var hex = this.minicolors('value');
+            var overview = overviewPlots[datastream_id];
+            var graph = plots[datastream_id];
+           
+            //Get the current data set to change color
+            var overview_data = overview.getData();
+            var graph_data = graph.getData();
+             
+            //Change color within data
+            overview_data[0]['color'] = hex;
+            graph_data[0]['color'] = hex;
+
+            //Set the data back and tell graphs to draw
+            overviewPlots[datastream_id].setData(overview_data);
+            plots[datastream_id].setData(graph_data);
+            overviewPlots[datastream_id].draw();
+            plots[datastream_id].draw();
+
+        },
+        hideSpeed: 100,
+        inline: false,
+        letterCase: 'lowercase',
+        opacity: false,
+        position: 'top',
+        show: null, 
+        showSpeed: 100,
+        swatchPosition: 'left',
+        textfield: true,
+        theme: 'none'     
+    });
+}
+
 function ready_datepickers()
 {
+    /*
+     * Finds the start and end date picker inputs and initializes them for use.
+     */
+
     $('#start').datetimepicker
     ({
         showSecond: true,

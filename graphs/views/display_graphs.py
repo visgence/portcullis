@@ -211,6 +211,8 @@ def getStreamData(g_params, auth):
         "scaling_function": ds.scaling_function.id,
         "datastream_id":    ds.id,
         "color":            ds.color,
+        "shadowSize":       0,
+        "points":           { "show": False },
         "node_id":          ds.node_id,
         "units":            ds.units,
         "permission":       True
