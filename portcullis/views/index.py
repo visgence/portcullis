@@ -13,16 +13,24 @@ from django.template import RequestContext, loader
 # Local imports
 from portcullis.views.side_pane import streams
 from portcullis.views.login import greeting
+from portcullis.views.savedView import savedView
 
-def index(request):
+def index(request, content = None, content_id = None):
     '''
     ' This is the main page index.  It should render all the
     ' place holders for the panes, as well as the initial content.
+    '
+    ' Keyword Args:
+    '   content - The content page to render, passed by the url
+    '   content-id - The identifier for the content, usually a key/token.
     '''
 
-    # For first iteration of this function, just render the side pane as the user_streams
-    side_pane = streams(request)
-    content_pane = ''
+    if content == 'savedView':
+        side_pane = streams(request)
+        content_pane = savedView(request, content_id).content
+    else:
+        side_pane = streams(request)
+        content_pane = ''
 
     t = loader.get_template('main_page.html')
     c = RequestContext(request, { 'greeting': greeting(request),

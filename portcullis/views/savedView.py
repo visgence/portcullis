@@ -1,5 +1,5 @@
 """
-" portcullis/views/shared_view.py
+" portcullis/views/savedView.py
 " Contributing Authors:
 "    Jeremiah Davis (Visgence, Inc)
 "
@@ -8,6 +8,7 @@
 
 
 # System Imports
+from django.core.urlresolvers import reverse
 from django.db.transaction import commit_on_success
 from django.http import HttpResponse, Http404, HttpResponseForbidden
 from django.template import RequestContext, loader
@@ -23,7 +24,7 @@ from graphs.models import SavedDSGraph
 from graphs.data_reduction import reductFunc
 
 
-def sharedView(request, token):
+def savedView(request, token):
     '''
     ' This view will render the main page for sharing views, with the divs
     ' for widgets.  The widgets will be loaded with ajax after page load.
@@ -61,7 +62,7 @@ def createSavedView(request):
     try:
         portcullisUser = request.user.portcullisuser
     except ObjectDoesNotExist:
-        # Should not be a return, should be a raise, but don't have a 403 right now,
+        # TODO: Should not be a return, should be a raise, but don't have a 403 right now,
         #But should be okay, because save has not been called yet.
         return HttpResponseForbidden('Must be logged in to create saved view')
 
@@ -87,11 +88,10 @@ def createSavedView(request):
         graph = SavedDSGraph(datastream = ds, start = start, end = end,
                              reduction_type = graphData['reduction'], granularity = gran,
                              zoom_start = start, zoom_end = end)
-        print graph
         graph.save()
         savedView.widget.add(graph)
 
-    link = '/portcullis/shared_view/' + key.key + '/'
+    link = reverse('portcullis-saved-view', args = ['savedView', key.key])
 
     return HttpResponse(json.dumps({'html':'<a href="%s">%s</a>' % (link, link)}), mimetype='application/json')
     
