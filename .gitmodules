@@ -1,0 +1,3 @@
+[submodule "portcullis/static/plugins/mini-colors"]
+	path = portcullis/static/plugins/mini-colors
+	url = https://github.com/claviska/jquery-miniColors.git

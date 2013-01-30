@@ -164,7 +164,7 @@ def getStreamData(g_params, auth):
     start = g_params['start']
     end = g_params['end']
     ds_id = g_params['datastream_id']
-    granularity = g_params['granularity']
+    granularity = int(g_params['granularity'])
     reduction_type = g_params['reduction']
 
     
@@ -211,6 +211,8 @@ def getStreamData(g_params, auth):
         "scaling_function": ds.scaling_function.id,
         "datastream_id":    ds.id,
         "color":            ds.color,
+        "shadowSize":       0,
+        "points":           { "show": False },
         "node_id":          ds.node_id,
         "units":            ds.units,
         "permission":       True

@@ -13,6 +13,7 @@
 var timezone_date = new Date();
 var timezone_offset = timezone_date.getTimezoneOffset()*60*1000//milliseconds
 var overviewPlots = {};
+var plots = {};
 
 function create_plot_select_handler(datastream_id) 
 { 
@@ -44,6 +45,15 @@ function create_plot_click_handler(datastream_id)
     };
 }
 
+function set_graph_range_labels(start, end, datastream_id)
+{
+    var start_date = new Date(start + timezone_offset);
+    var end_date = new Date(end  + timezone_offset);
+
+    $('#start_range_'+datastream_id).text(start_date.toLocaleString());
+    $('#end_range_'+datastream_id).text(end_date.toLocaleString());
+}
+
 function reset_graph_selection(datastream_id)
 {
     $('#graph_selection_'+datastream_id).attr('style', 'display: none;');
@@ -72,9 +82,8 @@ function on_graphs_load()
         // setup the download link.
         setupDownload(this.id);
     });
-
-    //Creating range object for query
-    //var ranges = { xaxis: { from: epoch_start, to: epoch_end }};
+    
+    ready_datepickers();
 }
 
 
@@ -130,17 +139,17 @@ function getRanges() {
     var epoch_end;
     var start = new Date($("#start").val());
     var end = new Date($("#end").val());
-
-    var start_radio_text = $('.start_radio:checked').next().text();
-    var end_radio_text = $('.end_radio:checked').next().text();  
     
-    if((start_radio_text != "None" && end_radio_text == "None" && !$("#end").val()) ||
+    var start_range = $('#start_range').val();
+    var end_range = $('#end_range').val();  
+    
+    if((start_range != "None" && end_range == "None" && !$("#end").val()) ||
        ($("#start").val() && !$("#end").val()))
     {
         end = new Date(d.getTime());
         $("#end").val(end.toLocaleString());
     }
-    else if((end_radio_text != "None" && start_radio_text == "None" && !$("#start").val()) ||
+    else if((end_range != "None" && start_range == "None" && !$("#start").val()) ||
             (!$("#start").val() && $("#end").val()))
     {
         start = new Date(d.getTime() - range*1000);
@@ -155,10 +164,10 @@ function getRanges() {
         $("#end").val(end.toLocaleString());
     }
 
-    if(start_radio_text != "None")
-        start = modify_date(end, start_radio_text, true);
-    else if(end_radio_text != "None")
-        end = modify_date(start, end_radio_text, false);
+    if(start_range != "None")
+        start = modify_date(end, start_range, true);
+    else if(end_range != "None")
+        end = modify_date(start, end_range, false);
 
     epoch_start = start.getTime() - timezone_offset;
     epoch_end = end.getTime() - timezone_offset;
@@ -244,20 +253,9 @@ function plot_graph(data,options,div)
 }//end plot_graph
 
 //queries for a time range(datepicker)
-function submit_form(datastream_id)
+function submit_form()
 {   
-    var start = new Date($("#start").val());
-    var end = new Date($("#end").val());
-
     get_granularity();
-    
-    epoch_start = start.getTime();
-    epoch_end= end.getTime();  
-    
-    epoch_start -= timezone_offset;
-    epoch_end -= timezone_offset;
-
-    var ranges = { xaxis: { from: epoch_start , to: epoch_end }};
     loadAllGraphs(getRanges());
 }//end submit_form
 
@@ -295,6 +293,7 @@ function zoom_graph(ranges, datastream_id)
         var plot =  plot_graph(data,options,"#sensor" + datastream_id);
         result.resolve(plot);//sent back for binding
 
+        set_graph_range_labels(ranges.xaxis.from, ranges.xaxis.to, datastream_id);
         reset_graph_selection(datastream_id);
     }//end on data_recieved
 
@@ -334,6 +333,7 @@ function graph_overview_callback(ranges) {
         var dData = $.extend(true, {}, data);
         renderGraph(data, ranges, true);
         renderOverview(dData, ranges);
+        ready_minicolors(data.datastream_id);
     }
 }
 
@@ -383,6 +383,8 @@ function renderGraph(data, ranges, shouldScale)
         $('#actual_datapoints_'+dataStreamId).text(data.data.length);
     }
     result.resolve(plot);//sent back for binding
+    plots[dataStreamId] = plot;
+    set_graph_range_labels(ranges.xaxis.from, ranges.xaxis.to, dataStreamId);
 }
 
 function renderOverview(data, ranges)
@@ -500,20 +502,20 @@ function setupDownload(datastreamId)
     });
 }
 
-function toggleDateRange(radio_input, date_input_id, mutable_radio_class)
+function toggle_date_range(select, date_id, mutable_select)
 {
-    var date_field = $("#"+date_input_id);
-    var span_text = $(radio_input).next().text();
+    var date_field = $("#"+date_id);
+    var selected = $(select).val();
     
-    if(span_text != "None")
+    if(selected != "None")
     {
         date_field.attr('disabled', 'disabled');
-        $('.'+mutable_radio_class).attr('disabled', 'disabled');
+        $('#'+mutable_select).attr('disabled', 'disabled');
     }
     else
     {
         date_field.removeAttr('disabled');
-        $('.'+mutable_radio_class).removeAttr('disabled');
+        $('#'+mutable_select).removeAttr('disabled');
     }
 }
 
@@ -547,3 +549,83 @@ function saveView()
                $('#savedViewLink').html(data['html']);
            });
 }
+
+function ready_minicolors(datastream_id)
+{ 
+    /*
+     * Creates the minicolor pickers inside each graphs advanced options space.
+     */
+
+    var graph_data = plots[datastream_id].getData();
+    var default_color = graph_data[0]['color'];
+
+    $('#minicolor_'+datastream_id).minicolors({
+        animationSpeed: 100,
+        animationEasing: 'swing',
+        change: null,
+        control: 'wheel',
+        defaultValue: default_color,
+        hide: function() {
+            var hex = this.minicolors('value');
+            var overview = overviewPlots[datastream_id];
+            var graph = plots[datastream_id];
+           
+            //Get the current data set to change color
+            var overview_data = overview.getData();
+            var graph_data = graph.getData();
+             
+            //Change color within data
+            overview_data[0]['color'] = hex;
+            graph_data[0]['color'] = hex;
+
+            //Set the data back and tell graphs to draw
+            overviewPlots[datastream_id].setData(overview_data);
+            plots[datastream_id].setData(graph_data);
+            overviewPlots[datastream_id].draw();
+            plots[datastream_id].draw();
+
+        },
+        hideSpeed: 100,
+        inline: false,
+        letterCase: 'lowercase',
+        opacity: false,
+        position: 'top',
+        show: null, 
+        showSpeed: 100,
+        swatchPosition: 'left',
+        textfield: true,
+        theme: 'none'     
+    });
+}
+
+function ready_datepickers()
+{
+    /*
+     * Finds the start and end date picker inputs and initializes them for use.
+     */
+
+    $('#start').datetimepicker
+    ({
+        showSecond: true,
+        dateFormat: 'mm/dd/yy',
+        timeFormat: 'hh:mm:ss',
+        onSelect: function (selectedDateTime)
+        {
+            var start = $(this).datetimepicker('getDate');
+            $('#end').datetimepicker('option', 'minDate', new Date(start.getTime()));
+        }
+    });
+    $('#end').datetimepicker
+    ({
+        showSecond: true,
+        dateFormat: 'mm/dd/yy',
+        timeFormat: 'hh:mm:ss',
+        onSelect: function (selectedDateTime)
+        {
+            var end = $(this).datetimepicker('getDate');
+            $('#start').datetimepicker('option', 'maxDate', new Date(end.getTime()));
+        }
+    });
+
+}
+
