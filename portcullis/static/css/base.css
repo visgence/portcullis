@@ -1,14 +1,9 @@
-#main_page
+#header
 {
+    width: 1512px;
+    margin-left: auto;
+    margin-right: auto;
     position: relative;
-    height: 100%;
-    width: 90%;
-    margin-left: 5%;
-}
-
-#header, #greeting
-{
-    margin-left: 10em;
 }
 
 #base_content

@@ -49,6 +49,7 @@
 {
     border: 1px solid gray;
     text-align: center;
+    width: 80%;
 }
 
 .date_range_seperator
@@ -66,7 +67,7 @@
 
 .portcullis-graph
 {
-    margin-left: 2.5em;
+    margin-left: 3em;
 }
 
 #graph_container
