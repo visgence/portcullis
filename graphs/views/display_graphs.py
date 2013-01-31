@@ -174,7 +174,7 @@ def getStreamData(g_params, auth):
         print 'User verification failed: ' + ds
         stream_data = {'data':[],
                 'permission':       False,
-                'label':            ds,
+                'ds_label':            ds,
                 "datastream_id":    ds_id,
                 }
         return json.dumps(stream_data)
@@ -184,7 +184,6 @@ def getStreamData(g_params, auth):
     readings = SensorReading.objects.filter(timestamp__gte = start, timestamp__lte = end,
                                             datastream = ds).order_by('timestamp')
     numReadings = readings.count()
-
     # if we have less readings than our granularity, put them in a list, otherwise reduce it
     if(numReadings <= granularity):
         data_points = [ [x.timestamp,float(x.value)] for x in readings ]
@@ -201,7 +200,7 @@ def getStreamData(g_params, auth):
         max_value = float(max_value)
 
     stream_data = {
-        "label":            ds.name,
+        "ds_label":            ds.name,
         "port_id":          ds.port_id,
         "data":             data_points,
         "num_readings":     numReadings,

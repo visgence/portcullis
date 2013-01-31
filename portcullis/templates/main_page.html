@@ -4,12 +4,16 @@
 <link rel="stylesheet" media="all" type="text/css" href="{{STATIC_URL}}css/main_page.css" />
 
 <div id="main_page">
+    <div id="side_pane_anchor"><!--Used to tell us if user has scrolled this passed the top or not.--></div>
     <div id="side_pane">
 
         <div id="side_pane_content">
             {{side_pane|safe}}
         </div>
-
+    
+    <script>
+        $(window).scroll(sidepane_relocate);
+    </script>
     </div><!--End side_pane-->
 
     <div id="content">

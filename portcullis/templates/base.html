@@ -11,6 +11,7 @@
 
         <script type="text/javascript" src="{{STATIC_URL}}js/flot/jquery.flot.min.js"></script>
         <script type="text/javascript" src="{{STATIC_URL}}js/flot/jquery.flot.selection.min.js"></script>
+        <script type="text/javascript" src="{{STATIC_URL}}js/flot/jquery.flot.resize.min.js"></script>
         <script type="text/javascript" src="{{STATIC_URL}}js/jquery.flot.axislabels.js"></script>
         
         <script type="text/javascript" src="{{STATIC_URL}}js/downloadify.min.js"></script>
@@ -37,13 +38,12 @@
         </div>
 
         <div id="header">
-            <img id="header_image" src="{{STATIC_URL}}branding/header.png" usemap="#visgence_map"/>
-            <map name="visgence_map">
-                <area shape="rect" href="/" coords="60, 15, 320, 160" title="Go back to Portcullis home page."/>
-            </map>
+            <a href="/" title="Streams">
+                <img id="header_image" src="{{STATIC_URL}}branding/header.png"/>
+            </a>
         </div>
         
-        <div class="content">
+        <div id="base_content">
             {% block content %} {%endblock%}
         </div>
     </body>

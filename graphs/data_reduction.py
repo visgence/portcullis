@@ -18,6 +18,8 @@ def reduceData(rawData, size, red = 'mean'):
     '''
     #TODO: Custom exception for bad redution type.
 
+    print "inside reduce"
+    print size
     increment = len(rawData)/size
     data = []
     for i in range(0, len(rawData), increment):

@@ -203,7 +203,6 @@ function plot_graph(data,options,div)
         var empty_plot = $.plot($(div), [[2,2]], 
                         {
                             bars: { show: true, barWidth: 0.5, fill: 0.9 },
-                            label:  data.label, 
                             xaxis: {ticks: [], autoscaleMargin: 0.02, min: 0, max: 10 },
                             yaxis: { min: 0, max: 10 }
                         });
@@ -219,7 +218,6 @@ function plot_graph(data,options,div)
         var empty_plot = $.plot($(div), [[2,2]], 
                         {
                             bars: { show: true, barWidth: 0.5, fill: 0.9 },
-                            label:  data.label, 
                             xaxis: {ticks: [], autoscaleMargin: 0.02, min: 0, max: 10 },
                             yaxis: { min: 0, max: 10 }
                         });
@@ -233,11 +231,13 @@ function plot_graph(data,options,div)
     } 
     else
     {
+        var default_color = $('#minicolor_'+data.datastream_id).val();
+        if(default_color != '')
+            data.color = default_color
+
         var scaled_data = scale_data(data);
         var csv="time,raw reading,scaled value\n";
-        for (var i in scaled_data['data'])
-        {   
-            //console.log(scaled_data['data'][i]);//DEBUG
+        for (var i in scaled_data['data']) {   
             csv += data['data'][i][0]+",";
             csv += data['data'][i][1]+",";
             csv += scaled_data['data'][i][1]+"\n";
@@ -287,8 +287,11 @@ function zoom_graph(ranges, datastream_id)
     function on_data_recieved(data) 
     {
         //set the graphs title
-        $("#graph_title" + datastream_id).text(data.label + " - Node " + data.node_id + " - Stream " + datastream_id );
+        $("#graph_title" + datastream_id).text(data.ds_label + " - Node " + data.node_id + " - Stream " + datastream_id );
+
+        //Highlight zoomed section on overview graph
         overviewPlots[datastream_id].setSelection({xaxis: {from: ranges.xaxis.from, to: ranges.xaxis.to}}, true);
+
         options.yaxis = {min:data.min_value, max:data.max_value, axisLabel: data.units};
         var plot =  plot_graph(data,options,"#sensor" + datastream_id);
         result.resolve(plot);//sent back for binding
@@ -371,7 +374,7 @@ function renderGraph(data, ranges, shouldScale)
     };
     
     //set the graphs title
-    $("#graph_title" + dataStreamId).text(data.label);
+    $("#graph_title" + dataStreamId).text(data.ds_label);
     options.yaxis = {min:data.min_value, max:data.max_value, axisLabel: data.units};
     var plot;
     if(shouldScale)
@@ -546,6 +549,7 @@ function saveView()
 
     $.post('/portcullis/createSavedView/', {'jsonData': JSON.stringify(view), 'csrfmiddlewaretoken': csrf},
            function (data) {
+               console.log(data);
                $('#savedViewLink').html(data['html']);
            });
 }
@@ -567,22 +571,23 @@ function ready_minicolors(datastream_id)
         defaultValue: default_color,
         hide: function() {
             var hex = this.minicolors('value');
-            var overview = overviewPlots[datastream_id];
             var graph = plots[datastream_id];
+            var overview = overviewPlots[datastream_id];
            
             //Get the current data set to change color
-            var overview_data = overview.getData();
             var graph_data = graph.getData();
+            var overview_data = overview.getData();
              
             //Change color within data
-            overview_data[0]['color'] = hex;
             graph_data[0]['color'] = hex;
+            overview_data[0]['color'] = hex;
 
             //Set the data back and tell graphs to draw
-            overviewPlots[datastream_id].setData(overview_data);
             plots[datastream_id].setData(graph_data);
-            overviewPlots[datastream_id].draw();
+            overviewPlots[datastream_id].setData(overview_data);
+
             plots[datastream_id].draw();
+            overviewPlots[datastream_id].draw();
 
         },
         hideSpeed: 100,

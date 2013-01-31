@@ -16,9 +16,8 @@
     <!-- Create a placeholder for each datastream -->
     {% for stream in streams%}
     <div id="graph_container_{{stream.id}}" class="graph_container"> 
-        <b id = "graph_title{{stream.id}}" class="graph_title"> </b>
-        
         <div id ="{{stream.id}}" class="portcullis-graph">
+            <b id = "graph_title{{stream.id}}" class="graph_title"> </b>
             <div id="sensor{{stream.id}}" class="sensor_graph" ></div>
             <div id="overview{{stream.id}}" class = "overview_graph"></div>
         </div><!--end graph div-->
