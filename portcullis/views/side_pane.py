@@ -32,6 +32,6 @@ def streams(request):
                                  'public_streams':public_streams,
                                  'viewable_streams':viewable_streams})
     
-    return HttpResponse(t.render(c), mimetype='type/html')
+    return HttpResponse(t.render(c), mimetype='text/html')
 
 
