@@ -288,8 +288,7 @@ function submit_form()
 function zoom_graph(ranges, datastream_id)
 {
     var result = $.Deferred();
-    var options = 
-    { 
+    var options = { 
         lines: { show: true }, 
         xaxis: 
         {     
@@ -306,14 +305,10 @@ function zoom_graph(ranges, datastream_id)
     };
 
     //plot the data that we receive
-    function on_data_recieved(data) 
-    {
+    function on_data_recieved(data) {
         //set the graphs title
         $("#graph_title" + datastream_id).text(data.ds_label + " - Node " + data.node_id + " - Stream " + datastream_id );
     
-        console.log(datastream_id);
-        console.log(plots);
-        console.log(overviewPlots);
         //Highlight zoomed section on overview graph
         overviewPlots[datastream_id].setSelection({xaxis: {from: ranges.xaxis.from, to: ranges.xaxis.to}}, true);
 
@@ -321,15 +316,16 @@ function zoom_graph(ranges, datastream_id)
         var plot =  plot_graph(data,options,"#sensor" + datastream_id);
         result.resolve(plot);//sent back for binding
 
+        plots[datastream_id] = plot;
         set_graph_range_labels(ranges.xaxis.from, ranges.xaxis.to, datastream_id);
         reset_graph_selection(datastream_id);
-    }//end on data_recieved
+    }
 
     //request data for the new timeframe
     loadGraph(datastream_id, get_granularity(), ranges, on_data_recieved);
 
     return result;
-}//end zoom_graph
+}
 
 
 function loadAllSharedGraphs(ranges)
@@ -448,6 +444,10 @@ function renderOverview(data, ranges)
         },
         selection: { mode: "x" }
     };
+
+    var default_color = $('#minicolor_'+data.datastream_id).val();
+    if(default_color != '')
+        data.color = default_color
 
     if(data.min_value == null && data.max_value == null )
         options.yaxis = {min:data.min_value, max:data.max_value};
