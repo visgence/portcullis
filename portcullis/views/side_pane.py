@@ -18,16 +18,16 @@ def streams(request):
     #    return response
 
     #Pull streams that are owned by this user.
-    owned_streams = DataStream.objects.filter(owner__username = request.user.username) 
+    owned_streams = DataStream.objects.filter(owner__username = request.user.username).distinct()
         
     #Pull streams that are viewable by this user.
-    viewable_streams = DataStream.objects.filter(can_read__owner__username = request.user.username).exclude(id__in=owned_streams)
+    viewable_streams = DataStream.objects.filter(can_read__owner__username = request.user.username).exclude(id__in=owned_streams).distinct()
 
     #Pull any public streams as well
-    public_streams = DataStream.objects.filter(is_public = True).exclude(id__in=viewable_streams).exclude(id__in=owned_streams)
+    public_streams = DataStream.objects.filter(is_public = True).exclude(id__in=viewable_streams).exclude(id__in=owned_streams).distinct()
 
     t = loader.get_template('user_streams.html')
-    c = RequestContext(request, {'user':request.user,
+    C = RequestContext(request, {'user':request.user,
                                  'owned_streams':owned_streams,
                                  'public_streams':public_streams,
                                  'viewable_streams':viewable_streams})
