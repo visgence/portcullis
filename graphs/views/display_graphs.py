@@ -40,12 +40,7 @@ def display_graphs(request):
     graphs_page = loader.get_template('display_nodes.html')
     graphs_c = RequestContext(request, data)
         
-    controls_page = loader.get_template('graph_controls.html')
-    controls_c = RequestContext(request, data)
-        
-    template_data = {'graphs': graphs_page.render(graphs_c),
-                         'controls': controls_page.render(controls_c)}
-    return HttpResponse(json.dumps(template_data),mimetype="application/json")
+    return HttpResponse(graphs_page.render(graphs_c), mimetype="text/html")
 
 def render_graph(request):
     '''
