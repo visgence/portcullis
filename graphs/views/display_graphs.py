@@ -1,5 +1,5 @@
 #System Imports
-from django.template import RequestContext
+from django.template import RequestContext, Context
 from django.http import HttpResponse, Http404
 from django.template import Context, loader
 from django.core.exceptions import ObjectDoesNotExist
@@ -27,20 +27,33 @@ def display_graphs(request):
 
     json_data = json.loads(request.GET['json_data'])
 
-    data = {
-        'granularity': json_data.get('granularity', ''),
-        'start': json_data.get('start', ''),
-        'end': json_data.get('end', ''),
-        'streams': DataStream.objects.filter(id__in = json_data['streams']),
-        'reductions': reductFunc.keys()
-        }    
-    if(data['granularity'] != ''):
-        data['granularity'] = int(data['granularity'])
+    streams = DataStream.objects.filter(id__in = json_data['streams'])
+
+    t_graph_contain = loader.get_template('graph_container.html')
+    c_graph_contain = RequestContext(request, {'graphs':graphs_list(streams)})
         
-    graphs_page = loader.get_template('display_nodes.html')
-    graphs_c = RequestContext(request, data)
-        
-    return HttpResponse(graphs_page.render(graphs_c), mimetype="text/html")
+    return HttpResponse(t_graph_contain.render(c_graph_contain), mimetype="text/html")
+
+def graphs_list(streams):
+    '''
+    ' Take an iterable of graph streams and return a list of rendered graph objects.
+    ' 
+    ' Keyword args:
+    '  streams - An iterable of DataStreams.
+    '''
+    reductions = reductFunc.keys()    
+    graphs = []
+    t_graph = loader.get_template('graph.html')
+    for stream in streams:
+        c_graph = Context({
+                'id': stream.id,
+                'node_id': stream.node_id,
+                'port_id': stream.port_id,
+                'reductions': reductions
+                })
+        graphs.append(t_graph.render(c_graph))
+    return graphs
+
 
 def render_graph(request):
     '''

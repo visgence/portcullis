@@ -28,6 +28,8 @@ def savedView(request, token):
     '''
     ' This view will render the main page for sharing views, with the divs
     ' for widgets.  The widgets will be loaded with ajax after page load.
+    '
+    ' TODO: When other kinds of  widgets are added, add them to the page also.
     '''
     # validate the token, consuming a use if applicable
     key = Key.objects.validate(token)
