@@ -192,6 +192,23 @@ function scale_data(data)
     return data;
 }
 
+function graph_options_visibility(datastream_id, display_css) {
+    /*
+     * Get's a specific graphs advanced options and overview and changes it's visibility by setting 
+     * it's display css property.
+     *
+     * datastream_id - The graphs id who's options and overview will change.
+     * display_css   - String that will be set as the 'display' css property.
+     */
+
+    var advanced_options = $('#advanced_options_'+datastream_id);
+    var advanced_hook = $(advanced_options).prev('.graph_toggle');
+    $('#overview'+datastream_id).css('display', display_css);
+    $(advanced_options).css('display', display_css);
+    $(advanced_hook).css('display', display_css);
+    $(advanced_options).hide();
+}
+
 function plot_empty_graph(datastream_id, msg)
 {
     /*
@@ -214,14 +231,11 @@ function plot_empty_graph(datastream_id, msg)
 
     //Put in message for why graph is empty
     $(div).append('<span class="empty_graph_msg">'+msg+'</span>'); 
+    graph_options_visibility(datastream_id, 'none');
 
-    //Get rid of graphs advanced options, no longer needed.
-    var advanced_options = $('#advanced_options_'+datastream_id);
-    var advanced_hook = $(advanced_options).prev('.graph_toggle');
-    $('#overview'+datastream_id).remove();
-    $(advanced_options).remove();
-    $(advanced_hook).remove();
-        
+    //Add empty class so everything that needs graphs with data can ignore.
+    $('#'+datastream_id).addClass('empty');
+
     return empty_plot;
 }
 
@@ -255,6 +269,8 @@ function plot_graph(data, options, div)
     $('#datapoints_'+data.datastream_id).text(data.num_readings);
     $('#actual_datapoints_'+data.datastream_id).text(scaled_data['data'].length);
 
+    $('#'+data.datastream_id).removeClass('empty');
+
     return plot;
 }
 
@@ -272,8 +288,7 @@ function submit_form()
 function zoom_graph(ranges, datastream_id)
 {
     var result = $.Deferred();
-    var options = 
-    { 
+    var options = { 
         lines: { show: true }, 
         xaxis: 
         {     
@@ -290,11 +305,10 @@ function zoom_graph(ranges, datastream_id)
     };
 
     //plot the data that we receive
-    function on_data_recieved(data) 
-    {
+    function on_data_recieved(data) {
         //set the graphs title
         $("#graph_title" + datastream_id).text(data.ds_label + " - Node " + data.node_id + " - Stream " + datastream_id );
-
+    
         //Highlight zoomed section on overview graph
         overviewPlots[datastream_id].setSelection({xaxis: {from: ranges.xaxis.from, to: ranges.xaxis.to}}, true);
 
@@ -302,15 +316,16 @@ function zoom_graph(ranges, datastream_id)
         var plot =  plot_graph(data,options,"#sensor" + datastream_id);
         result.resolve(plot);//sent back for binding
 
+        plots[datastream_id] = plot;
         set_graph_range_labels(ranges.xaxis.from, ranges.xaxis.to, datastream_id);
         reset_graph_selection(datastream_id);
-    }//end on data_recieved
+    }
 
     //request data for the new timeframe
     loadGraph(datastream_id, get_granularity(), ranges, on_data_recieved);
 
     return result;
-}//end zoom_graph
+}
 
 
 function loadAllSharedGraphs(ranges)
@@ -347,6 +362,8 @@ function graph_overview_callback(ranges) {
             plot_empty_graph(data.datastream_id, msg);
         }
         else {
+            graph_options_visibility(data.datastream_id, '');
+
             //Make a full copy of the data since the two graphs need their own copy to work.
             var dData = $.extend(true, {}, data);
             renderGraph(data, ranges, true);
@@ -428,6 +445,10 @@ function renderOverview(data, ranges)
         selection: { mode: "x" }
     };
 
+    var default_color = $('#minicolor_'+data.datastream_id).val();
+    if(default_color != '')
+        data.color = default_color
+
     if(data.min_value == null && data.max_value == null )
         options.yaxis = {min:data.min_value, max:data.max_value};
     else
@@ -443,7 +464,7 @@ function resetZoom(streamId)
 {
     if($("#zoom_sync_"+streamId).is(':checked'))         
     {
-        divs = $(".portcullis-graph");
+        divs = $(".portcullis-graph:not(.empty)");
         for (var i = 0; i < divs.length; i++) 
         {
             var datastream_id = divs[i].id;
@@ -484,7 +505,7 @@ function resetZoom(streamId)
  *selection in flot. */
 function zoom_all_graphs(ranges)
 {
-    divs = $(".portcullis-graph");
+    divs = $(".portcullis-graph:not(.empty)");
     for (var i = 0; i < divs.length; i++) 
     {
         var datastream_id = divs[i].id;

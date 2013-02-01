@@ -27,10 +27,12 @@ def streams(request):
     public_streams = DataStream.objects.filter(is_public = True).exclude(id__in=viewable_streams).exclude(id__in=owned_streams).distinct()
 
     t_streams = loader.get_template('user_streams.html')
-    c_streams = RequestContext(request, {'user':request.user,
-                                 'owned_streams':owned_streams,
-                                 'public_streams':public_streams,
-                                 'viewable_streams':viewable_streams})
+    c_streams = RequestContext(request, {
+            'user':request.user,
+            'owned_streams':owned_streams,
+            'public_streams':public_streams,
+            'viewable_streams':viewable_streams
+            })
     t_controls = loader.get_template('graph_controls.html')
     c_controls = RequestContext(request)
     
