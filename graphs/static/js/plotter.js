@@ -192,65 +192,71 @@ function scale_data(data)
     return data;
 }
 
-/*Plots a  graph.
-* returns: plot object
-*/
-function plot_graph(data,options,div)
+function plot_empty_graph(datastream_id, msg)
 {
- 
-    if(data.permission == "false")
-    {
-        var empty_plot = $.plot($(div), [[2,2]], 
-                        {
-                            bars: { show: true, barWidth: 0.5, fill: 0.9 },
-                            xaxis: {ticks: [], autoscaleMargin: 0.02, min: 0, max: 10 },
-                            yaxis: { min: 0, max: 10 }
-                        });
-        //inform the user that there is no data for this sensor 
-        var offset = empty_plot.pointOffset({ x: 4, y: 5});
-        $(div).append('<div style="position:absolute;width:800px;text-align:center;top:' + offset.top + 
-                      'px;color:#666;font-size:smaller">You do not have permission to view '+ data.label + '</div>');
+    /*
+     * Plots and returns an empty graph with a message in the graphs center.  
+     *
+     * datastream_id - The id of the stream itself.
+     * msg           - The message to appear in the graphs center.
+     *
+     * Returns: Empty flot graph.
+     */
+    
+    //Div hook for empty graph
+    var div = "#sensor"+datastream_id;
 
+    var empty_plot = $.plot($(div), [[2,2]], {
+        bars: { show: true, barWidth: 0.5, fill: 0.9 },
+        xaxis: {ticks: [], autoscaleMargin: 0.02, min: 0, max: 10},
+        yaxis: { min: 0, max: 10 }
+    });
+
+    //Put in message for why graph is empty
+    $(div).append('<span class="empty_graph_msg">'+msg+'</span>'); 
+
+    //Get rid of graphs advanced options, no longer needed.
+    var advanced_options = $('#advanced_options_'+datastream_id);
+    var advanced_hook = $(advanced_options).prev('.graph_toggle');
+    $('#overview'+datastream_id).remove();
+    $(advanced_options).remove();
+    $(advanced_hook).remove();
+        
+    return empty_plot;
+}
+
+function plot_graph(data, options, div)
+{
+    /*
+     * Plots and returns a flot graph using given data and options.
+     *
+     * data    - Object structure containing data from server to graph.
+     * options - Dictionary like object specifying how the graph should be created.
+     * div     - String that is the id for the div hook for the graph to drawn to.
+     *
+     * Returns: A newly created flot graph. Shiny!
+     */
+
+    var default_color = $('#minicolor_'+data.datastream_id).val();
+    if(default_color != '')
+        data.color = default_color
+
+    var scaled_data = scale_data(data);
+    var csv="time,raw reading,scaled value\n";
+    for (var i in scaled_data['data']) {   
+        csv += data['data'][i][0]+",";
+        csv += data['data'][i][1]+",";
+        csv += scaled_data['data'][i][1]+"\n";
     }
-    //If no data then say so inside empty graph
-    else if(data.data.length==0)
-    {  
-        var empty_plot = $.plot($(div), [[2,2]], 
-                        {
-                            bars: { show: true, barWidth: 0.5, fill: 0.9 },
-                            xaxis: {ticks: [], autoscaleMargin: 0.02, min: 0, max: 10 },
-                            yaxis: { min: 0, max: 10 }
-                        });
-        //inform the user that there is no data for this sensor 
-        var offset = empty_plot.pointOffset({ x: 4, y: 5});
-        $(div).append('<div style="position:absolute;width:800px;text-align:center;top:' + offset.top + 
-                      'px;color:#666;font-size:smaller">No Data for '+ data.label + ' in this range</div>');
 
-        $('#datapoints_'+data.datastream_id).text('0');
-        $('#actual_datapoints_'+data.datastream_id).text('0');
-    } 
-    else
-    {
-        var default_color = $('#minicolor_'+data.datastream_id).val();
-        if(default_color != '')
-            data.color = default_color
+    scaled_data['raw_data'] = data['data'];
+    var plot = $.plot($(div), [scaled_data], options);
+    $(div+"_csv").html(csv);
+    $('#datapoints_'+data.datastream_id).text(data.num_readings);
+    $('#actual_datapoints_'+data.datastream_id).text(scaled_data['data'].length);
 
-        var scaled_data = scale_data(data);
-        var csv="time,raw reading,scaled value\n";
-        for (var i in scaled_data['data']) {   
-            csv += data['data'][i][0]+",";
-            csv += data['data'][i][1]+",";
-            csv += scaled_data['data'][i][1]+"\n";
-        }   
-
-        scaled_data['raw_data'] = data['data'];
-        var plot = $.plot($(div), [scaled_data], options);
-        $(div+"_csv").html(csv);
-        $('#datapoints_'+data.datastream_id).text(data.num_readings);
-        $('#actual_datapoints_'+data.datastream_id).text(scaled_data['data'].length);
-        return plot;
-    }
-}//end plot_graph
+    return plot;
+}
 
 //queries for a time range(datepicker)
 function submit_form()
@@ -331,12 +337,25 @@ function loadAllGraphs(ranges)
 
 function graph_overview_callback(ranges) {
     return function (data) {
-                
-        //Make a full copy of the data since the two graphs need their own copy to work.
-        var dData = $.extend(true, {}, data);
-        renderGraph(data, ranges, true);
-        renderOverview(dData, ranges);
-        ready_minicolors(data.datastream_id);
+        
+        if(data.data.length == 0) {
+            var msg = "No data for this range.";
+            plot_empty_graph(data.datastream_id, msg);
+        }
+        else if(!data.permission) {
+            var msg = "You do not have permission to view this graph.";
+            plot_empty_graph(data.datastream_id, msg);
+        }
+        else {
+            //Make a full copy of the data since the two graphs need their own copy to work.
+            var dData = $.extend(true, {}, data);
+            renderGraph(data, ranges, true);
+            renderOverview(dData, ranges);
+            ready_minicolors(data.datastream_id);
+        }
+
+        //set the graphs title
+        $("#graph_title" + data.datastream_id).text(data.ds_label);
     }
 }
 
@@ -373,8 +392,6 @@ function renderGraph(data, ranges, shouldScale)
         }
     };
     
-    //set the graphs title
-    $("#graph_title" + dataStreamId).text(data.ds_label);
     options.yaxis = {min:data.min_value, max:data.max_value, axisLabel: data.units};
     var plot;
     if(shouldScale)
@@ -615,6 +632,7 @@ function ready_datepickers()
             $('#end').datetimepicker('option', 'minDate', new Date(start.getTime()));
         }
     });
+
     $('#end').datetimepicker
     ({
         showSecond: true,
@@ -626,7 +644,6 @@ function ready_datepickers()
             $('#start').datetimepicker('option', 'maxDate', new Date(end.getTime()));
         }
     });
-
 }
 
 /**
