@@ -4,6 +4,7 @@ from django.http import HttpResponse, Http404
 from django.template import Context, loader
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render
+from django.views.decorators.http import require_GET
 try: import simplejson as json
 except ImportError: import json
 
@@ -13,103 +14,42 @@ from check_access import check_access
 from graphs.data_reduction import reduceData, reductFunc
 from graphs.models import SavedDSGraph
 
+@require_GET
 def display_graphs(request):
     '''
-    Grabs all relevent data streams that are to be displayed and returns them to the display_nodes
-    template. There are two ways for this to be called. The first is through the user portal after
-    logging in.  This requires them to check off all streams they want to see and we grab them. 
-    Otherwise we get url parameters through a GET and obtain the proper streams that way.
-
-    TODO: The share this view linkage needs GET in order to work.  Would like to seperate that 
-          functionality out to have POST as well from the user portal perhaps.  
+    ' Use JSON data to retrieve the appropriate datastreams for rendering.
     '''
 
-    response = check_access(request)
-    if(response):
-        return response
+    # TODO: Figure out how we want to do check_access
+    #response = check_access(request)
+    #if(response):
+    #    return response
 
-    if(request.method == 'GET'):
-        if 'json_data' in request.GET:
-            json_data = json.loads(request.GET['json_data'])
-            view_streams = json_data.get('view', [])
-            owned_streams = json_data.get('owned', [])
-            public_streams = json_data.get('public', [])
-        else:
-            json_data = request.GET
-            view_streams = json_data.getlist('view', [])
-            owned_streams = json_data.getlist('owned', [])
-            public_streams = json_data.getlist('public', [])
+    json_data = json.loads(request.GET['json_data'])
+
+
+    print type(json_data['streams'])
+    print json_data['streams']
+
+    data = {
+        'granularity': json_data.get('granularity', ''),
+        'start': json_data.get('start', ''),
+        'end': json_data.get('end', ''),
+        'streams': DataStream.objects.filter(id__in = json_data['streams']),
+        'reductions': reductFunc.keys()
+        }    
+    if(data['granularity'] != ''):
+        data['granularity'] = int(data['granularity'])
         
-        node = json_data.get('node', '')
-        port = json_data.get('port', '')
-        start = json_data.get('start', '')
-        end = json_data.get('end', '')
-        granularity = json_data.get('granularity', '')
-        show_public= json_data.get('show_public', '')
-
-        data = {
-            'granularity':granularity,
-            'start':start,
-            'end':end,
-            'streams':DataStream.objects.none(),
-            'reductions': reductFunc.keys()
-        }
+    graphs_page = loader.get_template('display_nodes.html')
+    graphs_c = RequestContext(request, data)
         
-        if(granularity != ''):
-            data['granularity'] = int(granularity)
+    controls_page = loader.get_template('graph_controls.html')
+    controls_c = RequestContext(request, data)
         
-        #Grab all read-able streams
-        if(len(view_streams) > 0):
-            for stream in view_streams:
-                data['streams'] = data['streams'] | DataStream.objects.filter(id = stream) 
-
-        #Grab all owned streams by this user
-        if(len(owned_streams) > 0):
-            for stream in owned_streams:
-                data['streams'] = data['streams'] | DataStream.objects.filter(id = stream) 
-
-        #Grab all public streams
-        if(len(public_streams) > 0):
-            for stream in public_streams:
-                data['streams'] = data['streams'] | DataStream.objects.filter(id = stream) 
-
-        #It's possible for this to be empty so check then order the streams and return them
-        if(data['streams']):
-            data['streams'] = data['streams'].order_by('node_id', 'port_id', 'id')
-
-            if 'json_data' not in request.GET: 
-                return render(request,'display_nodes_shared.html', data, context_instance=RequestContext(request))        
-
-            graphs_page = loader.get_template('display_nodes.html')
-            graphs_c = RequestContext(request, data)
-        
-            controls_page = loader.get_template('graph_controls.html')
-            controls_c = RequestContext(request, data)
-
-            template_data = {'graphs': graphs_page.render(graphs_c),
-                             'controls': controls_page.render(controls_c)}
-            return HttpResponse(json.dumps(template_data),mimetype="application/json")
-
-        #If we have a node or node/port pair then pull streams for those otherwise pull streams
-        if(node != None and port != None):
-           data['streams'] = DataStream.objects.filter(node_id = int(node), port_id = int(port), can_read__owner = request.user)
-        elif(node != None):
-            data['streams'] = DataStream.objects.filter(node_id = int(node), can_read__owner = request.user)
-        else:
-            data['streams'] = DataStream.objects.filter(can_read__owner = request.user)
-      
-        graphs_page = loader.get_template('display_nodes.html')
-        graphs_c = RequestContext(request, data)
-
-        controls_page = loader.get_template('graph_controls.html')
-        controls_c = RequestContext(request, data)
-
-        
-        template_data = {'graphs': graphs_page.render(graphs_c),
+    template_data = {'graphs': graphs_page.render(graphs_c),
                          'controls': controls_page.render(controls_c)}
-        return json.dumps(template_data)
-        #return render(request,'display_nodes.html', data, context_instance=RequestContext(request))        
-
+    return HttpResponse(json.dumps(template_data),mimetype="application/json")
 
 def render_graph(request):
     '''
