@@ -27,10 +27,6 @@ def display_graphs(request):
 
     json_data = json.loads(request.GET['json_data'])
 
-
-    print type(json_data['streams'])
-    print json_data['streams']
-
     data = {
         'granularity': json_data.get('granularity', ''),
         'start': json_data.get('start', ''),
