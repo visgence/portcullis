@@ -580,6 +580,7 @@ function saveView()
     view['granularity'] = get_granularity();
 
     csrf = $('input[name="csrfmiddlewaretoken"]').val()
+
     $.post('/portcullis/createSavedView/', {'jsonData': JSON.stringify(view), 'csrfmiddlewaretoken': csrf},
            function (data) {
                $('#savedViewLink').html(data['html']);
@@ -666,3 +667,31 @@ function ready_datepickers()
     });
 }
 
+/**
+ * This function is called when the submit button in the Streams control is pushed.
+ * It gets the id's of the requested streams and makes an ajax request to render them
+ * in the content pane.
+ */
+function get_selected_streams()
+{
+    var checked_streams = $.makeArray($('.stream:checked').map(function(index, element) {
+        return $(this).val();
+    }));
+
+    if(checked_streams.length == 0)
+        return;
+
+    var get_data = new Object();
+
+    get_data['streams'] = checked_streams;
+    var json_data = JSON.stringify(get_data);
+
+    $.get('/graphs/', {'json_data': json_data}, function(data){
+        var previous_controls = $('#graph_controls');
+        if(previous_controls.length > 0)
+           previous_controls.remove();
+
+        $('#side_pane_content').prepend(data.controls);
+        $('#content').html(data.graphs);
+    });
+}
