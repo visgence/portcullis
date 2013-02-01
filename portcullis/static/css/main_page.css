@@ -1,8 +1,7 @@
 #main_page
 {
     position: relative;
-    width: 90%;
-    margin-left: 5%;
+    width: 100%;
 }
 
 #side_pane_content
@@ -21,7 +20,7 @@
 #side_pane
 {
     height: 95%;
-    width: 400px;
+    width: 300px;
     float: left;
 }
 
@@ -32,5 +31,5 @@
 
 #content
 {
-    margin-left: 400px;
+    margin-left: 300px;
 }

@@ -29,7 +29,11 @@
 #end
 {
     width: 12em;
-    margin-top: 2em;
+}
+
+#end_label
+{
+    margin-top: 1em;
 }
 
 #graph_time_controls ul
@@ -126,17 +130,18 @@
 {
     float: left;
     display: block;
-    width: 20em;
+    margin-left: 1em;
 }
 
 .stream_data_container ul
 {
     list-style: none; 
+    padding: 0;
 }
 
 .stream_controls_container
 {
-    width: 15em;
+    width: 13em;
     margin-right: 1em;
     float: right;
     display: block;
@@ -147,17 +152,15 @@
 .sensor_graph
 {
     margin-top:10px;
-    margin-left:10px;
-    width:90%;
+    margin-right:2em;
     height:300px;
 
 }
 
 .overview_graph
 {
-    margin-left:10px;
+    margin-right: 2em;
     margin-top:20px;
-    width:90%;
     height:100px;
     margin-bottom:20px;
 }
