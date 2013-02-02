@@ -24,7 +24,6 @@ function post_login(data)
     if(data.error)
         $('#login_error').text(data.error);
     else {
-        $('#side_pane_content').html(data.streams_html);
         $('#greeting').html(data.greeting);
         $('#login_error').text('');
     }
