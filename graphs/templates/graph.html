@@ -2,6 +2,7 @@
 {# This is a single, discrete graph skeleton.  It will be added to the graph_container. #}
 <div id="graph_container_{{id}}" class="graph_container"> 
     <div id ="{{id}}" class="portcullis-graph">
+        <input type="hidden" id="saved_graph_{{widget_id}}" value="{{widget_id}}" />
         <b id = "graph_title{{id}}" class="graph_title"> </b>
         <div id="sensor{{id}}" class="sensor_graph" ></div>
         <div id="overview{{id}}" class = "overview_graph"></div>

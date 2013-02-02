@@ -22,7 +22,7 @@ from datetime import datetime, timedelta
 from portcullis.models import SavedView, Key, DataStream
 from graphs.models import SavedDSGraph
 from graphs.data_reduction import reductFunc
-
+from graphs.views.display_graphs import graphs_list
 
 def savedView(request, token):
     '''
@@ -38,17 +38,10 @@ def savedView(request, token):
 
     # Load the instance, if there is one.
     view = SavedView.objects.get(key = key)
+    streams = [ w.saveddsgraph.datastream for w in view.widget.all()]
 
-
-    dateformat = '%Y/%m/%d %H:%M:%S'
-    start = datetime.utcfromtimestamp(view.widget.all()[0].saveddsgraph.start)
-    end = datetime.utcfromtimestamp(view.widget.all()[0].saveddsgraph.end)
-    t = loader.get_template('sharedView.html')
-    c = RequestContext(request, {'view': view,
-                                 'start': start,
-                                 'end': end,
-                                 'granularity': view.widget.all()[0].saveddsgraph.granularity,
-                                 'reductions': reductFunc.keys(),
+    t = loader.get_template('graph_container.html')
+    c = RequestContext(request, {'graphs': graphs_list(streams),
                                  'token': token
                                  })
 

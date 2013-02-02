@@ -84,6 +84,11 @@ function on_graphs_load()
     });
     
     ready_datepickers();
+    
+    if (  $('#auth_token').val() )
+        loadAllSharedGraphs(getRanges());
+    else 
+        loadAllGraphs(getRanges());
 }
 
 
