@@ -66,6 +66,11 @@
     margin-top: 1em;
 }
 
+.stream_clickable
+{
+    display: inline-block;
+}
+
 /*********** Graphs ***********/
 
 

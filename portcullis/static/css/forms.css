@@ -7,3 +7,9 @@ select:disabled
 {
     background: #D8D8D8;
 }
+
+.clickable:hover
+{
+    cursor: pointer;
+    color: #DE4343;
+}

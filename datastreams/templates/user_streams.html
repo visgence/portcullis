@@ -6,7 +6,11 @@
     <h2>Streams</h2>
 
     {% if owned_streams %}
+    <div  class="section_toggle stream_clickable clickable" onclick="toggle_form_section(event);">
         <b>My Streams</b>
+        <span class="collapse_state">+</span>
+    </div>
+    <div>
         <!-- Create a checkbox for each datastream owned by this user-->
         <ul class="streams">
             {% for stream in owned_streams%}
@@ -20,11 +24,16 @@
                 <label for="owned_checkall">Check All</label>
             </li>
         </ul>
-
+    </div>
+    <br/>
     {% endif %}
     
     {% if viewable_streams%}
+    <div  class="section_toggle stream_clickable clickable" onclick="toggle_form_section(event);">
         <b>Viewable Streams</b>
+        <span class="collapse_state">+</span>
+    </div>
+    <div>
         <!-- Create a checkbox for each public datastream -->
         <ul class="streams">
             {% for stream in viewable_streams%}
@@ -38,10 +47,16 @@
                 <label for="view_checkall">Check All</label>
             </li>
         </ul>
+    </div>
+    <br/>
     {% endif %}
-
+    
     {% if public_streams %}
+    <div  class="section_toggle stream_clickable clickable" onclick="toggle_form_section(event);">
         <b>Public Streams</b>
+        <span class="collapse_state">+</span>
+    </div>
+    <div>
         <!-- Create a checkbox for each public datastream -->
         <ul class="streams">
             {% for stream in public_streams%}
@@ -55,7 +70,12 @@
                 <label for="public_checkall">Check All</label>
             </li>
         </ul>
+    </div>
+    <br/>
      {% endif %}
-
-    <input type="button" value="submit" onclick="get_selected_streams();"/>
+    
+     <input type="button" value="submit" onclick="get_selected_streams();"/>
+     <script>
+        collapse_all();
+     </script>
 </div>

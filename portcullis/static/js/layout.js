@@ -10,7 +10,18 @@ function toggle_form_section(event) {
     };
 
     var element = $(event.target);
+    if($(element).hasClass('collapse_state'))
+        element = $(element).parent();
+    else if($(element).is('b'))
+        element = $(element).parent();
+
     element.next().toggle(toggle_options);
+
+    var toggle_symbol = $(element).children('.collapse_state');
+    if(toggle_symbol.html() == '+')
+        toggle_symbol.html('-');
+    else if(toggle_symbol.html() == "-")
+        toggle_symbol.html('+');
 }
 
 function collapse_all() {

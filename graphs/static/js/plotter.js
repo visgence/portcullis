@@ -84,6 +84,7 @@ function on_graphs_load()
     });
     
     ready_datepickers();
+    loadAllGraphs(getRanges());
 }
 
 
