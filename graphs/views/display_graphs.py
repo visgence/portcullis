@@ -57,7 +57,7 @@ def render_graph(request):
 
     try:
         portcullisUser = request.user.portcullisuser
-    except ObjectDoesNotExist:
+    except AttributeError:
         portcullisUser = None
 
     return HttpResponse(getStreamData(json.loads(jsonData), portcullisUser), mimetype="application/json")
