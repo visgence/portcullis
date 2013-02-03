@@ -150,21 +150,21 @@ function getRanges() {
        ($("#start").val() && !$("#end").val()))
     {
         end = new Date(d.getTime());
-        $("#end").val(end.toLocaleString());
+        $("#end").val(dateToString(end));
     }
     else if((end_range != "None" && start_range == "None" && !$("#start").val()) ||
             (!$("#start").val() && $("#end").val()))
     {
         start = new Date(d.getTime() - range*1000);
-        $("#start").val(start.toLocaleString());
+        $("#start").val(dateToString(start));
     }
     else if(!$("#start").val() && !$("#end").val())
     {    
         start = new Date(d.getTime() - range*1000);
         end= new Date(d.getTime());
  
-        $("#start").val(start.toLocaleString());
-        $("#end").val(end.toLocaleString());
+        $("#start").val(dateToString(start));
+        $("#end").val(dateToString(end));
     }
 
     if(start_range != "None")
@@ -692,4 +692,14 @@ function get_selected_streams()
     $.get('/graphs/', {'json_data': json_data}, function(data){
         $('#content').html(data);
     });
+}
+
+/** Take a Date object and return a string formatted as:
+ * mm/dd/yyyy HH:MM:SS
+ */
+function dateToString(date)
+{
+    dStr = String(date.getMonth() + 1) + '/' + String(date.getDate()) + '/' + String(date.getFullYear()) + 
+        ' ' + String(date.getHours()) + ':' + String(date.getMinutes()) + ':' + String(date.getSeconds());
+    return dStr;
 }
