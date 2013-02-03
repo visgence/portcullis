@@ -402,8 +402,8 @@ function renderGraph(data, ranges, shouldScale)
         {     
             mode: "time", 
             timeformat: " %m-%d %h:%M %p",
-            min: ranges.xaxis.from,
-            max: ranges.xaxis.to,
+            min: !data['xmin'] ? ranges.xaxis.from : data['xmin']*1000 - timezone_offset,
+            max: !data['xmax'] ? ranges.xaxis.to : data['xmax']*1000 - timezone_offset,
             ticks: 5
         },
         selection: {mode: "x"},
@@ -411,7 +411,8 @@ function renderGraph(data, ranges, shouldScale)
             clickable: true
         }
     };
-    
+    console.log(options.xaxis.min);
+    console.log(options.xaxis.max);
     options.yaxis = {min:data.min_value, max:data.max_value, axisLabel: data.units};
     var plot;
     if(shouldScale)
@@ -442,8 +443,8 @@ function renderOverview(data, ranges)
             mode: "time", 
             timeformat: "%m-%d %h:%M %p",
             ticks: 5 ,
-            min: ranges.xaxis.from,
-            max: ranges.xaxis.to
+            min: !data['xmin'] ? ranges.xaxis.from : data['xmin']*1000 - timezone_offset,
+            max: !data['xmax'] ? ranges.xaxis.to : data['xmax']*1000 - timezone_offset
         },
         selection: { mode: "x" }
     };

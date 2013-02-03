@@ -136,7 +136,7 @@ def getStreamData(g_params, auth):
         max_value = float(max_value)
 
     stream_data = {
-        "ds_label":            ds.name,
+        "ds_label":         ds.name,
         "port_id":          ds.port_id,
         "data":             data_points,
         "num_readings":     numReadings,
@@ -150,7 +150,9 @@ def getStreamData(g_params, auth):
         "points":           { "show": False },
         "node_id":          ds.node_id,
         "units":            ds.units,
-        "permission":       True
+        "permission":       True,
+        "xmax":             end,
+        "xmin":             start
         }
 
 
