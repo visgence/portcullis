@@ -26,6 +26,9 @@ function post_login(data)
     else {
         $('#greeting').html(data.greeting);
         $('#login_error').text('');
+        $.get('/portcullis/streams/', function(data) {
+            $('#side_pane_content').html(data);
+        });
     }
 }
 
