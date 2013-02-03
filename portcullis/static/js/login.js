@@ -28,6 +28,7 @@ function post_login(data)
         $('#login_error').text('');
         $.get('/portcullis/streams/', function(data) {
             $('#side_pane_content').html(data);
+            ready_datepickers();
         });
     }
 }
