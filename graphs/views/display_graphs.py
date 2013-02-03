@@ -29,18 +29,6 @@ def display_graphs(request):
 
     streams = DataStream.objects.filter(id__in = json_data['streams'])
 
-    t_graph_contain = loader.get_template('graph_container.html')
-    c_graph_contain = RequestContext(request, {'graphs':graphs_list(streams)})
-        
-    return HttpResponse(t_graph_contain.render(c_graph_contain), mimetype="text/html")
-
-def graphs_list(streams):
-    '''
-    ' Take an iterable of graph streams and return a list of rendered graph objects.
-    ' 
-    ' Keyword args:
-    '  streams - An iterable of DataStreams.
-    '''
     reductions = reductFunc.keys()    
     graphs = []
     t_graph = loader.get_template('graph.html')
@@ -52,7 +40,11 @@ def graphs_list(streams):
                 'reductions': reductions
                 })
         graphs.append(t_graph.render(c_graph))
-    return graphs
+
+    t_graph_contain = loader.get_template('graph_container.html')
+    c_graph_contain = RequestContext(request, {'graphs':graphs})
+
+    return HttpResponse(t_graph_contain.render(c_graph_contain), mimetype="text/html")
 
 
 def render_graph(request):

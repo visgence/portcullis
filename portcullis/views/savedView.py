@@ -11,7 +11,7 @@
 from django.core.urlresolvers import reverse
 from django.db.transaction import commit_on_success
 from django.http import HttpResponse, Http404, HttpResponseForbidden
-from django.template import RequestContext, loader
+from django.template import RequestContext, Context, loader
 from django.views.decorators.http import require_POST
 from django.utils import timezone
 try: import simplejson as json
@@ -22,7 +22,6 @@ from datetime import datetime, timedelta
 from portcullis.models import SavedView, Key, DataStream
 from graphs.models import SavedDSGraph
 from graphs.data_reduction import reductFunc
-from graphs.views.display_graphs import graphs_list
 
 def savedView(request, token):
     '''
@@ -38,10 +37,22 @@ def savedView(request, token):
 
     # Load the instance, if there is one.
     view = SavedView.objects.get(key = key)
-    streams = [ w.saveddsgraph.datastream for w in view.widget.all()]
+
+    reductions = reductFunc.keys()
+    graphs = []
+    t_graph = loader.get_template('graph.html')
+    for w in view.widget.all():
+        c_graph = Context({
+                'id': w.saveddsgraph.datastream.id,
+                'node_id': w.saveddsgraph.datastream.node_id,
+                'port_id': w.saveddsgraph.datastream.port_id,
+                'reductions': reductions,
+                'widget_id': w.id
+                })
+        graphs.append(t_graph.render(c_graph))
 
     t = loader.get_template('graph_container.html')
-    c = RequestContext(request, {'graphs': graphs_list(streams),
+    c = RequestContext(request, {'graphs': graphs,
                                  'token': token
                                  })
 
