@@ -1,5 +1,5 @@
 #System Imports
-from django.template import RequestContext
+from django.template import RequestContext, Context
 from django.http import HttpResponse, Http404
 from django.template import Context, loader
 from django.core.exceptions import ObjectDoesNotExist
@@ -27,25 +27,25 @@ def display_graphs(request):
 
     json_data = json.loads(request.GET['json_data'])
 
-    data = {
-        'granularity': json_data.get('granularity', ''),
-        'start': json_data.get('start', ''),
-        'end': json_data.get('end', ''),
-        'streams': DataStream.objects.filter(id__in = json_data['streams']),
-        'reductions': reductFunc.keys()
-        }    
-    if(data['granularity'] != ''):
-        data['granularity'] = int(data['granularity'])
-        
-    graphs_page = loader.get_template('display_nodes.html')
-    graphs_c = RequestContext(request, data)
-        
-    controls_page = loader.get_template('graph_controls.html')
-    controls_c = RequestContext(request, data)
-        
-    template_data = {'graphs': graphs_page.render(graphs_c),
-                         'controls': controls_page.render(controls_c)}
-    return HttpResponse(json.dumps(template_data),mimetype="application/json")
+    streams = DataStream.objects.filter(id__in = json_data['streams'])
+
+    reductions = reductFunc.keys()    
+    graphs = []
+    t_graph = loader.get_template('graph.html')
+    for stream in streams:
+        c_graph = Context({
+                'id': stream.id,
+                'node_id': stream.node_id,
+                'port_id': stream.port_id,
+                'reductions': reductions
+                })
+        graphs.append(t_graph.render(c_graph))
+
+    t_graph_contain = loader.get_template('graph_container.html')
+    c_graph_contain = RequestContext(request, {'graphs':graphs})
+
+    return HttpResponse(t_graph_contain.render(c_graph_contain), mimetype="text/html")
+
 
 def render_graph(request):
     '''
@@ -57,7 +57,7 @@ def render_graph(request):
 
     try:
         portcullisUser = request.user.portcullisuser
-    except ObjectDoesNotExist:
+    except AttributeError:
         portcullisUser = None
 
     return HttpResponse(getStreamData(json.loads(jsonData), portcullisUser), mimetype="application/json")
@@ -136,7 +136,7 @@ def getStreamData(g_params, auth):
         max_value = float(max_value)
 
     stream_data = {
-        "ds_label":            ds.name,
+        "ds_label":         ds.name,
         "port_id":          ds.port_id,
         "data":             data_points,
         "num_readings":     numReadings,
@@ -150,7 +150,9 @@ def getStreamData(g_params, auth):
         "points":           { "show": False },
         "node_id":          ds.node_id,
         "units":            ds.units,
-        "permission":       True
+        "permission":       True,
+        "xmax":             end,
+        "xmin":             start
         }
 
 

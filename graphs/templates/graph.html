@@ -1,0 +1,57 @@
+
+{# This is a single, discrete graph skeleton.  It will be added to the graph_container. #}
+<div id="graph_container_{{id}}" class="graph_container"> 
+    <div id ="{{id}}" class="portcullis-graph">
+        {% if widget_id %}
+        <input type="hidden" id="saved_graph_{{id}}" value="{{widget_id}}" />
+        {% endif %}
+        <b id = "graph_title{{id}}" class="graph_title"> </b>
+        <div id="sensor{{id}}" class="sensor_graph" ></div>
+        <div id="overview{{id}}" class = "overview_graph"></div>
+    </div><!--end graph div-->
+    
+    <div id="{{id}}_csv_container" style="display: none"><!--csv div-->
+        <textarea id="sensor{{id}}_csv"></textarea>
+    </div><!--end csv div-->
+    
+    <div id="graph_selection_{{id}}" class="graph_selection" style="display: none;">
+        Time: <span id="selected_time_{{id}}"></span>
+        Value: <span id="selected_value_{{id}}"></span>
+    </div>
+    
+    <div class="section_toggle graph_toggle" onclick="toggle_form_section(event)">Advanced Options</div>
+    <div id="advanced_options_{{id}}" class="advanced_options">
+        <div id="stream_data_container_{{id}}" class="stream_data_container">
+            <ul>
+                <li>Node: {{node_id}}</li>
+                <li>Port: {{port_id}}</li>
+                <li>Data In Range: <span id="datapoints_{{id}}"></span></li>
+                <li>Actual Data Shown: <span id="actual_datapoints_{{id}}"></span></li>
+                <li>Start Range: <span id="start_range_{{id}}"></span></li>
+                <li>End Range: <span id="end_range_{{id}}"></span></li>
+            </ul>
+            
+        </div>
+        
+        <div id="stream_controls_container_{{id}}" class="stream_controls_container">
+            <input type="button" value="Zoom Reset" onClick="resetZoom('{{id}}');"/>
+            <input type="checkbox" id="zoom_sync_{{id}}" value="{{id}}" class="stream_zoom" checked="checked"/> <label for="zoom_sync_{{id}}">Zoom Sync</label>
+            <label for="reduction_select_{{id}}">Reduction Type:</label>
+            <select id="reduction_select_{{id}}" class="reduction_select" 
+                    onchange="loadGraph('{{id}}', 
+                              $('#granularity').val(), 
+                              getRanges(), 
+                              graph_overview_callback(getRanges()));">
+                {% for red in reductions %}
+                {% if red == "mean" %}
+                <option value="{{red}}" selected="selected">{{red|title}}</option>
+                {% else %}
+                <option value="{{red}}">{{red|title}}</option>
+                {% endif %}
+                {% endfor %}
+            </select>
+            <p id="downloadify{{id}}"><!--Place holder for download button--></p>
+            <input id="minicolor_{{id}}" class="minicolors" type="text"/>
+        </div>
+    </div><!--End advanced_options_{{id}}--> 
+</div><!--End graph_container_id -->

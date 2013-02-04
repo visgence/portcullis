@@ -26,12 +26,16 @@ def streams(request):
     #Pull any public streams as well
     public_streams = DataStream.objects.filter(is_public = True).exclude(id__in=viewable_streams).exclude(id__in=owned_streams).distinct()
 
-    t = loader.get_template('user_streams.html')
-    c = RequestContext(request, {'user':request.user,
-                                 'owned_streams':owned_streams,
-                                 'public_streams':public_streams,
-                                 'viewable_streams':viewable_streams})
+    t_streams = loader.get_template('user_streams.html')
+    c_streams = RequestContext(request, {
+            'user':request.user,
+            'owned_streams':owned_streams,
+            'public_streams':public_streams,
+            'viewable_streams':viewable_streams
+            })
+    t_controls = loader.get_template('graph_controls.html')
+    c_controls = RequestContext(request)
     
-    return HttpResponse(t.render(c), mimetype='text/html')
+    return HttpResponse(t_controls.render(c_controls) + t_streams.render(c_streams), mimetype='text/html')
 
 

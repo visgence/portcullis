@@ -42,6 +42,28 @@ class KeyAdmin(admin.ModelAdmin):
     list_display = ('key', 'owner', 'description', 'expiration', 'num_uses')
     list_filter = ('owner', 'expiration')
 
+class SavedViewAdmin(admin.ModelAdmin):
+    list_display = ('key_str', 'owner', 'widget_list')
+
+    def owner(self, obj):
+        return obj.key.owner
+
+    def key_str(self, obj):
+        return obj.key.key
+
+    def widget_list(self, obj):
+        wlink = '<li><a href="/admin/portcullis/savedwidget/%s/">%s</a></li>'
+        graphlink = '<li><a href="/admin/graphs/saveddsgraph/%s/">%s</a></li>'
+        links = '<ul style="list-style: none">'
+        for w in obj.widget.all():
+            try:
+                links += graphlink % (str(w.id), w.saveddsgraph.__unicode__())
+            except:
+                links += wlink % (str(w.id), str(w))
+            
+        return links + '</ul>'
+    widget_list.allow_tags = True
+
 admin.site.register(PortcullisUser)
 admin.site.register(DataStream, DataStreamAdmin)
 admin.site.register(SensorReading, SensorReadingAdmin)
@@ -49,4 +71,5 @@ admin.site.register(ScalingFunction)
 #admin.site.register(Organization, OrganizationAdmin)
 admin.site.register(Device)
 admin.site.register(Key, KeyAdmin)
-admin.site.register(SavedView)
+admin.site.register(SavedView, SavedViewAdmin)
+admin.site.register(SavedWidget)

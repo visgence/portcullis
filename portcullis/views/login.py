@@ -1,5 +1,3 @@
-#Local Imports
-from portcullis.views.user_portal import user_streams
 
 #System Imports
 from django.http import HttpResponseRedirect, HttpResponse
@@ -48,9 +46,7 @@ def user_login(request):
                 greeting_page = loader.get_template('greeting.html')
                 greeting_c = RequestContext(request, {})
 
-                streams_page = user_streams(request) 
                 data = {
-                    'streams_html': streams_page, 
                     'greeting':greeting_page.render(greeting_c),
                 }
             

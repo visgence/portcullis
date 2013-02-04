@@ -1,0 +1,28 @@
+
+<link rel="stylesheet" media="all" type="text/css" href="{{STATIC_URL}}plugins/mini-colors/jquery.minicolors.css" />
+<script type="text/javascript" src="{{STATIC_URL}}plugins/mini-colors/jquery.minicolors.js"></script>
+
+<div id="graph_container_heading">
+    <h1> Sensor Readings</h1>
+    
+    <h2 id="utc_stamp"></h2>
+
+    {% if token %}
+    <input type="hidden" id="auth_token" value="{{token}}" />
+    {% else %}
+    <a id="share_link" onclick="saveView();" href="#" >Share this view</a>
+    {% endif %}
+    <div id="savedViewLink"></div>
+</div>
+<div id="graph_container">
+    {% for graph in graphs %}
+    {{graph|safe}}
+    {% endfor %}
+    <script>
+        //On load function will search for any 'portcullis-graph' divs on the page.
+        $("document").ready(on_graphs_load());
+        collapse_all();
+    </script>
+</div><!--End graph_container -->
+
+{% csrf_token %}

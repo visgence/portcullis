@@ -83,8 +83,10 @@ function on_graphs_load()
         setupDownload(this.id);
     });
     
-    ready_datepickers();
-    loadAllGraphs(getRanges());
+    if (  $('#auth_token').val() )
+        loadAllSharedGraphs(getRanges());
+    else 
+        loadAllGraphs(getRanges());
 }
 
 
@@ -148,21 +150,21 @@ function getRanges() {
        ($("#start").val() && !$("#end").val()))
     {
         end = new Date(d.getTime());
-        $("#end").val(end.toLocaleString());
+        $("#end").val(dateToString(end));
     }
     else if((end_range != "None" && start_range == "None" && !$("#start").val()) ||
             (!$("#start").val() && $("#end").val()))
     {
         start = new Date(d.getTime() - range*1000);
-        $("#start").val(start.toLocaleString());
+        $("#start").val(dateToString(start));
     }
     else if(!$("#start").val() && !$("#end").val())
     {    
         start = new Date(d.getTime() - range*1000);
         end= new Date(d.getTime());
  
-        $("#start").val(start.toLocaleString());
-        $("#end").val(end.toLocaleString());
+        $("#start").val(dateToString(start));
+        $("#end").val(dateToString(end));
     }
 
     if(start_range != "None")
@@ -400,8 +402,8 @@ function renderGraph(data, ranges, shouldScale)
         {     
             mode: "time", 
             timeformat: " %m-%d %h:%M %p",
-            min: ranges.xaxis.from,
-            max: ranges.xaxis.to,
+            min: !data['xmin'] ? ranges.xaxis.from : data['xmin']*1000 - timezone_offset,
+            max: !data['xmax'] ? ranges.xaxis.to : data['xmax']*1000 - timezone_offset,
             ticks: 5
         },
         selection: {mode: "x"},
@@ -409,7 +411,8 @@ function renderGraph(data, ranges, shouldScale)
             clickable: true
         }
     };
-    
+    console.log(options.xaxis.min);
+    console.log(options.xaxis.max);
     options.yaxis = {min:data.min_value, max:data.max_value, axisLabel: data.units};
     var plot;
     if(shouldScale)
@@ -440,8 +443,8 @@ function renderOverview(data, ranges)
             mode: "time", 
             timeformat: "%m-%d %h:%M %p",
             ticks: 5 ,
-            min: ranges.xaxis.from,
-            max: ranges.xaxis.to
+            min: !data['xmin'] ? ranges.xaxis.from : data['xmin']*1000 - timezone_offset,
+            max: !data['xmax'] ? ranges.xaxis.to : data['xmax']*1000 - timezone_offset
         },
         selection: { mode: "x" }
     };
@@ -688,11 +691,16 @@ function get_selected_streams()
     var json_data = JSON.stringify(get_data);
 
     $.get('/graphs/', {'json_data': json_data}, function(data){
-        var previous_controls = $('#graph_controls');
-        if(previous_controls.length > 0)
-           previous_controls.remove();
-
-        $('#side_pane_content').prepend(data.controls);
-        $('#content').html(data.graphs);
+        $('#content').html(data);
     });
+}
+
+/** Take a Date object and return a string formatted as:
+ * mm/dd/yyyy HH:MM:SS
+ */
+function dateToString(date)
+{
+    dStr = String(date.getMonth() + 1) + '/' + String(date.getDate()) + '/' + String(date.getFullYear()) + 
+        ' ' + String(date.getHours()) + ':' + String(date.getMinutes()) + ':' + String(date.getSeconds());
+    return dStr;
 }

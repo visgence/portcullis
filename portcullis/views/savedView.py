@@ -11,7 +11,7 @@
 from django.core.urlresolvers import reverse
 from django.db.transaction import commit_on_success
 from django.http import HttpResponse, Http404, HttpResponseForbidden
-from django.template import RequestContext, loader
+from django.template import RequestContext, Context, loader
 from django.views.decorators.http import require_POST
 from django.utils import timezone
 try: import simplejson as json
@@ -23,11 +23,12 @@ from portcullis.models import SavedView, Key, DataStream
 from graphs.models import SavedDSGraph
 from graphs.data_reduction import reductFunc
 
-
 def savedView(request, token):
     '''
     ' This view will render the main page for sharing views, with the divs
     ' for widgets.  The widgets will be loaded with ajax after page load.
+    '
+    ' TODO: When other kinds of  widgets are added, add them to the page also.
     '''
     # validate the token, consuming a use if applicable
     key = Key.objects.validate(token)
@@ -37,16 +38,21 @@ def savedView(request, token):
     # Load the instance, if there is one.
     view = SavedView.objects.get(key = key)
 
+    reductions = reductFunc.keys()
+    graphs = []
+    t_graph = loader.get_template('graph.html')
+    for w in view.widget.all():
+        c_graph = Context({
+                'id': w.saveddsgraph.datastream.id,
+                'node_id': w.saveddsgraph.datastream.node_id,
+                'port_id': w.saveddsgraph.datastream.port_id,
+                'reductions': reductions,
+                'widget_id': w.id
+                })
+        graphs.append(t_graph.render(c_graph))
 
-    dateformat = '%Y/%m/%d %H:%M:%S'
-    start = datetime.utcfromtimestamp(view.widget.all()[0].saveddsgraph.start)
-    end = datetime.utcfromtimestamp(view.widget.all()[0].saveddsgraph.end)
-    t = loader.get_template('sharedView.html')
-    c = RequestContext(request, {'view': view,
-                                 'start': start,
-                                 'end': end,
-                                 'granularity': view.widget.all()[0].saveddsgraph.granularity,
-                                 'reductions': reductFunc.keys(),
+    t = loader.get_template('graph_container.html')
+    c = RequestContext(request, {'graphs': graphs,
                                  'token': token
                                  })
 
@@ -61,7 +67,7 @@ def createSavedView(request):
 
     try:
         portcullisUser = request.user.portcullisuser
-    except ObjectDoesNotExist:
+    except AttributeError:
         # TODO: Should not be a return, should be a raise, but don't have a 403 right now,
         #But should be okay, because save has not been called yet.
         return HttpResponseForbidden('Must be logged in to create saved view')

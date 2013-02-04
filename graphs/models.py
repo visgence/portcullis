@@ -13,3 +13,6 @@ class SavedDSGraph(SavedWidget):
     granularity = models.IntegerField()
     zoom_start = models.IntegerField()
     zoom_end = models.IntegerField()
+
+    def __unicode__(self):
+        return 'SavedDSGraph: %d' % self.id

@@ -310,12 +310,18 @@ class SensorReading(models.Model):
 
 #Place holder model to expand when we support more widgets than just graphs.
 class SavedWidget(models.Model):
-    pass
+
+    def __unicode__(self):
+        return 'Widget: %s' % str(self.id)
 
 
 class SavedView(models.Model):
     key = models.OneToOneField(Key, primary_key=True)
     widget = models.ManyToManyField(SavedWidget)
+    # TODO: Should this be a Foreign key in the widget class? OneToMany?
+
+    def __unicode__(self):
+        return 'SavedView: %s, Owner: %s' % (self.key.key, self.key.owner)
 
 '''
 class Organization(models.Model):
