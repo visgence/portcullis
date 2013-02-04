@@ -30,6 +30,7 @@ function post_login(data)
             $('#side_pane_content').html(data);
             ready_datepickers();
         });
+        $('.logged_out_hide').removeClass('logged_out_hide');
     }
 }
 

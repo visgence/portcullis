@@ -13,3 +13,8 @@ select:disabled
     cursor: pointer;
     color: #DE4343;
 }
+
+.logged_out_hide
+{
+    display: none;
+}
