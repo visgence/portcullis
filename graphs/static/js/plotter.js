@@ -149,13 +149,13 @@ function getRanges() {
     if((start_range != "None" && end_range == "None" && !$("#end").val()) ||
        ($("#start").val() && !$("#end").val()))
     {
-        end = new Date(d.getTime());
+        end = new Date(start.getTime() + range*1000);
         $("#end").val(dateToString(end));
     }
     else if((end_range != "None" && start_range == "None" && !$("#start").val()) ||
             (!$("#start").val() && $("#end").val()))
     {
-        start = new Date(d.getTime() - range*1000);
+        start = new Date(end.getTime() - range*1000);
         $("#start").val(dateToString(start));
     }
     else if(!$("#start").val() && !$("#end").val())

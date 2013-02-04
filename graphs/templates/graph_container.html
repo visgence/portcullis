@@ -10,7 +10,7 @@
     {% if token %}
     <input type="hidden" id="auth_token" value="{{token}}" />
     {% else %}
-    <a id="share_link" onclick="saveView();" href="#" >Share this view</a>
+        <a id="share_link" class="logged_out_hide" onclick="saveView();" href="#" >Share this view</a>
     {% endif %}
     <div id="savedViewLink"></div>
 </div>
