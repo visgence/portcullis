@@ -18,8 +18,6 @@ def reduceData(rawData, size, red = 'mean'):
     '''
     #TODO: Custom exception for bad redution type.
 
-    print "inside reduce"
-    print size
     increment = len(rawData)/size
     data = []
     for i in range(0, len(rawData), increment):
@@ -55,7 +53,7 @@ def incrementMedianSorted(data):
     sortedData.sort()
     midPoint = len(sortedData)/2
     if len(sortedData) % 2 == 0:
-        return [timeCenter, (sortedData[midPoint] + sortedData[midPoint + 1])/2.0]
+        return [timeCenter, (sortedData[midPoint] + sortedData[midPoint - 1])/2.0]
     else:
         return [timeCenter, sortedData[midPoint]]
 
