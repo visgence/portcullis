@@ -46,7 +46,7 @@
         </ul>
     </div>
     
-    <div id="graph_controls_advanced" class="section_toggle clickable" onclick="toggle_form_section(event);">Advanced Options</div>
+    <div id="graph_controls_advanced" class="section_toggle controls_toggle clickable" onclick="toggle_form_section(event);">Advanced Options</div>
     <div>
         <div>
             <b>Number of datapoints</b> 
@@ -58,4 +58,7 @@
 
     <input type="hidden" name = "to_epoch" value ="true" />
     <input id="graph_options_submit" type="button" value="Submit" onClick="submit_form()" />
+    <script>
+        collapse_all('controls_toggle');
+    </script>
 </div>
