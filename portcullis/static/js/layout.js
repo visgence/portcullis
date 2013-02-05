@@ -24,12 +24,18 @@ function toggle_form_section(event) {
         toggle_symbol.html('+');
 }
 
-function collapse_all() {
+function collapse_all(t_class) {
     /*
      * Grabs all section toggles and hides their sibling element
+     *
+     * t_class - The class of toggle div's that should be collapsed. Default is section_toggle which is all 
+     *           div's that toggle.
      */
 
-    $('.section_toggle').next().hide();
+    if(t_class == "")
+        t_class = "section_toggle";
+
+    $('.'+t_class).next().hide();
 }
 
 function sidepane_relocate() {
