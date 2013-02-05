@@ -52,9 +52,9 @@ class SavedViewAdmin(admin.ModelAdmin):
         return obj.key.key
 
     def widget_list(self, obj):
-        wlink = '<li><a href="/admin/portcullis/savedwidget/%s/">%s</a></li>'
-        graphlink = '<li><a href="/admin/graphs/saveddsgraph/%s/">%s</a></li>'
-        links = '<ul style="list-style: none">'
+        wlink = '<li style="list-style: none;"><a href="/admin/portcullis/savedwidget/%s/">%s</a></li>'
+        graphlink = '<li style="list-style: none;"><a href="/admin/graphs/saveddsgraph/%s/">%s</a></li>'
+        links = '<ul>'
         for w in obj.widget.all():
             try:
                 links += graphlink % (str(w.id), w.saveddsgraph.__unicode__())

@@ -15,7 +15,7 @@ class SavedDSGraphAdmin(admin.ModelAdmin):
 
     def saved_view(self, obj):
         views = obj.savedview_set.all()
-        link = '<li><a href="/admin/portcullis/savedview/%s/">%s</a></li>'
+        link = '<li style="list-style: none;"><a href="/admin/portcullis/savedview/%s/">%s</a></li>'
         links = '<ul>'
         for view in views:
             links += link % (view.key.key, view.key.key)
