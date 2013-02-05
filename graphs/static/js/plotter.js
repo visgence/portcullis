@@ -234,11 +234,6 @@ function plot_empty_graph(datastream_id, msg)
 
     //Put in message for why graph is empty
     $(div).append('<span class="empty_graph_msg">'+msg+'</span>'); 
-    graph_options_visibility(datastream_id, 'none');
-
-    //Add empty class so everything that needs graphs with data can ignore.
-    $('#'+datastream_id).addClass('empty');
-
     return empty_plot;
 }
 
@@ -284,13 +279,16 @@ function submit_form()
     loadAllGraphs(getRanges());
 }//end submit_form
 
-/*queries for data for a single datastream and a specific time period
- * ranges: date range for the query
- * granularity: how many data points the result should aim for
-*/
+
 function zoom_graph(ranges, datastream_id)
 {
-    var result = $.Deferred();
+    /*
+     * Gets a new data set for the specified time range and renders just the graph while leaving the overview alone.
+     *
+     * ranges        - Dict like object that contains the start and end range for the data set.
+     * datastream_id - Id of the datastream to get new data for.
+     */
+
     var options = { 
         lines: { show: true }, 
         xaxis: 
@@ -307,27 +305,8 @@ function zoom_graph(ranges, datastream_id)
         }
     };
 
-    //plot the data that we receive
-    function on_data_recieved(data) {
-        //set the graphs title
-        $("#graph_title" + datastream_id).text(data.ds_label + " - Node " + data.node_id + " - Stream " + datastream_id );
-    
-        //Highlight zoomed section on overview graph
-        overviewPlots[datastream_id].setSelection({xaxis: {from: ranges.xaxis.from, to: ranges.xaxis.to}}, true);
-
-        options.yaxis = {min:data.min_value, max:data.max_value, axisLabel: data.units};
-        var plot =  plot_graph(data,options,"#sensor" + datastream_id);
-        result.resolve(plot);//sent back for binding
-
-        plots[datastream_id] = plot;
-        set_graph_range_labels(ranges.xaxis.from, ranges.xaxis.to, datastream_id);
-        reset_graph_selection(datastream_id);
-    }
-
     //request data for the new timeframe
-    loadGraph(datastream_id, get_granularity(), ranges, on_data_recieved);
-
-    return result;
+    loadGraph(datastream_id, get_granularity(), ranges, zoom_graph_callback(ranges));
 }
 
 
@@ -353,16 +332,61 @@ function loadAllGraphs(ranges)
     }
 }
 
-function graph_overview_callback(ranges) {
-    return function (data) {
-        
+
+function zoom_graph_callback(ranges) {
+    /*
+     * Returns a callback that renders a graph using data recieved from server after a user zooms the graph.
+     * If there is no data then an empty graph is rendered with an appropriate message.
+     *
+     * ranges - Dict like object that contains the start and end range for the data set.
+     *
+     * Returns: Function that will be used as the callback function and takes the data recieved from server.
+     */
+
+    return function(data) {
+
         if(data.data.length == 0) {
             var msg = "No data for this range.";
             plot_empty_graph(data.datastream_id, msg);
         }
+        else {
+            renderGraph(data, ranges, true);
+        }
+        
+        //Highlight zoomed section on overview graph
+        overviewPlots[data.datastream_id].setSelection({xaxis: {from: ranges.xaxis.from, to: ranges.xaxis.to}}, true);
+
+        //If user had datapoint selected then un-select it.
+        reset_graph_selection(data.datastream_id);
+    };
+}
+
+function graph_overview_callback(ranges) {
+    /*
+     * Returns a callback that renders a graph and overview using data recieved from server.  If there is no data
+     * or insufficient privilages then an empty graph is rendered with an appropriate message.
+     *
+     * ranges - Dict like object that contains the start and end range for the data set.
+     *
+     * Returns: Function that will be used as the callback function and takes the data recieved from server.
+     */
+
+    return function (data) {
+        if(data.data.length == 0) {
+            var msg = "No data for this range.";
+            plot_empty_graph(data.datastream_id, msg);
+            graph_options_visibility(data.datastream_id, 'none');
+           
+            //Add empty class so everything that needs graphs with data can ignore.
+            $('#'+data.datastream_id).addClass('empty');
+        }
         else if(!data.permission) {
             var msg = "You do not have permission to view this graph.";
             plot_empty_graph(data.datastream_id, msg);
+            graph_options_visibility(data.datastream_id, 'none');
+            
+            //Add empty class so everything that needs graphs with data can ignore.
+            $('#'+data.datastream_id).addClass('empty');
         }
         else {
             graph_options_visibility(data.datastream_id, '');
@@ -376,7 +400,7 @@ function graph_overview_callback(ranges) {
 
         //set the graphs title
         $("#graph_title" + data.datastream_id).text(data.ds_label);
-    }
+    };
 }
 
 function loadGraph(datastream_id, granularity, ranges, callback) {
@@ -411,8 +435,7 @@ function renderGraph(data, ranges, shouldScale)
             clickable: true
         }
     };
-    console.log(options.xaxis.min);
-    console.log(options.xaxis.max);
+    
     options.yaxis = {min:data.min_value, max:data.max_value, axisLabel: data.units};
     var plot;
     if(shouldScale)
