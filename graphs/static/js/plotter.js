@@ -61,12 +61,12 @@ function reset_graph_selection(datastream_id)
     $('#selected_time_'+datastream_id).text("");
 }
 
-/// This method should be called when graphs are loaded.
-function on_graphs_load()
-{
-    if(!$("#granularity").val()) 
-        get_granularity()
- 
+function on_graphs_load() {
+    /*
+     * Sets up all graph bindings and loads all on screen graphs including a shared view if a auth token
+     * is available within the template.
+     */
+
     //Find all portcullis graph divs
     $(".portcullis-graph").each(function(i) {
 
@@ -84,11 +84,31 @@ function on_graphs_load()
     });
     
     if (  $('#auth_token').val() )
-        loadAllSharedGraphs(getRanges());
+        load_all_shared_graphs();
     else 
-        loadAllGraphs(getRanges());
+        load_all_graphs();
 }
 
+
+function on_graph_load(datastream_id) {
+    /*
+     * Sets up a specific graphs bindings and loads it's data.
+     *
+     * datastream_id - The stream whose data is to be loaded.
+     */
+    
+    //bind main graph
+    $("#sensor" + datastream_id).bind("plotselected",create_plot_select_handler(datastream_id));
+    $("#sensor" + datastream_id).bind("plotclick",create_plot_click_handler(datastream_id));
+         
+    //bind overview graph 
+    $("#overview" + datastream_id).bind("plotselected",create_plot_select_handler(datastream_id));
+
+    // setup the download link.
+    setupDownload(datastream_id);
+   
+    load_graph(datastream_id, get_ranges(), graph_overview_callback());
+}
 
 function modify_date(date, date_range, subtract) {
     /* Takes a Date object and adds/subtracts a range of time from it based on the date_range passed in.
@@ -135,7 +155,7 @@ function get_granularity() {
     return $("#granularity").val();
 }
 
-function getRanges() {
+function get_ranges() {
     var d = new Date();
     var range = (48 * 60 * 60);    
     var epoch_start;
@@ -212,8 +232,7 @@ function graph_options_visibility(datastream_id, display_css) {
     $(advanced_options).hide();
 }
 
-function plot_empty_graph(datastream_id, msg)
-{
+function plot_empty_graph(datastream_id, msg) {
     /*
      * Plots and returns an empty graph with a message in the graphs center.  
      *
@@ -237,8 +256,7 @@ function plot_empty_graph(datastream_id, msg)
     return empty_plot;
 }
 
-function plot_graph(data, options, div)
-{
+function plot_graph(data, options, div) {
     /*
      * Plots and returns a flot graph using given data and options.
      *
@@ -272,16 +290,8 @@ function plot_graph(data, options, div)
     return plot;
 }
 
-//queries for a time range(datepicker)
-function submit_form()
-{   
-    get_granularity();
-    loadAllGraphs(getRanges());
-}//end submit_form
 
-
-function zoom_graph(ranges, datastream_id)
-{
+function zoom_graph(ranges, datastream_id) {
     /*
      * Gets a new data set for the specified time range and renders just the graph while leaving the overview alone.
      *
@@ -306,29 +316,33 @@ function zoom_graph(ranges, datastream_id)
     };
 
     //request data for the new timeframe
-    loadGraph(datastream_id, get_granularity(), ranges, zoom_graph_callback(ranges));
+    load_graph(datastream_id, ranges, zoom_graph_callback(ranges));
 }
 
 
-function loadAllSharedGraphs(ranges)
-{
-    var granularity = get_granularity();
+function load_all_shared_graphs() {
+    /*
+     * Loads all data for graphs that belong to a shared view in the window.
+     */
+
     var token = $('#auth_token').val();
     $('.portcullis-graph').each(function(i) {
         var url = '/graphs/sharedGraph/' + token + '/' + $('#saved_graph_'+this.id).val() + '/';
-        $.get(url, graph_overview_callback(ranges));
+        $.get(url, graph_overview_callback());
     });
 }
 
-function loadAllGraphs(ranges)
-{
+function load_all_graphs() {
+    /*
+     * Get's all graph divs and loads their data.
+     */
+
     divs = $(".portcullis-graph");
-    var granularity = get_granularity()
 
     //Cycle though all graphs and fetch data from server
     for (var i = 0; i < divs.length; i++) 
     {
-        loadGraph(divs[i].id, granularity, ranges, graph_overview_callback(ranges));
+        load_graph(divs[i].id, get_ranges(), graph_overview_callback());
     }
 }
 
@@ -361,15 +375,15 @@ function zoom_graph_callback(ranges) {
     };
 }
 
-function graph_overview_callback(ranges) {
+function graph_overview_callback() {
     /*
      * Returns a callback that renders a graph and overview using data recieved from server.  If there is no data
      * or insufficient privilages then an empty graph is rendered with an appropriate message.
      *
-     * ranges - Dict like object that contains the start and end range for the data set.
-     *
      * Returns: Function that will be used as the callback function and takes the data recieved from server.
      */
+
+    var ranges = get_ranges();
 
     return function (data) {
         if(data.data.length == 0) {
@@ -403,7 +417,9 @@ function graph_overview_callback(ranges) {
     };
 }
 
-function loadGraph(datastream_id, granularity, ranges, callback) {
+function load_graph(datastream_id, ranges, callback) {
+    var granularity = get_granularity();
+
     var getData = new Object();
     getData['start'] = Math.round(ranges.xaxis.from/1000 + timezone_offset/1000);
     getData['end'] = Math.round(ranges.xaxis.to/1000 + timezone_offset/1000);
@@ -601,7 +617,7 @@ function saveView()
         return graph;
     }));
 
-    ranges = getRanges();
+    ranges = get_ranges();
     view['start'] = Math.round(ranges.xaxis.from/1000 + timezone_offset/1000);
     view['end'] = Math.round(ranges.xaxis.to/1000 + timezone_offset/1000);
     view['granularity'] = get_granularity();
@@ -717,6 +733,57 @@ function get_selected_streams()
         $('#content').html(data);
     });
 }
+
+function load_unload_stream(checkbox) {
+    /*
+     * Loads a stream to the page if it's checkbox was checked and unloads or stops the loading 
+     * of the stream if it's checkbox is unchecked.
+     *
+     * checkbox - The streams checkbox input.
+     */
+
+    var datastream_id = $(checkbox).val();     
+    if($(checkbox).attr('checked')) {
+        var stream = new Object();
+        stream['stream'] = datastream_id;
+        var json = JSON.stringify(stream);
+
+        //If we're already loading this graph
+        if($('#graph_container_'+datastream_id).length)
+            return;
+
+        //If there's no graph container render it first before graphs
+        if(!$('#graph_container').length) {
+            $.get('/graphs/render_container/', {}, function(data) {
+                $('#content').html(data); 
+
+                //Need to do this one here to ensure graph container has finished being rendered first.
+                $.get('/graphs/', {'json_data': json}, function(data) {
+                    $('#graph_container').append(data);
+                    on_graph_load(datastream_id);
+                });
+            });
+        }
+        else {
+            //Graph container is already rendered so just append to it
+            $.get('/graphs/', {'json_data': json}, function(data) {
+                $('#graph_container').append(data);
+                on_graph_load(datastream_id);
+            });
+        }
+    }
+    else {
+        var graph_container = $('#graph_container');
+        $(graph_container).children('#graph_container_'+datastream_id).remove();
+       
+        //If no more graphs exist empty the content div 
+        if(!$(graph_container).children('.graph_container').length)
+            $('#content').children().remove();
+    }
+        
+}
+
+
 
 /** Take a Date object and return a string formatted as:
  * mm/dd/yyyy HH:MM:SS

@@ -26,7 +26,7 @@ function toggle_form_section(event) {
 
 function collapse_all(t_class) {
     /*
-     * Grabs all section toggles and hides their sibling element
+     * Grabs all specified section toggles and hides their sibling element
      *
      * t_class - The class of toggle div's that should be collapsed. Default is section_toggle which is all 
      *           div's that toggle.
@@ -35,7 +35,25 @@ function collapse_all(t_class) {
     if(t_class == "")
         t_class = "section_toggle";
 
-    $('.'+t_class).next().hide();
+    var element = $('.'+t_class);
+    $(element).next().hide();
+    
+    var toggle_symbol = $(element).children('.collapse_state');
+    if(toggle_symbol.html() == "-")
+        toggle_symbol.html('+');
+}
+
+function collapse(t_id) {
+    /*
+     * Collapses one specific toggle section specified by by 
+     */
+
+    var element = $('#'+t_id);
+    $(element).next().hide();
+
+    var toggle_symbol = $(element).children('.collapse_state');
+    if(toggle_symbol.html() == "-")
+        toggle_symbol.html('+');
 }
 
 function sidepane_relocate() {

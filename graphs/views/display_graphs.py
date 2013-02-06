@@ -15,9 +15,9 @@ from graphs.data_reduction import reduceData, reductFunc
 from graphs.models import SavedDSGraph
 
 @require_GET
-def display_graphs(request):
+def display_graph(request):
     '''
-    ' Use JSON data to retrieve the appropriate datastreams for rendering.
+    ' Use JSON data to retrieve the appropriate datastream for rendering.
     '''
 
     # TODO: Figure out how we want to do check_access
@@ -27,25 +27,31 @@ def display_graphs(request):
 
     json_data = json.loads(request.GET['json_data'])
 
-    streams = DataStream.objects.filter(id__in = json_data['streams'])
+    try:
+        stream = DataStream.objects.get(id = int(json_data['stream']))
+    except ObjectDoesNotExist as e:
+        raise Http404()
 
     reductions = reductFunc.keys()    
-    graphs = []
     t_graph = loader.get_template('graph.html')
-    for stream in streams:
-        c_graph = Context({
-                'id': stream.id,
-                'node_id': stream.node_id,
-                'port_id': stream.port_id,
-                'reductions': reductions
-                })
-        graphs.append(t_graph.render(c_graph))
+    c_graph = Context({
+        'id': stream.id,
+        'node_id': stream.node_id,
+        'port_id': stream.port_id,
+        'reductions': reductions
+    })
+
+    return HttpResponse(t_graph.render(c_graph), mimetype="text/html")
+
+
+def render_graph_container(request):
+    '''
+    ' Renders and returns just the graph container as html.
+    '''
 
     t_graph_contain = loader.get_template('graph_container.html')
-    c_graph_contain = RequestContext(request, {'graphs':graphs})
-
+    c_graph_contain = RequestContext(request, {})
     return HttpResponse(t_graph_contain.render(c_graph_contain), mimetype="text/html")
-
 
 def render_graph(request):
     '''
