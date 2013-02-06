@@ -46,6 +46,8 @@ function collapse_all(t_class) {
 function collapse(t_id) {
     /*
      * Collapses one specific toggle section specified by by 
+     *
+     * t_id - The id of the div to toggle.
      */
 
     var element = $('#'+t_id);
@@ -54,6 +56,41 @@ function collapse(t_id) {
     var toggle_symbol = $(element).children('.collapse_state');
     if(toggle_symbol.html() == "-")
         toggle_symbol.html('+');
+}
+
+
+function check_all(check_id) {
+    /*
+     * Get's a checkbox and checks all of it's neighboring checkboxes if the checkbox was checked.
+     * Neighboring checkboxes are ones that exist inside the same ul tag or div tag if no ul tag exists.
+     *
+     * check_id - Id of checkbox element.
+     */
+
+    var checkbox = $('#'+check_id+':checked');
+    var parent_el = $(checkbox).parents('ul:first');
+
+    //Just in case the checkboxes are not inside a ul
+    if(!parent_el.length)
+        parent_el = $(checkbox).parents('div:first');
+
+    var checkboxes = $(parent_el).find('input[type="checkbox"]');
+    checkboxes.each(function() {
+        $(this).attr('checked', 'checked');
+        $(this).trigger('change');
+    });
+}
+
+function reset_check_all(checkbox, checkall_id) {
+    /*
+     * Checks if a checkbox was unchecked and if so unchecks it's corresponding checkall checkbox.
+     *
+     * checkbox    - The checkbox that has just changed state.
+     * checkall_id - Id of checkall checkbox to uncheck.
+     */
+
+    if(!$(checkbox).attr('checked'))
+        $('#'+checkall_id).removeAttr('checked');
 }
 
 function sidepane_relocate() {
