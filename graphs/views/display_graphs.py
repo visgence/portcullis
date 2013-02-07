@@ -66,7 +66,6 @@ def shared_graph(request, token, id):
     '''
     This function will use a key to send the jsonData for a shared graph.
     '''
-
     try:
         # Get the key from the token
         key = Key.objects.get(key = token)
@@ -75,7 +74,7 @@ def shared_graph(request, token, id):
         graph = SavedDSGraph.objects.get(id = id)
     except ObjectDoesNotExist:
         raise Http404('Graph %s/%s/ does not exist' % (token, str(id)))
-        
+
     params = {
         'start':         graph.start,
         'end':           graph.end,
@@ -83,10 +82,11 @@ def shared_graph(request, token, id):
         'granularity':   graph.granularity,
         'datastream_id': graph.datastream.id
         }
-    return HttpResponse(getStreamData(params, key), mimetype="application/json")
+
+    return HttpResponse(getStreamData(params, key, request.user), mimetype="application/json")
     
 
-def getStreamData(g_params, auth):
+def getStreamData(g_params, auth, user = None):
     '''
     ' This function will return streamData serialized to JSON for graphing.
     '
@@ -95,6 +95,7 @@ def getStreamData(g_params, auth):
     '            Required keys:
     '                start, end, ds_id, granularity
     ' auth     - Used for authentication.  This can either be a portcullis user or a key
+    ' user     - Secondary authentication.  should only be a request.user.  May change in future...
     '''
 
     start = g_params['start']
@@ -107,13 +108,20 @@ def getStreamData(g_params, auth):
     ds = DataStream.objects.get_ds_and_validate(ds_id, auth, 'read')
     
     if not isinstance(ds, DataStream):
-        print 'User verification failed: ' + ds
-        stream_data = {'data':[],
+        # Try auth2
+        try:
+            ds = DataStream.objects.get_ds_and_validate(ds_id, user.portcullisuser, 'read')
+        except AttributeError:
+            ds = None
+        if not isinstance(ds, DataStream):
+            print 'User verification failed: ' + ds
+            stream_data = {
+                'data':[],
                 'permission':       False,
                 'ds_label':            ds,
                 "datastream_id":    ds_id,
                 }
-        return json.dumps(stream_data)
+            return json.dumps(stream_data)
     
     #Pull the data for this stream
     #Check if there are less points in timeframe then granularity

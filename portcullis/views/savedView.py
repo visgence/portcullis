@@ -89,7 +89,8 @@ def createSavedView(request):
     # Not doing in a try catch, because should be gotten from existing graphs
     for graphData in jsonData['graphs']:
         ds = DataStream.objects.get(id = graphData['ds_id'])
-        if key not in ds.can_read.all():
+        # Make sure not to add the key if not the owner.
+        if key not in ds.can_read.all() and portcullisUser != ds.owner and not ds.public:
             ds.can_read.add(key)
         graph = SavedDSGraph(datastream = ds, start = start, end = end,
                              reduction_type = graphData['reduction'], granularity = gran,
