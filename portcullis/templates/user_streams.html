@@ -6,21 +6,22 @@
     <h2>Streams</h2>
 
     {% if owned_streams %}
-    <div  class="section_toggle stream_clickable clickable" onclick="toggle_form_section(event);">
+    <div id="owned_clickable" class="section_toggle clickable" onclick="toggle_form_section(event);">
         <b>My Streams</b>
-        <span class="collapse_state">+</span>
+        <span class="collapse_state">-</span>
     </div>
     <div>
         <!-- Create a checkbox for each datastream owned by this user-->
         <ul class="streams">
             {% for stream in owned_streams%}
             <li>
-                <input type="checkbox" name="owned" class="stream" id="owned_stream_{{stream.id}}" value="{{stream.id}}" /> 
-                <label for="owned_stream_{{stream.id}}">{{stream.name}}</label>
+            <input type="checkbox" name="owned" class="stream" id="stream_{{stream.id}}" value="{{stream.id}}" onChange="load_unload_stream(this, '{{stream.id}}');
+                                                                                                                               reset_check_all(this, 'owned_checkall');"/> 
+                <label for="stream_{{stream.id}}">{{stream.name}}</label>
             </li>
             {% endfor %}
             <li>
-                <input type="checkbox" id="owned_checkall" onClick="checkOwned(this)"/>
+                <input type="checkbox" id="owned_checkall" onClick="check_all('owned_checkall')"/>
                 <label for="owned_checkall">Check All</label>
             </li>
         </ul>
@@ -29,21 +30,22 @@
     {% endif %}
     
     {% if viewable_streams%}
-    <div  class="section_toggle stream_clickable clickable" onclick="toggle_form_section(event);">
+    <div id="viewable_clickable" class="section_toggle clickable" onclick="toggle_form_section(event);">
         <b>Viewable Streams</b>
-        <span class="collapse_state">+</span>
+        <span class="collapse_state">-</span>
     </div>
     <div>
         <!-- Create a checkbox for each public datastream -->
         <ul class="streams">
             {% for stream in viewable_streams%}
             <li>
-                <input type="checkbox" name="view" class="stream" id="view_stream_{{stream.id}}" value="{{stream.id}}"/>
-                <label for="view_stream_{{stream.id}}">{{stream.name}}</label>
+            <input type="checkbox" name="view" class="stream" id="stream_{{stream.id}}" value="{{stream.id}}" onChange="load_unload_stream(this, '{{stream.id}}');
+                                                                                                                             reset_check_all(this, 'view_checkall');"/>
+                <label for="stream_{{stream.id}}">{{stream.name}}</label>
             </li>
             {% endfor %}
             <li>
-                <input type="checkbox" id="view_checkall" onClick="checkView(this)"/>
+                <input type="checkbox" id="view_checkall" onClick="check_all('view_checkall')"/>
                 <label for="view_checkall">Check All</label>
             </li>
         </ul>
@@ -52,30 +54,35 @@
     {% endif %}
     
     {% if public_streams %}
-    <div  class="section_toggle stream_clickable clickable" onclick="toggle_form_section(event);">
+    <div id="public_clickable" class="section_toggle clickable" onclick="toggle_form_section(event);">
         <b>Public Streams</b>
-        <span class="collapse_state">+</span>
+        <span class="collapse_state">-</span>
     </div>
     <div>
         <!-- Create a checkbox for each public datastream -->
         <ul class="streams">
             {% for stream in public_streams%}
             <li>
-                <input type="checkbox" name="public" class="stream" id="public_stream_{{stream.id}}" value="{{stream.id}}"/> 
-                <label for="public_stream_{{stream.id}}">{{stream.name}}</label>
+            <input type="checkbox" class="stream public_stream" id="stream_{{stream.id}}" value="{{stream.id}}" onChange="load_unload_stream(this, '{{stream.id}}'); 
+                                                                                                                                reset_check_all(this, 'public_checkall');"/> 
+                <label for="stream_{{stream.id}}">{{stream.name}}</label>
             </li>
             {% endfor %}
             <li>
-                <input type="checkbox" id="public_checkall" onClick="checkPublic(this)"/> 
+                <input type="checkbox" id="public_checkall" onClick="check_all('public_checkall')"/> 
                 <label for="public_checkall">Check All</label>
             </li>
         </ul>
     </div>
     <br/>
-     {% endif %}
+    {% endif %}
     
-     <input type="button" value="submit" onclick="get_selected_streams();"/>
      <script>
-        collapse_all('stream_clickable');
-     </script>
+        {% if owned_streams %}
+        collapse('public_clickable');
+        collapse('viewable_clickable');
+        {% elif viewable_streams %}
+        collapse('public_clickable');
+        {% endif %}
+    </script>
 </div>
