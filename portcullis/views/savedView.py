@@ -51,9 +51,10 @@ def savedView(request, token):
                 })
         graphs.append(t_graph.render(c_graph))
 
-    t = loader.get_template('graph_container.html')
-    c = RequestContext(request, {'graphs': graphs,
-                                 'token': token
+    t = loader.get_template('content_container.html')
+    c = RequestContext(request, {
+                                    'widgets': graphs,
+                                    'token': token,
                                  })
 
     return HttpResponse(t.render(c))

@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 
+{% csrf_token %}
+
 {% block content %}
 <link rel="stylesheet" media="all" type="text/css" href="{{STATIC_URL}}css/main_page.css" />
 

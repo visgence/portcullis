@@ -29,8 +29,10 @@ def index(request, content = None, content_id = None):
         side_pane = streams(request)
         content_pane = savedView(request, content_id).content
     else:
+        content_t = loader.get_template('content_container.html')
+        content_c = RequestContext(request, {}) 
         side_pane = streams(request)
-        content_pane = ''
+        content_pane = content_t.render(content_c)
 
     t = loader.get_template('main_page.html')
     c = RequestContext(request, { 'greeting': greeting(request),

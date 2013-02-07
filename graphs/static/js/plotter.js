@@ -724,7 +724,6 @@ function ready_datepickers()
  * This function is called when the submit button in the Streams control is pushed.
  * It gets the id's of the requested streams and makes an ajax request to render them
  * in the content pane.
- */
 function get_selected_streams()
 {
     var checked_streams = $.makeArray($('.stream:checked').map(function(index, element) {
@@ -742,7 +741,9 @@ function get_selected_streams()
     $.get('/graphs/', {'json_data': json_data}, function(data){
         $('#content').html(data);
     });
-}
+}*/
+
+
 
 function load_unload_stream(checkbox) {
     /*
