@@ -16,7 +16,7 @@
             {% for stream in owned_streams%}
             <li>
             <input type="checkbox" name="owned" class="stream" id="stream_{{stream.id}}" value="{{stream.id}}" onChange="load_unload_stream(this);
-                                                                                                                               reset_check_all(this, 'owned_checkall');"/> 
+                                                                                                                         reset_check_all(this, 'owned_checkall');"/> 
                 <label for="stream_{{stream.id}}">{{stream.name}}</label>
             </li>
             {% endfor %}
@@ -40,7 +40,7 @@
             {% for stream in viewable_streams%}
             <li>
             <input type="checkbox" name="view" class="stream" id="stream_{{stream.id}}" value="{{stream.id}}" onChange="load_unload_stream(this);
-                                                                                                                             reset_check_all(this, 'view_checkall');"/>
+                                                                                                                        reset_check_all(this, 'view_checkall');"/>
                 <label for="stream_{{stream.id}}">{{stream.name}}</label>
             </li>
             {% endfor %}
@@ -64,7 +64,7 @@
             {% for stream in public_streams%}
             <li>
             <input type="checkbox" class="stream public_stream" id="stream_{{stream.id}}" value="{{stream.id}}" onChange="load_unload_stream(this); 
-                                                                                                                                reset_check_all(this, 'public_checkall');"/> 
+                                                                                                                          reset_check_all(this, 'public_checkall');"/> 
                 <label for="stream_{{stream.id}}">{{stream.name}}</label>
             </li>
             {% endfor %}
