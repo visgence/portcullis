@@ -6,7 +6,7 @@
 <div id="main_page">
     <div id="side_pane_anchor"><!--Used to tell us if user has scrolled this passed the top or not.--></div>
     <div id="side_pane">
-
+        <div id="side_pane_button" style="width:1.32em;" onclick="toggle_side_pane();"></div>
         <div id="side_pane_content">
             {{side_pane|safe}}
         </div>
@@ -14,6 +14,7 @@
     <script>
         $(window).scroll(sidepane_relocate);
         ready_datepickers();
+        $('#side_pane_button').button({icons: {primary: "ui-icon-circle-triangle-s"}});
     </script>
     </div><!--End side_pane-->
 
