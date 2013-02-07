@@ -761,36 +761,18 @@ function load_unload_stream(checkbox) {
         //If we're already loading this graph
         if($('#graph_container_'+datastream_id).length)
             return;
-
-        //If there's no graph container render it first before graphs
-        if(!$('#graph_container').length) {
-            $.get('/graphs/render_container/', {}, function(data) {
-                $('#content').html(data); 
-
-                //Need to do this one here to ensure graph container has finished being rendered first.
-                $.get('/graphs/', {'json_data': json}, function(data) {
-                    $('#graph_container').append(data);
-                    on_graph_load(datastream_id);
-                });
-            });
-        }
-        else {
-            //Graph container is already rendered so just append to it
-            $.get('/graphs/', {'json_data': json}, function(data) {
-                $('#graph_container').append(data);
-                on_graph_load(datastream_id);
-            });
-        }
+        
+        // append to widget container
+        $.get('/graphs/', {'json_data': json}, function(data) {
+            $('#widget_container').append(data);
+            on_graph_load(datastream_id);
+        });
     }
     else {
-        var graph_container = $('#graph_container');
-        $(graph_container).children('#graph_container_'+datastream_id).remove();
-       
-        //If no more graphs exist empty the content div 
-        if(!$(graph_container).children('.graph_container').length)
-            $('#content').children().remove();
+        var widget_container = $('#widget_container');
+        $(widget_container).children('#graph_container_'+datastream_id).remove();
     }
-        
+    
 }
 
 
