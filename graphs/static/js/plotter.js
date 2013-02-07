@@ -630,6 +630,16 @@ function saveView()
            });
 }
 
+function ready_checkboxes() {
+    /*
+     * Get's any existing graphs on page and checks their respective checkbox.
+     */
+
+    //If any pre-loaded graphs are on page then check their stream checkbox
+     var loaded_graphs = $('.portcullis-graph');
+     loaded_graphs.each(function() { $('#stream_'+$(this).attr('id')).attr('checked', 'checked'); });
+}
+
 function ready_minicolors(datastream_id)
 { 
     /*

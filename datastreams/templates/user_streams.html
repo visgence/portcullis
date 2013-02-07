@@ -15,9 +15,9 @@
         <ul class="streams">
             {% for stream in owned_streams%}
             <li>
-            <input type="checkbox" name="owned" class="stream" id="owned_stream_{{stream.id}}" value="{{stream.id}}" onChange="load_unload_stream(this, '{{stream.id}}');
+            <input type="checkbox" name="owned" class="stream" id="stream_{{stream.id}}" value="{{stream.id}}" onChange="load_unload_stream(this, '{{stream.id}}');
                                                                                                                                reset_check_all(this, 'owned_checkall');"/> 
-                <label for="owned_stream_{{stream.id}}">{{stream.name}}</label>
+                <label for="stream_{{stream.id}}">{{stream.name}}</label>
             </li>
             {% endfor %}
             <li>
@@ -39,9 +39,9 @@
         <ul class="streams">
             {% for stream in viewable_streams%}
             <li>
-            <input type="checkbox" name="view" class="stream" id="view_stream_{{stream.id}}" value="{{stream.id}}" onChange="load_unload_stream(this, '{{stream.id}}');
+            <input type="checkbox" name="view" class="stream" id="stream_{{stream.id}}" value="{{stream.id}}" onChange="load_unload_stream(this, '{{stream.id}}');
                                                                                                                              reset_check_all(this, 'view_checkall');"/>
-                <label for="view_stream_{{stream.id}}">{{stream.name}}</label>
+                <label for="stream_{{stream.id}}">{{stream.name}}</label>
             </li>
             {% endfor %}
             <li>
@@ -63,9 +63,9 @@
         <ul class="streams">
             {% for stream in public_streams%}
             <li>
-            <input type="checkbox" class="stream public_stream" id="public_stream_{{stream.id}}" value="{{stream.id}}" onChange="load_unload_stream(this, '{{stream.id}}'); 
+            <input type="checkbox" class="stream public_stream" id="stream_{{stream.id}}" value="{{stream.id}}" onChange="load_unload_stream(this, '{{stream.id}}'); 
                                                                                                                                 reset_check_all(this, 'public_checkall');"/> 
-                <label for="public_stream_{{stream.id}}">{{stream.name}}</label>
+                <label for="stream_{{stream.id}}">{{stream.name}}</label>
             </li>
             {% endfor %}
             <li>
@@ -75,14 +75,14 @@
         </ul>
     </div>
     <br/>
-     {% endif %}
+    {% endif %}
     
      <script>
-         {% if owned_streams %}
-         collapse('public_clickable');
-         collapse('viewable_clickable');
-         {% elif viewable_streams %}
-         collapse('public_clickable');
-         {% endif %}
+        {% if owned_streams %}
+        collapse('public_clickable');
+        collapse('viewable_clickable');
+        {% elif viewable_streams %}
+        collapse('public_clickable');
+        {% endif %}
     </script>
 </div>
