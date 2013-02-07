@@ -1,9 +1,14 @@
 #header
 {
-    width: 1512px;
-    margin-left: auto;
-    margin-right: auto;
-    position: relative;
+    width: 90%;
+    margin: auto;
+    text-align: center;
+}
+
+#header_image
+{
+    max-width: 100%;
+    min-width: 100%;
 }
 
 #base_content
