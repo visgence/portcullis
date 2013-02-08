@@ -8,7 +8,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE",'settings')
 from django.core.exceptions import ObjectDoesNotExist
 
 from portcullis.models import DataStream, ScalingFunction, PortcullisUser
-from collector.data_loader import insert_reading
+from collector.views.data_loader import insert_reading
 
 import math
 import time
