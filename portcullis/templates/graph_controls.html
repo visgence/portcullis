@@ -8,7 +8,7 @@
                 <b><span id="end_label">Start Date</span></b>
             </li>
             <li>
-                <input type="text" name ="start" id="start" value="{{start}}"/>
+                <input type="text" name ="start" id="start" value="{{start}}" onChange="load_all_graphs();"/>
             </li>
             <li class="date_range_seperator">
                 or
@@ -17,7 +17,8 @@
                 <b>Range Before End Date</b>
             </li>
             <li>
-                <select id="start_range" type="select" onchange="toggle_date_range(this, 'start', 'end_range');">
+            <select id="start_range" type="select" onchange="toggle_date_range(this, 'start', 'end_range');
+                                                             load_all_graphs();">
                     <option value="None" selected="selected">None</option>
                     <option value="One Day">One Day</option>
                     <option value="One Week">One Week</option>
@@ -27,7 +28,7 @@
                 <b>End Date</b> 
             </li>
             <li>
-                <input type="text" name ="end" id="end" value="{{end}}"/>
+                <input type="text" name ="end" id="end" value="{{end}}" onChange="load_all_graphs();"/>
             </li>
             <li class="date_range_seperator">
                 or
@@ -36,7 +37,8 @@
                 <b>Range After Start Date</b>
             </li>
             <li>
-                <select id="end_range" type="select" onchange="toggle_date_range(this, 'end', 'start_range');">
+            <select id="end_range" type="select" onchange="toggle_date_range(this, 'end', 'start_range');
+                                                           load_all_graphs();">
                     <option value="None" selected="selected">None</option>
                     <option value="One Day">One Day</option>
                     <option value="One Week">One Week</option>
@@ -46,18 +48,19 @@
         </ul>
     </div>
     
-    <div id="graph_controls_advanced" class="section_toggle controls_toggle clickable" onclick="toggle_form_section(event);">Advanced Options</div>
+    <div id="graph_controls_advanced" class="section_toggle controls_toggle clickable" onclick="toggle_form_section(event);">
+        Advanced Options
+    </div>
+
     <div>
         <div>
             <b>Number of datapoints</b> 
         </div>
         <div>
-            <input type="text" name = "granularity" id="granularity" value="{{granularity}}" />
+            <input type="text" name = "granularity" id="granularity" value="{{granularity}}" onChange="load_all_graphs();"/>
         </div>
     </div>
 
-    <input type="hidden" name = "to_epoch" value ="true" />
-    <input id="graph_options_submit" type="button" value="Submit" onClick="load_all_graphs()" />
     <script>
         collapse_all('controls_toggle');
     </script>

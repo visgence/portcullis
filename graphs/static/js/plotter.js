@@ -508,7 +508,7 @@ function renderOverview(data, ranges)
 }
 
 
-/* Resets a graph back to it's original zoom level
+/** Resets a graph back to it's original zoom level
  */
 function resetZoom(streamId)
 {
@@ -551,8 +551,16 @@ function resetZoom(streamId)
     reset_graph_selection(streamId);
 }
 
-/*Responsible for keeping all graphs in sync (timewise) upon a date range
- *selection in flot. */
+/** Given a time range (x-axis) reloads all graphs using that range.
+ *
+ *  ranges - Dict like object containing the new ranges.
+ *           {
+ *              xaxis: {
+ *                 from: epoch seconds
+ *                 to:   epoch seconds
+ *              }
+ *           }
+ */
 function zoom_all_graphs(ranges)
 {
     divs = $(".portcullis-graph:not(.empty)");
@@ -562,17 +570,20 @@ function zoom_all_graphs(ranges)
         if($("#zoom_sync_"+datastream_id).is(':checked'))         
             zoom_graph(ranges, datastream_id);
     }
-}//end zoom_all_graphs
+}
 
-
-function setupDownload(datastreamId)
+/** Initializes the download button under a given graphs Advanced Options.
+ *  
+ *  datastream_id - Id of stream who's download button is to be initialized.
+ */
+function setupDownload(datastream_id)
 {
-    $('#downloadify'+datastreamId).downloadify({
+    $('#downloadify'+datastream_id).downloadify({
         filename: function(){
-            return 'datastream_'+datastreamId+'\.csv'; 
+            return 'datastream_'+datastream_id+'\.csv'; 
         },
         data: function(){ 
-            return document.getElementById('sensor'+datastreamId+'_csv').value;
+            return document.getElementById('sensor'+datastream_id+'_csv').value;
         },
         onComplete: function() { 
             //console.log("File with csv data for data stream "+datastreamId+" saved to disk."); //DEBUG 
@@ -593,6 +604,14 @@ function setupDownload(datastreamId)
     });
 }
 
+/** Enables/disables a date range selector and date picker field. 
+ *  Selecting something other than 'None' will disable the other range selector as well as
+ *  the date picker field the range selector is next to. Selecting 'None' enables them again.
+ *
+ *  select         - The date range selector element.
+ *  date_id        - The date picker field id.
+ *  mutable_select - Id for the date range selector that is not being selected.
+ */
 function toggle_date_range(select, date_id, mutable_select)
 {
     var date_field = $("#"+date_id);
@@ -611,9 +630,10 @@ function toggle_date_range(select, date_id, mutable_select)
 }
 
 
-/// Save this view and give the link to it.
-/// TODO: Expand to save all widgets, not just graphs, maybe in another js file?
-///       Also, expand to include zoom info, and info per widget/graph instead of page wide
+/** Save this view and give the link to it.
+*   TODO: Expand to save all widgets, not just graphs, maybe in another js file?
+*         Also, expand to include zoom info, and info per widget/graph instead of page wide
+*/
 function saveView()
 {
     var view = new Object();
@@ -637,22 +657,19 @@ function saveView()
            });
 }
 
-function ready_checkboxes() {
-    /*
-     * Get's any existing graphs on page and checks their respective checkbox.
-     */
-
+/** Get's any existing graphs on page and checks their respective checkbox.
+*/
+function ready_checkboxes() 
+{
     //If any pre-loaded graphs are on page then check their stream checkbox
      var loaded_graphs = $('.portcullis-graph');
      loaded_graphs.each(function() { $('#stream_'+$(this).attr('id')).attr('checked', 'checked'); });
 }
 
+/** Creates the minicolor pickers inside each graphs advanced options space.
+*/
 function ready_minicolors(datastream_id)
 { 
-    /*
-     * Creates the minicolor pickers inside each graphs advanced options space.
-     */
-
     var graph_data = plots[datastream_id].getData();
     var default_color = graph_data[0]['color'];
 
@@ -696,11 +713,11 @@ function ready_minicolors(datastream_id)
     });
 }
 
+
+/** Finds the start and end date picker inputs and initializes them for use.
+*/
 function ready_datepickers()
 {
-    /*
-     * Finds the start and end date picker inputs and initializes them for use.
-     */
 
     $('#start').datetimepicker
     ({
@@ -727,39 +744,14 @@ function ready_datepickers()
     });
 }
 
-/**
- * This function is called when the submit button in the Streams control is pushed.
- * It gets the id's of the requested streams and makes an ajax request to render them
- * in the content pane.
-function get_selected_streams()
-{
-    var checked_streams = $.makeArray($('.stream:checked').map(function(index, element) {
-        return $(this).val();
-    }));
 
-    if(checked_streams.length == 0)
-        return;
-
-    var get_data = new Object();
-
-    get_data['streams'] = checked_streams;
-    var json_data = JSON.stringify(get_data);
-
-    $.get('/graphs/', {'json_data': json_data}, function(data){
-        $('#content').html(data);
-    });
-}*/
-
-
-
-function load_unload_stream(checkbox) {
-    /*
-     * Loads a stream to the page if it's checkbox was checked and unloads or stops the loading 
-     * of the stream if it's checkbox is unchecked.
-     *
-     * checkbox - The streams checkbox input.
-     */
-
+/** Loads a stream to the page if it's checkbox was checked and unloads or stops the loading 
+ * of the stream if it's checkbox is unchecked.
+ *
+ * checkbox - The streams checkbox input.
+ */
+function load_unload_stream(checkbox) 
+{ 
     var datastream_id = $(checkbox).val();     
     if($(checkbox).attr('checked')) {
         var stream = new Object();
@@ -774,15 +766,17 @@ function load_unload_stream(checkbox) {
         $.get('/graphs/', {'json_data': json}, function(data) {
             $('#widget_container').append(data);
             on_graph_load(datastream_id);
+            $('#share_link').removeClass('display_none');
         });
     }
     else {
         var widget_container = $('#widget_container');
         $(widget_container).children('#graph_container_'+datastream_id).remove();
+        
+        if(!$('.graph_container').length)
+            $('#share_link').addClass('display_none');
     }
-    
 }
-
 
 
 /** Take a Date object and return a string formatted as:
