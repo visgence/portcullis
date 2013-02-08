@@ -32,10 +32,10 @@ function spin(target, type) {
     }
     else {
         var opts = {
-            lines: 25,
-            length: 100,
-            width: 5,
-            radius: 40,
+            lines: 20,
+            length: 50,
+            width: 4,
+            radius: 30,
             corners: 0.5,
             rotate: 28,
             color: '#000000',
