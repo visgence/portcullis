@@ -419,6 +419,9 @@ function graph_overview_callback() {
 
 function load_graph(datastream_id, ranges, callback) {
     var granularity = get_granularity();
+    
+    var indicator_s = spin(document.getElementById('stream_span_' + datastream_id), 'tiny');
+    var indicator_g = spin(document.getElementById('graph_container_' + datastream_id));
 
     var getData = new Object();
     getData['start'] = Math.round(ranges.xaxis.from/1000 + timezone_offset/1000);
@@ -428,7 +431,11 @@ function load_graph(datastream_id, ranges, callback) {
     getData['reduction'] = $('#reduction_select_' + datastream_id).val();
 
     json_data = JSON.stringify(getData);
-    $.get("/graphs/render_graph/", {'json_data': json_data}, callback);
+    $.get("/graphs/render_graph/", {'json_data': json_data}, function(data) {
+        indicator_s.stop();
+        indicator_g.stop();
+        callback(data);
+    });
 }
 
 function renderGraph(data, ranges, shouldScale)

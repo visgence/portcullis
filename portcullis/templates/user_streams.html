@@ -15,9 +15,11 @@
         <ul class="streams">
             {% for stream in owned_streams%}
             <li>
-            <input type="checkbox" name="owned" class="stream" id="stream_{{stream.id}}" value="{{stream.id}}" onChange="load_unload_stream(this);
-                                                                                                                               reset_check_all(this, 'owned_checkall');"/> 
-                <label for="stream_{{stream.id}}">{{stream.name}}</label>
+                <div id="stream_span_{{stream.id}}">
+                    <input type="checkbox" name="owned" class="stream" id="stream_{{stream.id}}" value="{{stream.id}}" onChange="load_unload_stream(this);
+                                                                                                                                 reset_check_all(this, 'owned_checkall');"/> 
+                    <label for="stream_{{stream.id}}">{{stream.name}}</label>
+                </div>
             </li>
             {% endfor %}
             <li>
