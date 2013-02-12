@@ -16,7 +16,7 @@ try: import simplejson as json
 except ImportError: import json
 
 # Local Imports
-from portcullis.models import DataStream
+from portcullis.models import DataStream, PortcullisUser
 
 def crudjs(request):
     '''
@@ -26,6 +26,7 @@ def crudjs(request):
     t = loader.get_template('crud.js')
     c = RequestContext(request, {
             'model': json.dumps(genModel(DataStream), indent=4),
+            'user_model': json.dumps(genModel(PortcullisUser), indent=4),
             'columns': json.dumps(genColumns(DataStream), indent=4)
             })
     return HttpResponse(t.render(c), mimetype="text/javascript")
@@ -55,9 +56,11 @@ def genModel(modelObj):
     fields = {}
 
     for f in get_meta_fields(modelObj):
-        fields[f.name] = {}
+        fields[f.name] = {'django_m2m': False}
         if f.unique or not f.editable:
             fields[f.name]['editable'] = False
+        else:
+            fields[f.name]['editable'] = True
 
         # Figure out the type of field.
         d_type = f.db_type(connections.all()[0])
@@ -70,8 +73,16 @@ def genModel(modelObj):
             fields[f.name]['type'] = 'date'
         # Default is string
             
+        # If it is a related object, flag it as such
+        if isinstance(f, models.ForeignKey) or isinstance(f, models.OneToOneField):
+            fields[f.name]['django_related_field'] = True
+            fields[f.name]['django_related_app'] = f.rel.to.__module__.partition('.')[0]
+            fields[f.name]['django_related_cls'] = f.rel.to.__name__
+        else:
+            fields[f.name]['django_related_field'] = False
+            
     for m in get_meta_m2m(modelObj):
-        fields[m.name] = {'editable': False}
+        fields[m.name] = {'editable': False, 'django_related_field': True, 'django_m2m': True}
         
     model['fields'] = fields
     return model
@@ -83,6 +94,11 @@ def genColumns(modelObj):
         field = {'field':f.name,'title':f.name.title()}
         if f.name in ['name', 'id']:
             field['sortable'] = True
+            
+        # TODO: For foreign keys (and maybe OneToOne relations), add a custom edit widget
+        #if isinstance(f, models.ForeignKey):
+        #    field[''] = 
+
         columns.append(field)
     for m in get_meta_m2m(modelObj):
         columns.append({'field':m.name, 'title':m.name.title()})
