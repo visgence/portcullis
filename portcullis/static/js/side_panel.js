@@ -26,11 +26,11 @@ function toggle_side_pane()
     $('#side_pane_content').toggle('slide', {direction: 'left'}, 'fast');
 }
 
-/** Readies the side panes tab strip from kendo ui */
-function ready_tab_strip() 
+/** Readies the side panes tabs jquery ui */
+function ready_tabs() 
 {
-    $('#tab_strip').kendoTabStrip({
-        contentUrls: ["/portcullis/streams/"]
+    var tabs = $('#tabs').tabs({
+        cache: true
     });
 }
 
@@ -64,7 +64,7 @@ function sidepane_relocate()
         //Must be scrolled at the bottom then.
         else if(window_top > div_top){
 
-            var top_pos = $('#base_content').height() - tab_strip.height() - 10;
+            var top_pos = $('#base_content').height() - tab_strip.height();
             $('#side_pane').removeClass('stick'); 
             $('#side_pane').addClass('absolute');
             $('#side_pane').css('top', top_pos);
