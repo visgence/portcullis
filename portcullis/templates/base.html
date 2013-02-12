@@ -1,7 +1,8 @@
 {% load dajaxice_templatetags %}
 <html>
     <head>
-        <script src="http://code.jquery.com/jquery-1.8.2.min.js"></script>
+
+        <script type="text/javascript" src="http://code.jquery.com/jquery-1.8.2.min.js"></script>
 
         {% dajaxice_js_import %}
         
@@ -36,17 +37,16 @@
         <script type="text/javascript" src="{{STATIC_URL}}js/kendoui/kendo.tabstrip.min.js"></script>
         <script type="text/javascript" src="{{STATIC_URL}}js/kendoui/kendo.web.min.js"></script>
         
-        
-        
-        <link rel="stylesheet" media="all" type="text/css" href="{{STATIC_URL}}plugins/mini-colors/jquery.minicolors.css" />
-        <link rel="stylesheet" media="all" type="text/css" href="{{STATIC_URL}}css/ui-lightness/jquery-ui-1.7.3.custom.css" />
-        <link rel="stylesheet" media="all" type="text/css" href="{{STATIC_URL}}css/base.css" />
-        <link rel="stylesheet" media="all" type="text/css" href="{{STATIC_URL}}css/forms.css" />
-        <link rel="stylesheet" media="all" type="text/css" href="{{STATIC_URL}}css/display_nodes.css" />
+        <link rel="stylesheet" media="all" type="text/css" href="{{STATIC_URL}}plugins/mini-colors/jquery.minicolors.css">
+        <link rel="stylesheet" media="all" type="text/css" href="{{STATIC_URL}}css/ui-lightness/jquery-ui-1.7.3.custom.css">
+        <link rel="stylesheet" media="all" type="text/css" href="{{STATIC_URL}}css/ui-lightness/ui.tabs.css">
+        <link rel="stylesheet" media="all" type="text/css" href="{{STATIC_URL}}css/base.css">
+        <link rel="stylesheet" media="all" type="text/css" href="{{STATIC_URL}}css/forms.css">
+        <link rel="stylesheet" media="all" type="text/css" href="{{STATIC_URL}}css/display_nodes.css">
 
-        <link rel="stylesheet" media="all" type="text/css" href="{{STATIC_URL}}css/kendoui/kendo.metro.min.css" />
-        <link rel="stylesheet" media="all" type="text/css" href="{{STATIC_URL}}css/kendoui/kendo.common.min.css" />
-        <link rel="stylesheet" media="all" type="text/css" href="{{STATIC_URL}}css/kendoui/kendo.default.min.css" />
+        <link rel="stylesheet" media="all" type="text/css" href="{{STATIC_URL}}css/kendoui/kendo.metro.min.css">
+        <link rel="stylesheet" media="all" type="text/css" href="{{STATIC_URL}}css/kendoui/kendo.common.min.css">
+        <link rel="stylesheet" media="all" type="text/css" href="{{STATIC_URL}}css/kendoui/kendo.default.min.css">
     </head>
     <body>
         <div id="greeting"> 
@@ -59,7 +59,7 @@
 
         <div id="header">
             <a href="/" title="Streams">
-                <img id="header_image" src="{{STATIC_URL}}branding/header.png"/>
+                <img id="header_image" alt="header" src="{{STATIC_URL}}branding/header.png"/>
             </a>
         </div>
         

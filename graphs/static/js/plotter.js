@@ -751,7 +751,7 @@ function ready_datepickers()
  * checkbox - The streams checkbox input.
  */
 function load_unload_stream(checkbox) 
-{ 
+{
     var datastream_id = $(checkbox).val();     
     if($(checkbox).attr('checked')) {
         var stream = new Object();
