@@ -25,7 +25,7 @@ def streams(request):
 
     #Pull any public streams as well
     public_streams = DataStream.objects.filter(is_public = True).exclude(id__in=viewable_streams).exclude(id__in=owned_streams).distinct()
-    print viewable_streams
+
     t_streams = loader.get_template('user_streams.html')
     c_streams = RequestContext(request, {
             'user':request.user,

@@ -17,6 +17,17 @@
     top: .1em;
 }
 
+#side_pane.absolute
+{
+    position: absolute;
+}
+
+#tab_strip
+{
+    width: 300px;
+    float: left;
+}
+
 #side_pane
 {
     height: 95%;
