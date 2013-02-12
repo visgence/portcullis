@@ -2,6 +2,7 @@
  * portcullis/static/side_panel.js
  * Contributing Authors:
  *    Jeremiah Davis (Visgence, Inc.)
+ *    Bretton Murphy (Visgence, Inc.)
  *
  * (c) 2013 Visgence, Inc.
  *
@@ -11,23 +12,6 @@
 /** Toggle hide the side panel. */
 function toggle_side_pane() 
 {
-    if (!this.slide) {
-        slide = kendo.fx($('#greeting')).slideIn("left");
-        visible = true;
-    }
-
-    if (visible) {
-        console.log(slide);
-        slide.play();
-        $('#side_pane_button').button('option', 'icons', {primary: 'ui-icon-circle-triangle-s'});
-    }
-    else {
-        slide.reverse();
-        $('#side_pane_button').button('option', 'icons', {primary: 'ui-icon-circle-triangle-w'});
-    }
-    visible = !visible;
-
-    /*
     // Make sure to toggle the arrow direction.
     if ( $('#side_pane_button .ui-icon-circle-triangle-w').length ) {
         $('#side_pane_button').button('option', 'icons', {primary: 'ui-icon-circle-triangle-s'});
@@ -40,7 +24,6 @@ function toggle_side_pane()
         $('#side_pane').css('width', '20px');
     }
     $('#side_pane_content').toggle('slide', {direction: 'left'}, 'fast');
-    */
 }
 
 /** Readies the side panes tab strip from kendo ui */
@@ -60,7 +43,7 @@ function sidepane_relocate()
     var window_top = $(window).scrollTop();
     var div_top = $('#side_pane_anchor').offset().top;
 
-    var tab_strip = $('#tab_strip');
+    var tab_strip = $('#tabs');
     var base_content = $('#base_content');
 
     //If the side pane height is greater than browser view.
@@ -81,7 +64,7 @@ function sidepane_relocate()
         //Must be scrolled at the bottom then.
         else if(window_top > div_top){
 
-            var top_pos = $('#base_content').height() - tab_strip.height();
+            var top_pos = $('#base_content').height() - tab_strip.height() - 10;
             $('#side_pane').removeClass('stick'); 
             $('#side_pane').addClass('absolute');
             $('#side_pane').css('top', top_pos);
