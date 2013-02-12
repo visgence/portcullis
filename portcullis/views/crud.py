@@ -8,6 +8,7 @@
 """
 
 # System Imports
+from django.db import models, connections
 from django.core import serializers
 from django.http import HttpResponse
 from django.template import RequestContext, loader
@@ -40,6 +41,12 @@ def read(request):
     jsonData  = serializers.serialize("json", DataStream.objects.all())
     return HttpResponse(jsonData, mimetype="application/json")
 
+def create(request):
+    print request.GET.items()
+    return HttpResponse(json.dumps(request.GET), mimetype='application/json')
+    #print json.loads(request.POST['jsonData'])
+    #return HttpResponse(request.GET['jsonData'], mimetype="application/json")
+
 def genModel(modelObj):
    
     model = {};
@@ -47,23 +54,52 @@ def genModel(modelObj):
     
     fields = {}
 
-    for f in modelObj._meta.fields:
-        if f.unique:
-            fields[f.name] = {'editable':False}
-        else:
-            fields[f.name] = {'editable':True}
+    for f in get_meta_fields(modelObj):
+        fields[f.name] = {}
+        if f.unique or not f.editable:
+            fields[f.name]['editable'] = False
 
-
+        # Figure out the type of field.
+        d_type = f.db_type(connections.all()[0])
+        if d_type == 'boolean':
+            fields[f.name]['type'] = 'boolean'
+            #fields[f.name]['validation'] = {'required': True}
+        elif d_type in ['integer', 'serial'] or d_type.startswith('numeric'):
+            fields[f.name]['type'] = 'number'
+        elif d_type.startswith('timestamp'):
+            fields[f.name]['type'] = 'date'
+        # Default is string
+            
+    for m in get_meta_m2m(modelObj):
+        fields[m.name] = {'editable': False}
+        
     model['fields'] = fields
     return model
 
 def genColumns(modelObj):
     
     columns = []
-    for f in modelObj._meta.fields:
-        columns.append({'field':f.name,'title':f.name})
+    for f in get_meta_fields(modelObj):
+        field = {'field':f.name,'title':f.name.title()}
+        if f.name in ['name', 'id']:
+            field['sortable'] = True
+        columns.append(field)
+    for m in get_meta_m2m(modelObj):
+        columns.append({'field':m.name, 'title':m.name.title()})
     return columns
 
 def model(request):
     jsonData = {'model':genModel(datastream.models.DataStream)}
     return HttpResponse(json.dumps(jsonData,indent=4), mimetype="application/json")
+
+def get_meta_fields(cls):
+    '''
+    ' Use a model class to get the _meta fields.
+    '''
+    return cls._meta.fields
+
+def get_meta_m2m(cls):
+    '''
+    ' Use a model class to get the _meta ManyToMany fields
+    '''
+    return cls._meta.many_to_many

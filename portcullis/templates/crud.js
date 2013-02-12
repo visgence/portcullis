@@ -18,20 +18,21 @@
 $(function() {
     dataSource = new kendo.data.DataSource({
         transport: {
-            read: {
-                url: 'read/'
+            read: function(options){
+                console.log('In read');
+                Dajaxice.portcullis.read_datastream(function(response) {
+                    options.success(response);
+                });
             },
-            update: {
-                url: 'update/',
-                type: 'post/'
+            update: function(options){
+                alert('In update');
             },
-            destroy: {
-                url: 'destroy/',
-                type: 'post/'
+            destroy: function(options){
+                alert('In destroy');
             },
-            create: {
-                url: 'create/',
-                type: 'post'
+            create: function(options) {
+                Dajaxice.portcullis.create_datastream(function(response) {
+                    options.success(response);}, {'data': options.data});
             },
             parameter: function(data, type) {
                 return {data: kendo.stringify(data)};
@@ -39,11 +40,14 @@ $(function() {
         },
         schema: {
             data: function(d) {
-                return d.map(function(e) {
+                console.log('in data');
+                var stuff = d.map(function(e) {
                     data = e['fields'];
                     data['id'] = e['pk'];
                     return data;
                 });
+                console.log(stuff);
+                return stuff;
             },
             model: {{ model|safe }}
         }
@@ -52,8 +56,15 @@ $(function() {
     $('#ds_grid').kendoGrid({
         dataSource: dataSource,
         columns: {{ columns|safe }},
-        editable: 'popup',
+        //editable: 'popup',
         navigable: true,
-        toolbar: ['create']
+        toolbar: ['create', 'save', 'cancel'],
+        editable: {
+            update: true,
+            destroy: false,
+            confirmation: "Do you really want to delete this item?  This operation cannot be undone."
+        },
+        navigatable: true,
+        sortable: true
     });
 });

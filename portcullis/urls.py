@@ -11,6 +11,7 @@ urlpatterns = patterns(
     url(r'^createSavedView/$', 'savedView.createSavedView', name='portcullis-saveView'),
     url(r'^datastream/$', 'crud.datastream', name='portcullis-datastream-editor'),
     url(r'^datastream/read/$', 'crud.read', name="portcullis-datastream-read"),
+    url(r'^datastream/create/$', 'crud.create', name='portcullis-datastream-create'),
     url(r'^datstream/crud.js$', 'crud.crudjs', name="portcullis-datastream-crudjs")
 )
 

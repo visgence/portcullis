@@ -1,6 +1,9 @@
+{% load dajaxice_templatetags %}
 <html>
     <head>
         <script src="http://code.jquery.com/jquery-1.8.2.min.js"></script>
+
+        {% dajaxice_js_import %}
         
         <script type="text/javascript" src="{{STATIC_URL}}js/jquery-ui-1.8.18.custom.min.js"></script>
         <script type="text/javascript" src="{{STATIC_URL}}js/jquery-ui-timepicker-addon.js"></script>
@@ -32,6 +35,8 @@
         <script type="text/javascript" src="{{STATIC_URL}}js/kendoui/kendo.fx.min.js"></script>
         <script type="text/javascript" src="{{STATIC_URL}}js/kendoui/kendo.tabstrip.min.js"></script>
         <script type="text/javascript" src="{{STATIC_URL}}js/kendoui/kendo.web.min.js"></script>
+        
+        
         
         <link rel="stylesheet" media="all" type="text/css" href="{{STATIC_URL}}plugins/mini-colors/jquery.minicolors.css" />
         <link rel="stylesheet" media="all" type="text/css" href="{{STATIC_URL}}css/ui-lightness/jquery-ui-1.7.3.custom.css" />
