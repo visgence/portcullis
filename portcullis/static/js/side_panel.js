@@ -30,7 +30,10 @@ function toggle_side_pane()
 function ready_tabs() 
 {
     var tabs = $('#tabs').tabs({
-        cache: true
+        cache: true,
+        beforeActivate: function(event, ui) {
+            $('#widget_container').html('');
+        }
     });
 }
 
@@ -83,4 +86,13 @@ function sidepane_relocate()
         else
             $('#side_pane').removeClass('stick'); 
     }
+}
+
+/** Gets the html for managing a users streams and puts it in the content of the page */
+function load_manage_streams() 
+{
+    var url = "/portcullis/datastream/";
+    $.get(url, {}, function(data) {
+        $('#widget_container').html(data);  
+    });
 }

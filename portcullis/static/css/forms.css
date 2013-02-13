@@ -14,6 +14,22 @@ select:disabled
     color: #DE4343;
 }
 
+.clickable_text
+{
+    color: blue;
+}
+
+.clickable_text:hover
+{
+    cursor: pointer;
+    color: #DE4343;
+}
+
+.selected_text
+{
+    color: #DE4343;
+}
+
 .logged_out_hide
 {
     display: none;
