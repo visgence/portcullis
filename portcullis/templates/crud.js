@@ -16,22 +16,21 @@
 
 /** Setup the DataStream kendo datasource. */
 
-var dataStreamSource = new kendo.data.DataSource({
+var dataSource = new kendo.data.DataSource({
     error: function(e) {
         alert(e.errors);
-        var grid = $('#ds_grid').data('kendoGrid');
+        var grid = $('#{{model_name}}_grid').data('kendoGrid');
         grid.cancelChanges();
     },
     transport: {
         read: function(options){
             console.log('In read');
-            Dajaxice.portcullis.read_datastream(function(response) {
-                options.success(response);
-            });
+            Dajaxice.portcullis.read_source(function(response) {
+                options.success(response);}, { 'model_name': '{{model_name}}'});
         },
         update: function(options){
-            Dajaxice.portcullis.create_datastream(function(response) {
-                options.success(response);}, {'data': options.data, 'update':true});
+            Dajaxice.portcullis.update_model_obj(function(response) {
+                options.success(response);}, {'data': options.data, 'model_name':'{{model_name}}'});
         },
         destroy: function(options){
             Dajaxice.portcullis.destroy(function(response) {
@@ -39,8 +38,8 @@ var dataStreamSource = new kendo.data.DataSource({
             }, {'data':options.data});   
         },
         create: function(options) {
-            Dajaxice.portcullis.create_datastream(function(response) {
-                options.success(response);}, {'data': options.data, 'update':false});
+            Dajaxice.portcullis.create_model_obj(function(response) {
+                options.success(response);}, {'data': options.data, 'model_name': '{{model_name}}'});
         },
         parameter: function(data, type) {
             console.log('In parameter map.');
@@ -51,14 +50,7 @@ var dataStreamSource = new kendo.data.DataSource({
     },
     schema: {
         data: function(d) {
-            console.log('in data');
-            var stuff = d.map(function(e) {
-                data = e['fields'];
-                data['id'] = e['pk'];
-                return data;
-            });
-            console.log(stuff);
-            return stuff;
+            return d;
         },
         errors: function(response) {
             return response.errors;
@@ -67,42 +59,9 @@ var dataStreamSource = new kendo.data.DataSource({
     }
 }); 
 
-var portcullisUserSource = new kendo.data.DataSource({
-    transport: {
-        read: function(options) {
-            Dajaxice.portcullis.read_objects(function(response) {
-                options.success(response);
-            });
-        }
-    },
-    schema:{
-        data: function(d) {
-            return d.map(function(e) {
-                data = e['fields'];
-                data['id'] = e['pk'];
-                return data;
-            });
-        },
-        errors: function(response) {
-            return response.errors;
-        },
-        model: {{ user_model|safe }}
-    },
-    // TODO:  Not currently used.
-    customDropDown: function(container, options) {
-        $('<input data-text-field="" data-value-field="CategoryID" data-bind="value:' + options.field + '"/>')
-            .appendTo(container)
-            .kendoDropDownList({
-                autoBind: false,
-                dataSource: this
-            });
-    }
-});
-                                             
-
 $(function() {    
-    $('#ds_grid').kendoGrid({
-        dataSource: dataStreamSource,
+    $('#{{model_name}}_grid').kendoGrid({
+        dataSource: dataSource,
         columns: {{ columns|safe }},
         editable: 'popup',
         navigable: true,

@@ -9,44 +9,39 @@
 
 # System Imports
 from django.db import models, connections
-from django.core import serializers
 from django.http import HttpResponse
 from django.template import RequestContext, loader
+from django.core.urlresolvers import reverse
 try: import simplejson as json
 except ImportError: import json
 
 # Local Imports
 from portcullis.models import DataStream, PortcullisUser
 
-def crudjs(request):
+def crudjs(request, model_name):
     '''
     ' View to return dynamic javascript for the DataStream crud interface.  May be extended
     ' to do other models also.
     '''
+
+    cls = models.loading.get_model('portcullis', model_name)
+
     t = loader.get_template('crud.js')
     c = RequestContext(request, {
-            'model': json.dumps(genModel(DataStream), indent=4),
-            'user_model': json.dumps(genModel(PortcullisUser), indent=4),
-            'columns': json.dumps(genColumns(DataStream), indent=4)
+            'model': json.dumps(genModel(cls), indent=4),
+            'columns': json.dumps(genColumns(cls), indent=4),
+            'model_name': model_name
             })
     return HttpResponse(t.render(c), mimetype="text/javascript")
 
-def datastream(request):
-    t = loader.get_template('ds_crud.html')
-    c = RequestContext(request)
+def model_grid(request, model_name):
+    '''
+    ' View to return the html that will hold a models crud. 
+    '''
+
+    t = loader.get_template('crud.html')
+    c = RequestContext(request, {'model_name': model_name})
     return HttpResponse(t.render(c), mimetype="text/html")
-
-
-def read(request):
-
-    jsonData  = serializers.serialize("json", DataStream.objects.all())
-    return HttpResponse(jsonData, mimetype="application/json")
-
-def create(request):
-    print request.GET.items()
-    return HttpResponse(json.dumps(request.GET), mimetype='application/json')
-    #print json.loads(request.POST['jsonData'])
-    #return HttpResponse(request.GET['jsonData'], mimetype="application/json")
 
 def genModel(modelObj):
    
