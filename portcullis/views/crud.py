@@ -102,6 +102,7 @@ def genColumns(modelObj):
         columns.append(field)
     for m in get_meta_m2m(modelObj):
         columns.append({'field':m.name, 'title':m.name.title()})
+    columns.append({'command': ['edit', 'destroy'], 'title': '&nbsp;'})
     return columns
 
 def model(request):
