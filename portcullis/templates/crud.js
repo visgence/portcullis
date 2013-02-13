@@ -30,14 +30,17 @@ var dataStreamSource = new kendo.data.DataSource({
             });
         },
         update: function(options){
-            alert('In update');
+            Dajaxice.portcullis.create_datastream(function(response) {
+                options.success(response);}, {'data': options.data, 'update':true});
         },
         destroy: function(options){
-            alert('In destroy');
+            Dajaxice.portcullis.destroy(function(response) {
+                options.success(response);
+            }, {'data':options.data});   
         },
         create: function(options) {
             Dajaxice.portcullis.create_datastream(function(response) {
-                options.success(response);}, {'data': options.data});
+                options.success(response);}, {'data': options.data, 'update':false});
         },
         parameter: function(data, type) {
             console.log('In parameter map.');
@@ -101,14 +104,14 @@ $(function() {
     $('#ds_grid').kendoGrid({
         dataSource: dataStreamSource,
         columns: {{ columns|safe }},
-        //editable: 'popup',
+        editable: 'popup',
         navigable: true,
-        toolbar: ['create', 'save', 'cancel'],
-        editable: {
-            update: true,
-            destroy: false,
-            confirmation: "Do you really want to delete this item?  This operation cannot be undone."
-        },
+        toolbar: ['create'],//, 'save', 'cancel'],
+        //editable: {
+        //    update: true,
+        //    destroy: false,
+        //    confirmation: "Do you really want to delete this item?  This operation cannot be undone."
+        //},
         navigatable: true,
         sortable: true
     });

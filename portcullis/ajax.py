@@ -25,9 +25,16 @@ def read_datastream(request):
     return serializers.serialize("json", DataStream.objects.all())
 
 @dajaxice_register
-def create_datastream(request, data):
+def create_datastream(request, data, update):
     fields = genModel(DataStream)['fields'].items()
-    ds = DataStream()
+    if update:
+        try:
+            ds = DataStream.objects.get(id=data['id'])
+        except Exception as e:
+            return json.dumps({'errors': 'Can not load datastream: Exception: ' + str(e)})
+    else:
+        ds = DataStream()
+        
     m2m = []
     try:
         for field, properties in fields:
@@ -48,6 +55,15 @@ def create_datastream(request, data):
         ds.save()
     except Exception as e:
         print 'In create_datastream exception: ' + str(e)
-        return json.dumps({'errors': str(e)})
+        return json.dumps({'errors': 'Can not save datastream: Exception: ' + str(e)})
     return serializers.serialize('json', [ds])
 
+@dajaxice_register
+def destroy(request, data):
+    try:
+        ds = DataStream.objects.get(id = data['id'])
+    except Exception as e:
+        return json.dumps({'errors': 'Could not delete: Exception: ' + str(e)})
+
+    ds.delete()
+    return serializers.serialize("json", DataStream.objects.all())
