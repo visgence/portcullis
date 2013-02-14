@@ -126,10 +126,7 @@ def serialize_model_objs(objs):
         fields = obj._meta.fields
         obj_dict = {}
         for f in fields:
-            if type(f.value_from_object(obj)) is int:
-                obj_dict[f.attname] = int(f.value_to_string(obj))
-            else:
-                obj_dict[f.attname] = f.value_to_string(obj)
+            obj_dict[f.attname] = f.value_to_string(obj)
 
         new_objs.append(obj_dict)
         

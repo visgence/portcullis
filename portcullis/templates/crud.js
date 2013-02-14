@@ -5,16 +5,17 @@
  * Contributing Authors:
  *    Evan Salazar   (Visgence, Inc.)
  *    Jeremiah Davis (Visgence, Inc.)
+ *    Bretton Murphy (Visgence, Inc.)
  *
  * Copyright 2013, Visgence, Inc.
  *
  * This file is a template for a dynamic javascript file to setup the 
- * KendoUI grid to manage datastreams.  As long as this file takes to load, I think after development
+ * KendoUI grid to manage models.  As long as this file takes to load, I think after development
  * is finished, it should be statically generated.
  */
  {% endcomment %}
 
-/** Setup the DataStream kendo datasource. */
+/** Setup the model kendo datasource. */
 
 var dataSource = new kendo.data.DataSource({
     error: function(e) {
