@@ -46,11 +46,18 @@ def model_grid(request, model_name):
 def genModel(modelObj):
    
     model = {};
-    model['id'] = modelObj._meta.pk.name
-    
     fields = {}
 
     for f in get_meta_fields(modelObj):
+    
+        #Check if field is a primary key
+        if f.primary_key and not f.name.endswith('_ptr'):
+            model['id'] = f.name
+        
+        #We don't care about these fields
+        if f.name.endswith('_ptr'):
+            continue
+
         fields[f.name] = {'django_m2m': False}
         if f.unique or not f.editable:
             fields[f.name]['editable'] = False
@@ -86,6 +93,11 @@ def genColumns(modelObj):
     
     columns = []
     for f in get_meta_fields(modelObj):
+       
+        #We don't care about these fields
+        if f.name.endswith('_ptr'):
+            continue
+
         field = {'field':f.name,'title':f.name.title()}
         if f.name in ['name', 'id']:
             field['sortable'] = True
