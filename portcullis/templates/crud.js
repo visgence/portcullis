@@ -13,10 +13,24 @@
  * KendoUI grid to manage models.  As long as this file takes to load, I think after development
  * is finished, it should be statically generated.
  */
- {% endcomment %}
+    {% endcomment %}
 
-/** Setup the model kendo datasource. */
 
+var grid;
+var columns = {{columns|safe}};
+
+var options = {
+    enableCellNavigation: true
+ };
+
+$(function() {
+    var data = {{data|safe}};
+
+    grid = new Slick.Grid("#{{model_name}}_grid", data, columns, options);
+    console.log(grid);
+});
+
+/** Setup the model kendo datasource.
 var dataSource = new kendo.data.DataSource({
     error: function(e) {
         alert(e.errors);
@@ -76,3 +90,4 @@ $(function() {
         sortable: true
     });
 });
+*/

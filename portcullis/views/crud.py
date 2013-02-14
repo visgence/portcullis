@@ -18,6 +18,7 @@ except ImportError: import json
 # Local Imports
 from portcullis.models import DataStream, PortcullisUser
 
+
 def crudjs(request, model_name):
     '''
     ' View to return dynamic javascript for the DataStream crud interface.  May be extended
@@ -30,7 +31,8 @@ def crudjs(request, model_name):
     c = RequestContext(request, {
             'model': json.dumps(genModel(cls), indent=4),
             'columns': json.dumps(genColumns(cls), indent=4),
-            'model_name': model_name
+            'model_name': model_name,
+            'data': serialize_model_objs(DataStream.objects.all())
             })
     return HttpResponse(t.render(c), mimetype="text/javascript")
 
@@ -98,9 +100,9 @@ def genColumns(modelObj):
         if f.name.endswith('_ptr'):
             continue
 
-        field = {'field':f.name,'title':f.name.title()}
-        if f.name in ['name', 'id']:
-            field['sortable'] = True
+        field = {'field':f.name,'name':f.name.title(), 'id': f.name}
+        #if f.name in ['name', 'id']:
+        #    field['sortable'] = True
             
         # TODO: For foreign keys (and maybe OneToOne relations), add a custom edit widget
         #if isinstance(f, models.ForeignKey):
@@ -108,8 +110,8 @@ def genColumns(modelObj):
 
         columns.append(field)
     for m in get_meta_m2m(modelObj):
-        columns.append({'field':m.name, 'title':m.name.title()})
-    columns.append({'command': ['edit', 'destroy'], 'title': '&nbsp;'})
+        columns.append({'field':m.name, 'name':m.name.title(), 'id':m.name})
+    #columns.append({'command': ['edit', 'destroy'], 'title': '&nbsp;'})
     return columns
 
 def model(request):
@@ -127,3 +129,21 @@ def get_meta_m2m(cls):
     ' Use a model class to get the _meta ManyToMany fields
     '''
     return cls._meta.many_to_many
+
+def serialize_model_objs(objs):
+    '''
+    ' Takes a list of model objects and returns the serialization of them.
+    '
+    ' Keyword Args:
+    '    objs - The objects to serialize
+    '''
+    new_objs = []
+    for obj in objs:
+        fields = obj._meta.fields
+        obj_dict = {}
+        for f in fields:
+            obj_dict[f.name] = f.value_to_string(obj)
+
+        new_objs.append(obj_dict)
+        
+    return json.dumps(new_objs, indent=4)
