@@ -1,3 +1,6 @@
 [submodule "portcullis/static/plugins/mini-colors"]
 	path = portcullis/static/plugins/mini-colors
 	url = https://github.com/claviska/jquery-miniColors.git
+[submodule "portcullis/static/plugins/slickGrid"]
+	path = portcullis/static/plugins/slickGrid
+	url = https://github.com/mleibman/SlickGrid.git
