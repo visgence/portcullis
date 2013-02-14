@@ -59,7 +59,7 @@ def genModel(modelObj):
             continue
 
         fields[f.name] = {'django_m2m': False}
-        if f.unique or not f.editable:
+        if f.primary_key or not f.editable:
             fields[f.name]['editable'] = False
         else:
             fields[f.name]['editable'] = True

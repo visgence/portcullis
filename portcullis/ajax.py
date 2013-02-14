@@ -85,7 +85,7 @@ def alter_model_obj(obj, data):
     try:
         for field, properties in fields:
             print 'Adding properties to obj ' + field
-            if properties['editable']:
+            if properties['editable'] and data[field] not in [None, '']:
                 if properties['django_m2m']:
                     m2m.append((field, properties))
                     continue
@@ -102,7 +102,8 @@ def alter_model_obj(obj, data):
     except Exception as e:
         print 'In create_datastream exception: ' + str(e)
         return json.dumps({'errors': 'Can not save datastream: Exception: ' + str(e)})
-    return serializers.serialize('json', [obj])
+    
+    return serialize_model_objs([obj.__class__.objects.get(pk = obj.pk)]) 
 
 @dajaxice_register
 def destroy(request, data):
@@ -126,7 +127,7 @@ def serialize_model_objs(objs):
         fields = obj._meta.fields
         obj_dict = {}
         for f in fields:
-            obj_dict[f.attname] = f.value_to_string(obj)
+            obj_dict[f.name] = f.value_to_string(obj)
 
         new_objs.append(obj_dict)
         
