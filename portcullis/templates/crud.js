@@ -15,8 +15,6 @@
  */
 {% endcomment %}
 
-
-var grid;
 var columns = {{columns|safe}};
 
 var options = {
@@ -24,19 +22,48 @@ var options = {
     forceFitColumns: true,
     enableColumnReorder: true,
     fullWidthRows: true,
-    showTopPanel: true,
+    showTopPanel: true
 };
 
 var add_button = "<input type='button' value='Add' onclick='add_row();'/>";
 
+var dataModel = {
+    model: {
+        data: [],
+        getItem: function(i) {
+            return this.data[i];
+        },
+        getItemMetaData: function(i) {
+            return null;
+        },
+        getLength: function() {
+            return this.data.length;
+        }
+    },
+    
+    grid: null,
+
+    refresh: function() {
+        self = this;
+        Dajaxice.portcullis.read_source(
+            function(response) {
+                self.model.data = response;
+                self.grid.invalidate();
+            },
+            {model_name: '{{model_name}}'}
+        );
+    }
+};
+
 $(function() {
-    var data = {{data|safe}};
-    grid = new Slick.Grid("#{{model_name}}_grid", data, columns, options);
-    $(add_button).appendTo(grid.getTopPanel()); 
+    dataModel.grid = new Slick.Grid("#{{model_name}}_grid", dataModel.model, columns, options);
+    $(add_button).appendTo(dataModel.grid.getTopPanel()); 
+    dataModel.refresh();
 });
 
 function add_row () 
 {
+    var grid = dataModel.grid;
     var columns = grid.getColumns();
     var new_row = {};
 
@@ -45,7 +72,7 @@ function add_row ()
         new_row[col.field] = '';
     }
     
-    var rows = grid.getData();
+    var rows = grid.getData().data;
     rows.splice(0, 0, new_row);
     grid.setData(rows);
     grid.render();

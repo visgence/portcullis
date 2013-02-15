@@ -39,3 +39,9 @@ select:disabled
 {
     display: none;
 }
+
+.grid
+{
+    position: relative;
+    height: 300px;
+}

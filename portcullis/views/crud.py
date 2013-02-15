@@ -32,7 +32,7 @@ def crudjs(request, model_name):
             'model': json.dumps(genModel(cls), indent=4),
             'columns': json.dumps(genColumns(cls), indent=4),
             'model_name': model_name,
-            'data': serialize_model_objs(DataStream.objects.all())
+            'data': serialize_model_objs(cls.objects.all())
             })
     return HttpResponse(t.render(c), mimetype="text/javascript")
 
