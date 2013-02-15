@@ -13,81 +13,40 @@
  * KendoUI grid to manage models.  As long as this file takes to load, I think after development
  * is finished, it should be statically generated.
  */
-    {% endcomment %}
+{% endcomment %}
 
 
 var grid;
 var columns = {{columns|safe}};
 
 var options = {
-    enableCellNavigation: true
- };
+    enableCellNavigation: true,
+    forceFitColumns: true,
+    enableColumnReorder: true,
+    fullWidthRows: true,
+    showTopPanel: true,
+};
+
+var add_button = "<input type='button' value='Add' onclick='add_row();'/>";
 
 $(function() {
     var data = {{data|safe}};
-
     grid = new Slick.Grid("#{{model_name}}_grid", data, columns, options);
-    console.log(grid);
+    $(add_button).appendTo(grid.getTopPanel()); 
 });
 
-/** Setup the model kendo datasource.
-var dataSource = new kendo.data.DataSource({
-    error: function(e) {
-        alert(e.errors);
-        var grid = $('#{{model_name}}_grid').data('kendoGrid');
-        grid.cancelChanges();
-    },
-    transport: {
-        read: function(options){
-            console.log('In read');
-            Dajaxice.portcullis.read_source(function(response) {
-                options.success(response);}, { 'model_name': '{{model_name}}'});
-        },
-        update: function(options){
-            Dajaxice.portcullis.update_model_obj(function(response) {
-                options.success(response);}, {'data': options.data, 'model_name':'{{model_name}}'});
-        },
-        destroy: function(options){
-            Dajaxice.portcullis.destroy(function(response) {
-                options.success(response);
-            }, {'data':options.data});   
-        },
-        create: function(options) {
-            Dajaxice.portcullis.create_model_obj(function(response) {
-                options.success(response);}, {'data': options.data, 'model_name': '{{model_name}}'});
-        },
-        parameter: function(data, type) {
-            console.log('In parameter map.');
-            console.log(data);
-            console.log(type);
-            return {data: kendo.stringify(data)};
-        }
-    },
-    schema: {
-        data: function(d) {
-            return d;
-        },
-        errors: function(response) {
-            return response.errors;
-        },
-        model: {{ model|safe }}
+function add_row () 
+{
+    var columns = grid.getColumns();
+    var new_row = {};
+
+    for (var i = 0; i < columns.length; i++) {
+        var col = columns[i];
+        new_row[col.field] = '';
     }
-}); 
-
-$(function() {    
-    $('#{{model_name}}_grid').kendoGrid({
-        dataSource: dataSource,
-        columns: {{ columns|safe }},
-        editable: 'popup',
-        navigable: true,
-        toolbar: ['create'],//, 'save', 'cancel'],
-        //editable: {
-        //    update: true,
-        //    destroy: false,
-        //    confirmation: "Do you really want to delete this item?  This operation cannot be undone."
-        //},
-        navigatable: true,
-        sortable: true
-    });
-});
-*/
+    
+    var rows = grid.getData();
+    rows.splice(0, 0, new_row);
+    grid.setData(rows);
+    grid.render();
+}
