@@ -2,141 +2,101 @@
  * portcullis/static/js/crud.js
  *
  * Contributing Authors:
- *    Jeremiah Davis (jdavis@visgence.com)
+ *    Evan Salazar   (Visgence, Inc.)
+ *    Jeremiah Davis (Visgence, Inc.)
+ *    Bretton Murphy (Visgence, Inc.)
  *
  * Copyright 2013, Visgence, Inc.
  *
- * This file contains some general helper functions for portcullis.
+ * This file is a template for a dynamic javascript file to setup the 
+ * KendoUI grid to manage models.  As long as this file takes to load, I think after development
+ * is finished, it should be statically generated.
  */
 
-/** Setup the DataStream kendo datasource. */
-$(function() {
-    dataSource = new kendo.data.DataSource({
-        transport: {
-            read: {
-                url: 'read/'
-            },
-            update: {
-                url: 'update/',
-                type: 'post/'
-            },
-            destroy: {
-                url: 'destroy/',
-                type: 'post/'
-            },
-            create: {
-                url: 'create/',
-                type: 'post'
-            },
-            parameter: function(data, type) {
-                return {data: kendo.stringify(data)};
-            }
-        },
-        schema: {
-            data: function(d) {
-                return d.map(function(e) {
-                    data = e['fields'];
-                    data['id'] = e['pk'];
-                    return data;
-                });
-            },
-            model: {
-                "fields": {
-                    "reduction_type": {
-                        "editable": true
-                    },
-                    "description": {
-                        "editable": true
-                    },
-                    "color": {
-                        "editable": true
-                    },
-                    "max_value": {
-                        "editable": true
-                    },
-                    "min_value": {
-                        "editable": true
-                    },
-                    "node_id": {
-                        "editable": true
-                    },
-                    "scaling_function": {
-                        "editable": true
-                    },
-                    "units": {
-                        "editable": true
-                    },
-                    "is_public": {
-                        "editable": true
-                    },
-                    "port_id": {
-                        "editable": true
-                    },
-                    "id": {
-                        "editable": false
-                    },
-                    "name": {
-                        "editable": true
-                    }
-                },
-                "id": "id"
-            }
-        }
-    }); 
+/* Extra html for grids  */
+var add_button = "<input type='button' value='Add' onclick='dataModel.add_row();'/>";
+var delete_button = "<input type='button' value='Delete'/>";
 
-    $('#ds_grid').kendoGrid({
-        dataSource: dataSource,
-        columns: [
-            {
-                "field": "id",
-                "title": "id"
+
+/* Grid configurations */
+
+var dataModel = {
+    model: {
+        data: [],
+        getItem: function(i) {
+            return this.data[i];
+        },
+        getItemMetaData: function(i) {
+            return null;
+        },
+        getLength: function() {
+            return this.data.length;
+        },
+        set_data: function(new_data) {
+            this.data = new_data;
+        },
+        prepend_data: function(new_row) {
+            this.data.splice(0, 0, new_row); 
+        }
+    },
+    model_name: '',
+
+    columns: null,
+
+    options: {
+        editable: true,
+        enableCellNavigation: true,
+        forceFitColumns: true,
+        enableColumnReorder: true,
+        fullWidthRows: true,
+        showTopPanel: true
+    },
+
+    grid: null,
+
+    refresh: function() {
+        self = this;
+        Dajaxice.portcullis.read_source(
+            function(response) {
+                self.model.data = response;
+                self.grid.invalidate();
             },
-            {
-                "field": "node_id",
-                "title": "node_id"
-            },
-            {
-                "field": "port_id",
-                "title": "port_id"
-            },
-            {
-                "field": "units",
-                "title": "units"
-            },
-            {
-                "field": "name",
-                "title": "name"
-            },
-            {
-                "field": "description",
-                "title": "description"
-            },
-            {
-                "field": "color",
-                "title": "color"
-            },
-            {
-                "field": "min_value",
-                "title": "min_value"
-            },
-            {
-                "field": "max_value",
-                "title": "max_value"
-            },
-            {
-                "field": "scaling_function",
-                "title": "scaling_function"
-            },
-            {
-                "field": "reduction_type",
-                "title": "reduction_type"
-            },
-            {
-                "field": "is_public",
-                "title": "is_public"
-            }
-        ],
-        editable: 'popup',
-        navigable: true,
-        toolbar: ['create']
-    });
+            {model_name: self.model_name}
+        );
+    },
+
+    add_row: function() {
+        var grid = this.grid;
+        var model = this.model;
+
+        var columns = grid.getColumns();
+        var new_row = {};
+
+        for (var i = 0; i < columns.length; i++) {
+            var col = columns[i];
+            new_row[col.field] = '';
+        }
+       
+        model.prepend_data(new_row);
+        grid.invalidate();
+    },
+
+    error: function(msg) {
+        console.log('Error: msg');
+    }
+};
+
+$(function() {
+    dataModel.model_name = $('#model_name').val();
+    Dajaxice.portcullis.get_columns(
+        function(resp) {
+            dataModel.columns = resp;
+            dataModel.grid = new Slick.Grid("#" + dataModel.model_name + "_grid", dataModel.model, dataModel.columns, dataModel.options);
+            $(add_button).appendTo(dataModel.grid.getTopPanel()); 
+            $(delete_button).appendTo(dataModel.grid.getTopPanel()); 
+            dataModel.grid.setSelectionModel(new Slick.RowSelectionModel());
+            dataModel.refresh();
+        },
+        {'model_name': dataModel.model_name}
+    );
+});

@@ -17,7 +17,7 @@ from django.contrib.auth.models import User
 
 # Local imports
 from portcullis.models import DataStream
-from portcullis.views.crud import genModel
+from portcullis.views.crud import genModel, genColumns
 
 # TODO:  All this needs access checkers!!
 @dajaxice_register
@@ -114,6 +114,17 @@ def destroy(request, data):
 
     ds.delete()
     return serializers.serialize("json", DataStream.objects.all())
+
+@dajaxice_register
+def get_columns(request, model_name):
+    '''
+    ' Return a JSON serialized column list for rendering a grid representing a model.
+    '
+    ' Keyword args:
+    '   model_name - The name of the model to represent.
+    '''
+    cls = models.loading.get_model('portcullis', model_name)
+    return json.dumps(genColumns(cls))
 
 def serialize_model_objs(objs):
     '''
