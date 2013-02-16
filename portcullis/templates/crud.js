@@ -1,4 +1,3 @@
-{% comment %}
 /**
  * portcullis/static/js/crud.js
  *
@@ -13,19 +12,23 @@
  * KendoUI grid to manage models.  As long as this file takes to load, I think after development
  * is finished, it should be statically generated.
  */
-{% endcomment %}
 
+/* Extra html for grids  */
+var add_button = "<input type='button' value='Add' onclick='dataModel.add_row();'/>";
+var delete_button = "<input type='button' value='Delete'/>";
+
+
+/* Grid configurations */
 var columns = {{columns|safe}};
 
 var options = {
+    editable: true,
     enableCellNavigation: true,
     forceFitColumns: true,
     enableColumnReorder: true,
     fullWidthRows: true,
     showTopPanel: true
 };
-
-var add_button = "<input type='button' value='Add' onclick='add_row();'/>";
 
 var dataModel = {
     model: {
@@ -38,6 +41,12 @@ var dataModel = {
         },
         getLength: function() {
             return this.data.length;
+        },
+        set_data: function(new_data) {
+            this.data = new_data;
+        },
+        prepend_data: function(new_row) {
+            this.data.splice(0, 0, new_row); 
         }
     },
     
@@ -52,28 +61,30 @@ var dataModel = {
             },
             {model_name: '{{model_name}}'}
         );
+    },
+
+    add_row: function() {
+        var grid = this.grid;
+        var model = this.model;
+
+        var columns = grid.getColumns();
+        var new_row = {};
+
+        for (var i = 0; i < columns.length; i++) {
+            var col = columns[i];
+            new_row[col.field] = '';
+        }
+       
+        model.prepend_data(new_row);
+        grid.invalidate();
     }
 };
 
 $(function() {
     dataModel.grid = new Slick.Grid("#{{model_name}}_grid", dataModel.model, columns, options);
     $(add_button).appendTo(dataModel.grid.getTopPanel()); 
+    $(delete_button).appendTo(dataModel.grid.getTopPanel()); 
+    dataModel.grid.setSelectionModel(new Slick.RowSelectionModel());
+    
     dataModel.refresh();
 });
-
-function add_row () 
-{
-    var grid = dataModel.grid;
-    var columns = grid.getColumns();
-    var new_row = {};
-
-    for (var i = 0; i < columns.length; i++) {
-        var col = columns[i];
-        new_row[col.field] = '';
-    }
-    
-    var rows = grid.getData().data;
-    rows.splice(0, 0, new_row);
-    grid.setData(rows);
-    grid.render();
-}

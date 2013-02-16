@@ -100,7 +100,7 @@ def genColumns(modelObj):
         if f.name.endswith('_ptr'):
             continue
 
-        field = {'field':f.name,'name':f.name.title(), 'id': f.name}
+        field = {'field':f.name,'name':f.name.title(), 'id': f.name} 
         #if f.name in ['name', 'id']:
         #    field['sortable'] = True
             
