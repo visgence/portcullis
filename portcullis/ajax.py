@@ -106,14 +106,21 @@ def alter_model_obj(obj, data):
     return serialize_model_objs([obj.__class__.objects.get(pk = obj.pk)]) 
 
 @dajaxice_register
-def destroy(request, data):
+def destroy(request, model_name, data):
+    '''
+    ' Receive a model_name and data object via ajax, and remove that item,
+    ' returning either a success or error message.
+    '''
+    print data['pk']
+    cls = models.loading.get_model('portcullis', model_name)
     try:
-        ds = DataStream.objects.get(id = data['id'])
+        ds = cls.objects.get(pk = data['pk'])
     except Exception as e:
-        return json.dumps({'errors': 'Could not delete: Exception: ' + str(e)})
+        print e
+        return json.dumps({'errors': 'Could not delete: Exception: %s: %s' % (str(type(e)), e.message)})
 
     ds.delete()
-    return serializers.serialize("json", DataStream.objects.all())
+    return json.dumps({'success': 'Successfully deleted item with primary key: %s' % data['pk']})
 
 @dajaxice_register
 def get_columns(request, model_name):
@@ -139,6 +146,8 @@ def serialize_model_objs(objs):
         obj_dict = {}
         for f in fields:
             obj_dict[f.name] = f.value_to_string(obj)
+        if 'pk' not in obj_dict:
+            obj_dict['pk'] = obj.pk
 
         new_objs.append(obj_dict)
         

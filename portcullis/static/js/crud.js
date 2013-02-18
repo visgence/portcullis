@@ -16,6 +16,7 @@
 /* Extra html for grids  */
 var add_button = '<input type="button" value="Add" onclick="myGrid.add_row();"/>';
 var delete_button = '<input type="button" value="Delete" onclick="myGrid.delete_row();"/>';
+var refresh_button = '<input type="button" value="Refresh" onclick="myGrid.refresh();"/>';
 var myGrid = null;
 
 
@@ -40,6 +41,9 @@ function DataGrid() {
         },
         prepend_data: function(new_row) {
             this.data.splice(0, 0, new_row); 
+        },
+        remove_data: function(index) {
+            this.data.splice(index,1);
         }
     };
 
@@ -65,8 +69,14 @@ function DataGrid() {
     this.refresh = function() {
         self = this;
         Dajaxice.portcullis.read_source(
-            function(response) {
-                self.model.data = response;
+            function(resp) {
+                var data = resp;
+
+                // Make sure on refresh to mark everything gotten from the server as unedited.
+                for (var i = 0; i < data.length; i++)
+                    data[i]['_isNotEdited'] = true;
+                
+                self.model.set_data(data);
                 self.grid.invalidate();
             },
             {model_name: self.model_name}
@@ -90,15 +100,55 @@ function DataGrid() {
         grid.invalidate();
     };
 
-    /** Method to delete the selected row. */
-    this.delete_row = function() {
-        // get the selected row.
-        var row = $('.slick-row.active');
+    /** Method to remove a row from the grid */
+    this.remove_row = function(index) {
+        this.model.remove_data(index);
+        this.grid.invalidate();
     };
 
+    /** Method to delete the selected row. */
+    this.delete_row = function() {
+        // get the selected row, right now assume only one.
+        var selected = this.grid.getSelectedRows();
+        if (selected.length != 1) {
+            this.error("Error, we don't have exactly 1 data item selected!");
+            return;
+        }
+        var row = this.grid.getData()[selected[0]];
+        // If there is an id, send an ajax request to delete from server, otherwise, just
+        // remove it from the grid.
+        if (this.model.getItem(selected)['_isNotEdited'] === true) {
+            self = this;
+            Dajaxice.portcullis.destroy(
+                function(resp) {
+                    if ('errors' in resp) {
+                        self.error(resp['errors']);
+                        return;
+                    }
+                    else if ('success' in resp) {
+                        self.remove_row(selected);
+                        self.success(resp.success);
+                    }
+                    else
+                        self.error('Unknown error has occurred on delete.');
+                },
+                {'model_name': this.model_name, 'data': this.model.getItem(selected)}
+            );
+        }
+        else {
+            this.remove_row(selected);
+            this.success('Locally removed row: ' + selected + '.');
+        }
+    };
+        
     /** Stuff to do on error. */
     this.error = function(msg) {
-        console.log('Error: msg');
+        console.log('Error: ' + msg);
+    };
+
+    /** Stuff to do on success. */
+    this.success = function(msg) {
+        console.log('Success: ' + msg);
     };
 
     /** Here we initialize our object. */
@@ -110,7 +160,8 @@ function DataGrid() {
                 self.columns = resp;
                 self.grid = new Slick.Grid("#" + self.model_name + "_grid", self.model, self.columns, self.options);
                 $(add_button).appendTo(self.grid.getTopPanel()); 
-                $(delete_button).appendTo(self.grid.getTopPanel()); 
+                $(delete_button).appendTo(self.grid.getTopPanel());
+                $(refresh_button).appendTo(self.grid.getTopPanel());
                 self.grid.setSelectionModel(new Slick.RowSelectionModel());
                 self.refresh();
             },
