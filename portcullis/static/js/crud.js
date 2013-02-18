@@ -14,14 +14,17 @@
  */
 
 /* Extra html for grids  */
-var add_button = "<input type='button' value='Add' onclick='dataModel.add_row();'/>";
-var delete_button = "<input type='button' value='Delete'/>";
+var add_button = '<input type="button" value="Add" onclick="myGrid.add_row();"/>';
+var delete_button = '<input type="button" value="Delete" onclick="myGrid.delete_row();"/>';
+var myGrid = null;
 
 
-/* Grid configurations */
-
-var dataModel = {
-    model: {
+/* Grid configuration */
+function DataGrid() {
+    /** This is the object that contains the data.  It allows for more
+     *  dynamic data in the grid.
+     */
+    this.model = {
         data: [],
         getItem: function(i) {
             return this.data[i];
@@ -38,23 +41,28 @@ var dataModel = {
         prepend_data: function(new_row) {
             this.data.splice(0, 0, new_row); 
         }
-    },
-    model_name: '',
+    };
 
-    columns: null,
+    /** This is the name of the django model to we are creating the grid for. */
+    this.model_name = '';
 
-    options: {
+    /** The column definition for the grid.  This is loaded via ajax. */
+    this.columns = null;
+
+    /** These are the slickGrid options.*/
+    this.options = {
         editable: true,
         enableCellNavigation: true,
         forceFitColumns: true,
         enableColumnReorder: true,
         fullWidthRows: true,
         showTopPanel: true
-    },
+    };
 
-    grid: null,
+    this.grid = null;
 
-    refresh: function() {
+    /** Method to get data from server and refresh the grid.*/
+    this.refresh = function() {
         self = this;
         Dajaxice.portcullis.read_source(
             function(response) {
@@ -63,9 +71,10 @@ var dataModel = {
             },
             {model_name: self.model_name}
         );
-    },
+    };
 
-    add_row: function() {
+    /** Method to add a row */
+    this.add_row = function() {
         var grid = this.grid;
         var model = this.model;
 
@@ -79,24 +88,40 @@ var dataModel = {
        
         model.prepend_data(new_row);
         grid.invalidate();
-    },
+    };
 
-    error: function(msg) {
+    /** Method to delete the selected row. */
+    this.delete_row = function() {
+        // get the selected row.
+        var row = $('.slick-row.active');
+    };
+
+    /** Stuff to do on error. */
+    this.error = function(msg) {
         console.log('Error: msg');
-    }
-};
+    };
+
+    /** Here we initialize our object. */
+    this.init = function() {
+        this.model_name = $('#model_name').val();
+        self = this;
+        Dajaxice.portcullis.get_columns(
+            function(resp) { 
+                self.columns = resp;
+                self.grid = new Slick.Grid("#" + self.model_name + "_grid", self.model, self.columns, self.options);
+                $(add_button).appendTo(self.grid.getTopPanel()); 
+                $(delete_button).appendTo(self.grid.getTopPanel()); 
+                self.grid.setSelectionModel(new Slick.RowSelectionModel());
+                self.refresh();
+            },
+            {'model_name': self.model_name}
+        );
+    };
+
+    this.init();
+}
 
 $(function() {
-    dataModel.model_name = $('#model_name').val();
-    Dajaxice.portcullis.get_columns(
-        function(resp) {
-            dataModel.columns = resp;
-            dataModel.grid = new Slick.Grid("#" + dataModel.model_name + "_grid", dataModel.model, dataModel.columns, dataModel.options);
-            $(add_button).appendTo(dataModel.grid.getTopPanel()); 
-            $(delete_button).appendTo(dataModel.grid.getTopPanel()); 
-            dataModel.grid.setSelectionModel(new Slick.RowSelectionModel());
-            dataModel.refresh();
-        },
-        {'model_name': dataModel.model_name}
-    );
+    myGrid = new DataGrid();
+    
 });
