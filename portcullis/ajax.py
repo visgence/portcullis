@@ -158,7 +158,8 @@ def serialize_model_objs(objs):
                     isinstance(f, models.fields.related.OneToOneField):
                 obj_dict[f.name] = {
                     '__unicode__': getattr(obj, f.name).__unicode__(),
-                    'pk': f.value_from_object(obj)
+                    'pk': f.value_from_object(obj),
+                    'model_name': f.rel.to.__name__
                     }
             else:
                 obj_dict[f.name] = f.value_from_object(obj)
