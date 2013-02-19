@@ -86,10 +86,6 @@ def genColumns(modelObj):
         field = {'field':f.name,'name':f.name.title(), 'id': f.name} 
         #if f.name in ['name', 'id']:
         #    field['sortable'] = True
-        # TODO: For foreign keys (and maybe OneToOne relations), add a custom edit widget
-        #if isinstance(f, models.ForeignKey):
-        #    field[''] = 
-        print f
         # Make sure to give the type and other meta data for the columns.
         if f.primary_key or not f.editable:
             field['_editable'] = False
@@ -118,7 +114,13 @@ def genColumns(modelObj):
 
         columns.append(field)
     for m in get_meta_m2m(modelObj):
-        columns.append({'field':m.name, 'name':m.name.title(), 'id':m.name})
+        columns.append({
+            'field':m.name, 
+            'name':m.name.title(), 
+            'id':m.name,
+            '_type': 'm2m',
+            '_editable': True
+        })
 
     return columns
 
@@ -133,21 +135,3 @@ def get_meta_m2m(cls):
     ' Use a model class to get the _meta ManyToMany fields
     '''
     return cls._meta.many_to_many
-
-def serialize_model_objs(objs):
-    '''
-    ' Takes a list of model objects and returns the serialization of them.
-    '
-    ' Keyword Args:
-    '    objs - The objects to serialize
-    '''
-    new_objs = []
-    for obj in objs:
-        fields = obj._meta.fields
-        obj_dict = {}
-        for f in fields:
-            obj_dict[f.name] = f.value_to_string(obj)
-
-        new_objs.append(obj_dict)
-        
-    return json.dumps(new_objs, indent=4)

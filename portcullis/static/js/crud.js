@@ -217,7 +217,7 @@
                     self.columns = resp;
 
                     // Add editors to columns
-                    for ( var i = 0; i < self.columns.length; i++) { //var col in self.columns.length ) {
+                    for ( var i = 0; i < self.columns.length; i++) {
                         if (self.columns[i]._editable == true) {
                             switch (self.columns[i]._type) {
                             case 'boolean':
@@ -236,6 +236,9 @@
                             case 'foreignkey':
                                 self.columns[i].formatter = foreign_key_formatter;
                                 break;
+                            case 'm2m':
+                                self.columns[i].formatter = m2m_formatter;
+                                break;
                             case 'number':
                             case 'char':
                             default:
@@ -243,7 +246,7 @@
                             }
                         }
                     }
-                    
+                        
                     self.grid = new Slick.Grid("#" + self.model_name + "_grid", self.model, self.columns, self.options);
 
                     // Add controls
@@ -309,8 +312,61 @@
         return data['__unicode__'];
     }
 
+    /** Custom formatter for Many to Many columns in the data grid */
+    function m2m_formatter(row, cell, columnDef, dataContext) {
+        var grid = myGrid.grid;
+        var model = myGrid.model;
+        var col = grid.getColumns()[cell]['field'];
+        var data = model.get_cell_data(row, col);
+        
+        var m_input = ""; 
+        if(data.length > 0) {
+            //Create div used for dialog when viewing m2m data
+            var div = "<div id='m2m_"+row+"_"+cell+"' style='display:none'>";
+            
+            var ul = "<ul>";
+            for (var i = 0; i < data.length; i++) {
+                var li = "<li>"+data[i]['__unicode__']+"</li>";
+                ul += li;
+            };
+            ul += "</ul>";
+            div += ul + "</div>"; 
+            
+            //Make button that triggers dialog
+            var onclick = "dialog('m2m_"+row+"_"+cell+"')";
+            m_input = "<input type='button' value='View' onclick="+onclick+" />"+div;
+        }
+
+        return m_input;
+    }
+
+    function dialog (id) 
+    {
+        $('#' + id).dialog({
+            autoOpen: true,
+            resizable: true,
+            hide: "fade",
+            show: "fade",
+            modal: true,
+            minWidth: 250,
+            maxWidth: 1000,
+            minHeight: 200,
+            maxHeight: 1000,
+            height: 500,
+            width: 500,
+            dialogClass: "confirmation dialogue",
+            buttons: {
+                'Ok': function() {
+                    $(this).dialog('destroy');
+                },
+            }
+        });
+    }
     $.extend(window, {
         'DataGrid': DataGrid,
-        'confirmDialog': confirmDialog
+        'confirmDialog': confirmDialog,
+        'dialog': dialog
     });
+
 })(jQuery);
+

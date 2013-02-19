@@ -151,8 +151,9 @@ def serialize_model_objs(objs):
     new_objs = []
     for obj in objs:
         fields = obj._meta.fields
+        m2m_fields = obj._meta.many_to_many
         obj_dict = {}
-
+        
         for f in fields:
             if isinstance(f, models.fields.related.ForeignKey) or \
                     isinstance(f, models.fields.related.OneToOneField):
@@ -160,11 +161,21 @@ def serialize_model_objs(objs):
                     '__unicode__': getattr(obj, f.name).__unicode__(),
                     'pk': f.value_from_object(obj),
                     'model_name': f.rel.to.__name__
-                    }
+                }
             else:
                 obj_dict[f.name] = f.value_from_object(obj)
                 if type(obj_dict[f.name]) not in [dict, list, unicode, int, long, float, bool, type(None)]:
                     obj_dict[f.name] = f.value_to_string(obj)
+
+        for m in m2m_fields:
+            m_objs = getattr(obj, m.name).all()
+            obj_dict[m.name] = []
+            for m_obj in m_objs:
+                obj_dict[m.name].append({
+                    '__unicode__': m_obj.__unicode__(),
+                    'pk': m_obj.pk,
+                    'model_name': m.rel.to.__name__
+                })
 
         if 'pk' not in obj_dict:
             obj_dict['pk'] = obj.pk
