@@ -302,19 +302,50 @@ function m2m_formatter(row, cell, columnDef, dataContext) {
     var model = myGrid.model;
     var col = grid.getColumns()[cell]['field'];
     var data = model.get_cell_data(row, col);
-    
+   
     var m_input = ""; 
     if(data.length > 0) {
-        m_input = "<select multiple>";
+        //Create div used for dialog when viewing m2m data
+        var div = "<div id='m2m_"+row+"_"+cell+"' style='display:none'>";
+      
+        var ul = "<ul>";
         for (var i = 0; i < data.length; i++) {
-            var option = "<option>"+data[i]['__unicode__']+"</option>";
-            m_input += option;
+            var li = "<li>"+data[i]['__unicode__']+"</li>";
+            ul += li;
         };
-        m_input += "</select>";
+        ul += "</ul>";
+        div += ul + "</div>"; 
+       
+        //Make button that triggers dialog
+        var onclick = "dialog('m2m_"+row+"_"+cell+"')";
+        m_input = "<input type='button' value='View' onclick="+onclick+" />"+div;
     }
+
     return m_input;
 }
 
+function dialog (id) 
+{
+    $('#' + id).dialog({
+        autoOpen: true,
+        resizable: true,
+        hide: "fade",
+        show: "fade",
+        modal: true,
+        minWidth: 250,
+        maxWidth: 1000,
+        minHeight: 200,
+        maxHeight: 1000,
+        height: 500,
+        width: 500,
+        dialogClass: "confirmation dialogue",
+        buttons: {
+            'Ok': function() {
+                $(this).dialog('destroy');
+            },
+        }
+    });
+}
 $(function() {
     myGrid = new DataGrid(); 
 });
