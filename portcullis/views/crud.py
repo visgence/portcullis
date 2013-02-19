@@ -19,23 +19,6 @@ except ImportError: import json
 from portcullis.models import DataStream, PortcullisUser
 
 
-def crudjs(request, model_name):
-    '''
-    ' View to return dynamic javascript for the DataStream crud interface.  May be extended
-    ' to do other models also.
-    '''
-
-    cls = models.loading.get_model('portcullis', model_name)
-
-    t = loader.get_template('crud.js')
-    c = RequestContext(request, {
-            'model': json.dumps(genModel(cls), indent=4),
-            'columns': json.dumps(genColumns(cls), indent=4),
-            'model_name': model_name,
-            'data': serialize_model_objs(cls.objects.all())
-            })
-    return HttpResponse(t.render(c), mimetype="text/javascript")
-
 def model_grid(request, model_name):
     '''
     ' View to return the html that will hold a models crud. 
@@ -103,20 +86,39 @@ def genColumns(modelObj):
         field = {'field':f.name,'name':f.name.title(), 'id': f.name} 
         #if f.name in ['name', 'id']:
         #    field['sortable'] = True
-            
         # TODO: For foreign keys (and maybe OneToOne relations), add a custom edit widget
         #if isinstance(f, models.ForeignKey):
         #    field[''] = 
 
+        # Make sure to give the type and other meta data for the columns.
+        if f.primary_key or not f.editable:
+            field['_editable'] = False
+        else:
+            field['_editable'] = True
+
+        # Figure out the type of field.
+        d_type = f.db_type(connections.all()[0])
+        if d_type == 'boolean':
+            field['_type'] = 'boolean'
+        elif d_type in ['integer', 'serial']:
+            field['_type'] = 'integer'
+        elif d_type.startswith('numeric'):
+            field['_type'] = 'number'
+        elif d_type.startswith('timestamp'):
+            field['_type'] = 'date'
+        elif d_type == 'text':
+            field['_type'] = 'text'
+        elif d_type.find('char') > -1:
+            field['_type'] = 'char'
+        else:
+            field['_type'] = d_type # Any other type will default to a text widget.
+            
+
         columns.append(field)
     for m in get_meta_m2m(modelObj):
         columns.append({'field':m.name, 'name':m.name.title(), 'id':m.name})
-    #columns.append({'command': ['edit', 'destroy'], 'title': '&nbsp;'})
-    return columns
 
-def model(request):
-    jsonData = {'model':genModel(datastream.models.DataStream)}
-    return HttpResponse(json.dumps(jsonData,indent=4), mimetype="application/json")
+    return columns
 
 def get_meta_fields(cls):
     '''

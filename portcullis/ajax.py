@@ -46,7 +46,7 @@ def update_model_obj(request, data, model_name):
     cls = models.loading.get_model('portcullis', model_name)
 
     try:
-         obj = cls.objects.get(id=data['id'])
+         obj = cls.objects.get(pk=data['pk'])
     except Exception as e:
         return json.dumps({'errors': 'Can not load object: Exception: ' + str(e)})
 
@@ -93,7 +93,7 @@ def alter_model_obj(obj, data):
                 if properties['django_related_field']:
                     cls = models.loading.get_model(
                         properties['django_related_app'], properties['django_related_cls'])
-                    rel_obj = cls.objects.get(id=data[field])
+                    rel_obj = cls.objects.get(pk=data[field])
                     setattr(obj, field, rel_obj)
                 else:
                     setattr(obj, field, data[field])
@@ -111,12 +111,10 @@ def destroy(request, model_name, data):
     ' Receive a model_name and data object via ajax, and remove that item,
     ' returning either a success or error message.
     '''
-    print data['pk']
     cls = models.loading.get_model('portcullis', model_name)
     try:
         ds = cls.objects.get(pk = data['pk'])
     except Exception as e:
-        print e
         return json.dumps({'errors': 'Could not delete: Exception: %s: %s' % (str(type(e)), e.message)})
 
     ds.delete()
@@ -144,8 +142,12 @@ def serialize_model_objs(objs):
     for obj in objs:
         fields = obj._meta.fields
         obj_dict = {}
+
         for f in fields:
-            obj_dict[f.name] = f.value_to_string(obj)
+            obj_dict[f.name] = f.value_from_object(obj)
+            if type(obj_dict[f.name]) not in [dict, list, unicode, int, long, float, bool, type(None)]:
+                obj_dict[f.name] = f.value_to_string(obj)
+
         if 'pk' not in obj_dict:
             obj_dict['pk'] = obj.pk
 

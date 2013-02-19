@@ -158,10 +158,39 @@ function DataGrid() {
         Dajaxice.portcullis.get_columns(
             function(resp) { 
                 self.columns = resp;
+
+                // Add editors to columns
+                for ( var i = 0; i < self.columns.length; i++) { //var col in self.columns.length ) {
+                    if (self.columns[i]._editable == true) {
+                        switch (self.columns[i]._type) {
+                        case 'boolean':
+                            self.columns[i].editor = Slick.Editors.Checkbox;
+                            self.columns[i].formatter = Slick.Formatters.Checkmark;
+                            break;
+                        case 'integer':
+                            self.columns[i].editor = Slick.Editors.Integer;
+                            break;
+                        case 'date':
+                            self.columns[i].editor = Slick.Editors.Date;
+                            break;
+                        case 'text':
+                            self.columns[i].editor = Slick.Editors.LongText;
+                            break;
+                        case 'number':
+                        case 'char':
+                        default:
+                            self.columns[i].editor = Slick.Editors.Text;
+                        }
+                    }
+                }
+                
                 self.grid = new Slick.Grid("#" + self.model_name + "_grid", self.model, self.columns, self.options);
+
+                // Add controls
                 $(add_button).appendTo(self.grid.getTopPanel()); 
                 $(delete_button).appendTo(self.grid.getTopPanel());
                 $(refresh_button).appendTo(self.grid.getTopPanel());
+                
                 self.grid.setSelectionModel(new Slick.RowSelectionModel());
                 self.refresh();
             },

@@ -9,9 +9,7 @@ urlpatterns = patterns(
     url(r'^streams/$', 'side_pane.streams'),
     url(r'^(?P<content>savedView)/(?P<content_id>.+)/$', 'index.index', name='portcullis-saved-view'),
     url(r'^createSavedView/$', 'savedView.createSavedView', name='portcullis-saveView'),
-
-    url(r'^model_editor/(?P<model_name>.+)/$', 'crud.model_grid', name='portcullis-model-editor'),
-    url(r'^crud/(?P<model_name>.+)\.js$', 'crud.crudjs', name="portcullis-model-crudjs")
+    url(r'^model_editor/(?P<model_name>.+)/$', 'crud.model_grid', name='portcullis-model-editor')
 )
 
 
