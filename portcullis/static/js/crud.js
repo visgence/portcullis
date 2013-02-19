@@ -37,6 +37,9 @@ function DataGrid() {
         getLength: function() {
             return this.data.length;
         },
+        get_cell_data: function(row, col) {
+            return this.data[row][col];
+        },
         setItem: function(index, item) {
             this.data[index] = item;
         },
@@ -243,17 +246,21 @@ function DataGrid() {
             {'model_name': self.model_name}
         );
     };
-
+    
     this.init();
 }
 
-function foreign_key_formatter (row, cell, columnDef, dataContext) {
-    console.log(dataContext);
-    console.log(row);
-    return "test";
+/** Custom formatter for Foreign Key columns in the data grid */
+function foreign_key_formatter(row, cell, columnDef, dataContext) {
+    var grid = myGrid.grid;
+    var model = myGrid.model;
+    var col = grid.getColumns()[cell]['field'];
+    var data = model.get_cell_data(row, col);
+    
+    return data['__unicode__'];
 }
 
+
 $(function() {
-    myGrid = new DataGrid();
-    
+    myGrid = new DataGrid(); 
 });
