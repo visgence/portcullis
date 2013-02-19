@@ -218,6 +218,9 @@ function DataGrid() {
                         case 'foreignkey':
                             self.columns[i].formatter = foreign_key_formatter;
                             break;
+                        case 'm2m':
+                            self.columns[i].formatter = m2m_formatter;
+                            break;
                         case 'number':
                         case 'char':
                         default:
@@ -260,6 +263,24 @@ function foreign_key_formatter(row, cell, columnDef, dataContext) {
     return data['__unicode__'];
 }
 
+/** Custom formatter for Many to Many columns in the data grid */
+function m2m_formatter(row, cell, columnDef, dataContext) {
+    var grid = myGrid.grid;
+    var model = myGrid.model;
+    var col = grid.getColumns()[cell]['field'];
+    var data = model.get_cell_data(row, col);
+    
+    var m_input = ""; 
+    if(data.length > 0) {
+        m_input = "<select multiple>";
+        for (var i = 0; i < data.length; i++) {
+            var option = "<option>"+data[i]['__unicode__']+"</option>";
+            m_input += option;
+        };
+        m_input += "</select>";
+    }
+    return m_input;
+}
 
 $(function() {
     myGrid = new DataGrid(); 
