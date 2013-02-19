@@ -89,7 +89,7 @@ def genColumns(modelObj):
         # TODO: For foreign keys (and maybe OneToOne relations), add a custom edit widget
         #if isinstance(f, models.ForeignKey):
         #    field[''] = 
-
+        print f
         # Make sure to give the type and other meta data for the columns.
         if f.primary_key or not f.editable:
             field['_editable'] = False
@@ -98,7 +98,9 @@ def genColumns(modelObj):
 
         # Figure out the type of field.
         d_type = f.db_type(connections.all()[0])
-        if d_type == 'boolean':
+        if isinstance(f, models.ForeignKey):
+            field['_type'] = 'foreignkey'
+        elif d_type == 'boolean':
             field['_type'] = 'boolean'
         elif d_type in ['integer', 'serial']:
             field['_type'] = 'integer'

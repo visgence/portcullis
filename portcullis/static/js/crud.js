@@ -38,6 +38,9 @@ function DataGrid() {
         getLength: function() {
             return this.data.length;
         },
+        get_cell_data: function(row, col) {
+            return this.data[row][col];
+        },
         setItem: function(index, item) {
             this.data[index] = item;
         },
@@ -218,6 +221,9 @@ function DataGrid() {
                         case 'text':
                             self.columns[i].editor = Slick.Editors.LongText;
                             break;
+                        case 'foreignkey':
+                            self.columns[i].formatter = foreign_key_formatter;
+                            break;
                         case 'number':
                         case 'char':
                         default:
@@ -247,7 +253,7 @@ function DataGrid() {
             {'model_name': self.model_name}
         );
     };
-
+    
     this.init();
 }
 
@@ -278,7 +284,16 @@ function confirmDialog(id, action, action_func)//, cancel_func)
     });
 }
 
+/** Custom formatter for Foreign Key columns in the data grid */
+function foreign_key_formatter(row, cell, columnDef, dataContext) {
+    var grid = myGrid.grid;
+    var model = myGrid.model;
+    var col = grid.getColumns()[cell]['field'];
+    var data = model.get_cell_data(row, col);
+    return data['__unicode__'];
+}
+
+
 $(function() {
-    myGrid = new DataGrid();
-    
+    myGrid = new DataGrid(); 
 });
