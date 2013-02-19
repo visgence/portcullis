@@ -124,9 +124,8 @@ function DataGrid() {
                             console.log(i);
                             self.model.setItem(i, resp[0]);
                             self.model.getItem(i)._isNotEdited = true;
-                            //self.grid.invalidateRow(i);
-                            //self.grid.render();
-                            //self.grid.invalidate();
+                            self.grid.invalidateRow(i);
+                            self.grid.render();
                             self.success('Updated row ' + i);
                         }
                     };

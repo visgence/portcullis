@@ -154,9 +154,16 @@ def serialize_model_objs(objs):
         obj_dict = {}
 
         for f in fields:
-            obj_dict[f.name] = f.value_from_object(obj)
-            if type(obj_dict[f.name]) not in [dict, list, unicode, int, long, float, bool, type(None)]:
-                obj_dict[f.name] = f.value_to_string(obj)
+            if isinstance(f, models.fields.related.ForeignKey) or \
+                    isinstance(f, models.fields.related.OneToOneField):
+                obj_dict[f.name] = {
+                    '__unicode__': getattr(obj, f.name).__unicode__(),
+                    'pk': f.value_from_object(obj)
+                    }
+            else:
+                obj_dict[f.name] = f.value_from_object(obj)
+                if type(obj_dict[f.name]) not in [dict, list, unicode, int, long, float, bool, type(None)]:
+                    obj_dict[f.name] = f.value_to_string(obj)
 
         if 'pk' not in obj_dict:
             obj_dict['pk'] = obj.pk
