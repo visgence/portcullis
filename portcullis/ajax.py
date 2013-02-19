@@ -66,20 +66,30 @@ def create_model_obj(request, data, model_name):
     obj = cls() 
     return alter_model_obj(obj, data) 
     
-
-def alter_model_obj(obj, data):
+@dajaxice_register
+def update(request, model_name, data):
     '''
     ' Modifies a model object with the given data, saves it to the db and 
     ' returns it as serialized json.
     '
     ' Keyword Args:
-    '    obj  - The model object to modify.
+    '    model_name  - The name of the model object to modify.
     '    data - The data to modify the object with.
     '
     ' Returns:
     '    The modified object serialized as json. 
     '''
-    
+
+    cls = models.loading.get_model('portcullis', model_name)
+
+    if 'pk' not in data:
+        obj = cls()
+    else:
+        try:
+            obj = cls.objects.get(pk = data['pk'])
+        except Exception as e:
+            return json.dumps({'errors': 'Cannot load object to save: Exception: ' + e.message})
+
     fields = genModel(obj.__class__)['fields'].items()
     m2m = []
     try:
@@ -101,7 +111,7 @@ def alter_model_obj(obj, data):
         obj.save()
     except Exception as e:
         print 'In create_datastream exception: ' + str(e)
-        return json.dumps({'errors': 'Can not save datastream: Exception: ' + str(e)})
+        return json.dumps({'errors': 'Can not save object: Exception: ' + str(e)})
     
     return serialize_model_objs([obj.__class__.objects.get(pk = obj.pk)]) 
 

@@ -16,6 +16,7 @@
 /* Extra html for grids  */
 var add_button = '<input type="button" value="Add" onclick="myGrid.add_row();"/>';
 var delete_button = '<input type="button" value="Delete" onclick="myGrid.delete_row();"/>';
+var save_button = '<input type="button" value="Save" onclick="myGrid.save_all_rows();"/>';
 var refresh_button = '<input type="button" value="Refresh" onclick="myGrid.refresh();"/>';
 var myGrid = null;
 
@@ -35,6 +36,9 @@ function DataGrid() {
         },
         getLength: function() {
             return this.data.length;
+        },
+        setItem: function(index, item) {
+            this.data[index] = item;
         },
         set_data: function(new_data) {
             this.data = new_data;
@@ -99,6 +103,39 @@ function DataGrid() {
         model.prepend_data(new_row);
         grid.invalidate();
     };
+
+    /** Method to save all the modified rows, checks the _isNotEdited flag */
+    this.save_all_rows = function() {
+        self = this;
+        // Go through the models, and if a row has been edited, save it.
+        for (var i = 0; i < this.model.getLength(); i++) {
+            console.log(i);
+            console.log(this.model.getItem(i));
+            if (!this.model.getItem(i)._isNotEdited) {
+                var callback = function(index) {
+                    var i = index;
+                    return function(resp) {
+                        if ('errors' in resp) {
+                            self.error(resp['errors'])
+                            return;
+                        }
+                        else {
+                            console.log(resp);
+                            console.log(i);
+                            self.model.setItem(i, resp[0]);
+                            self.model.getItem(i)._isNotEdited = true;
+                            //self.grid.invalidateRow(i);
+                            //self.grid.render();
+                            //self.grid.invalidate();
+                            self.success('Updated row ' + i);
+                        }
+                    };
+                };
+                Dajaxice.portcullis.update(callback(i),
+                                           {'model_name': this.model_name, 'data': this.model.getItem(i)});
+            }
+        }
+    }; // End save_all_rows
 
     /** Method to remove a row from the grid */
     this.remove_row = function(index) {
@@ -189,9 +226,16 @@ function DataGrid() {
                 // Add controls
                 $(add_button).appendTo(self.grid.getTopPanel()); 
                 $(delete_button).appendTo(self.grid.getTopPanel());
+                $(save_button).appendTo(self.grid.getTopPanel());
                 $(refresh_button).appendTo(self.grid.getTopPanel());
                 
                 self.grid.setSelectionModel(new Slick.RowSelectionModel());
+
+                // Add some listeners
+                self.grid.onCellChange.subscribe(function (e, args) {
+                    args.item._isNotEdited = false;
+                });
+
                 self.refresh();
             },
             {'model_name': self.model_name}
