@@ -18,6 +18,7 @@ var add_button = '<input type="button" value="Add" onclick="myGrid.add_row();"/>
 var delete_button = '<input type="button" value="Delete" onclick="myGrid.delete_row();"/>';
 var save_button = '<input type="button" value="Save" onclick="myGrid.save_all_rows();"/>';
 var refresh_button = '<input type="button" value="Refresh" onclick="myGrid.refresh();"/>';
+var message_span = '<span id="server_messages" style="padding-left:1em"></span>';
 var myGrid = null;
 
 
@@ -158,21 +159,24 @@ function DataGrid() {
         // remove it from the grid.
         if (this.model.getItem(selected)['_isNotEdited'] === true) {
             self = this;
-            Dajaxice.portcullis.destroy(
-                function(resp) {
-                    if ('errors' in resp) {
-                        self.error(resp['errors']);
-                        return;
-                    }
-                    else if ('success' in resp) {
-                        self.remove_row(selected);
-                        self.success(resp.success);
-                    }
-                    else
-                        self.error('Unknown error has occurred on delete.');
-                },
-                {'model_name': this.model_name, 'data': this.model.getItem(selected)}
-            );
+            var delete_func = function() {
+                Dajaxice.portcullis.destroy(
+                    function(resp) {
+                        if ('errors' in resp) {
+                            self.error(resp['errors']);
+                            return;
+                        }
+                        else if ('success' in resp) {
+                            self.remove_row(selected);
+                            self.success(resp.success);
+                        }
+                        else
+                            self.error('Unknown error has occurred on delete.');
+                    },
+                    {'model_name': self.model_name, 'data': self.model.getItem(selected)}
+                );
+            };
+            confirmDialog('delete_confirm', 'Delete', delete_func);//, function(){return;});
         }
         else {
             this.remove_row(selected);
@@ -183,11 +187,13 @@ function DataGrid() {
     /** Stuff to do on error. */
     this.error = function(msg) {
         console.log('Error: ' + msg);
+        $('#server_messages').html(msg).css('color','red');
     };
 
     /** Stuff to do on success. */
     this.success = function(msg) {
         console.log('Success: ' + msg);
+        $('#server_messages').html(msg).css('color','green');
     };
 
     /** Here we initialize our object. */
@@ -236,6 +242,7 @@ function DataGrid() {
                 $(delete_button).appendTo(self.grid.getTopPanel());
                 $(save_button).appendTo(self.grid.getTopPanel());
                 $(refresh_button).appendTo(self.grid.getTopPanel());
+                $(message_span).appendTo(self.grid.getTopPanel());
                 
                 self.grid.setSelectionModel(new Slick.RowSelectionModel());
 
@@ -253,13 +260,39 @@ function DataGrid() {
     this.init();
 }
 
+/** Use this function to pop up a modal dialog asking for user input. */
+function confirmDialog(id, action, action_func)//, cancel_func)
+{
+    $('#' + id).dialog({
+        autoOpen: true,
+        resizable: true,
+        hide: "fade",
+        show: "fade",
+        modal: true,
+        minWidth: 250,
+        maxWidth: 1000,
+        minHeight: 200,
+        maxHeight: 1000,
+        dialogClass: "confirmation dialogue",
+        buttons: {
+            action: function() {
+                action_func();
+                $(this).dialog('destroy');
+            },
+            'Cancel': function() {
+                cancel_func();
+                $(this).dialog('destroy');
+            }
+        }
+    });
+}
+
 /** Custom formatter for Foreign Key columns in the data grid */
 function foreign_key_formatter(row, cell, columnDef, dataContext) {
     var grid = myGrid.grid;
     var model = myGrid.model;
     var col = grid.getColumns()[cell]['field'];
     var data = model.get_cell_data(row, col);
-    
     return data['__unicode__'];
 }
 
