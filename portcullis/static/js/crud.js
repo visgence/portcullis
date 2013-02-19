@@ -213,6 +213,9 @@ function DataGrid() {
                         case 'text':
                             self.columns[i].editor = Slick.Editors.LongText;
                             break;
+                        case 'foreignkey':
+                            self.columns[i].formatter = foreign_key_formatter;
+                            break;
                         case 'number':
                         case 'char':
                         default:
@@ -243,6 +246,12 @@ function DataGrid() {
     };
 
     this.init();
+}
+
+function foreign_key_formatter (row, cell, columnDef, dataContext) {
+    console.log(dataContext);
+    console.log(row);
+    return "test";
 }
 
 $(function() {
