@@ -74,7 +74,6 @@ STATICFILES_DIRS = (
     # Put strings here, like "/home/html/static" or "C:/www/django/static".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
-    APP_PATH + '/static/',
 )
 
 # List of finder classes that know how to find static files in
@@ -116,14 +115,9 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     # Uncomment the next line for simple clickjacking protection:
     # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    # Dango toolbar
-    'debug_toolbar.middleware.DebugToolbarMiddleware',
 )
 
 ROOT_URLCONF = 'urls'
-
-# Python dotted path to the WSGI application used by Django's runserver.
-# WSGI_APPLICATION = 'portcullis.wsgi.application'
 
 TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
@@ -150,8 +144,6 @@ INSTALLED_APPS = (
     'graphs',
     'collector',
     'snmpPoller',
-    # Also needed for django toolbar
-    'debug_toolbar',
 )
 
 # A sample logging configuration. The only tangible logging
@@ -182,6 +174,3 @@ LOGGING = {
         },
     }
 }
-
-# This is needed for debug_toobar
-INTERNAL_IPS = ('127.0.0.1')
