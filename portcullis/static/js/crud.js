@@ -98,6 +98,16 @@
 
         /** Method to add a row */
         this.add_row = function() {
+            console.log(this.columns);
+            var add_form = get_add_form(this.columns);
+            if (add_form) {
+               $('#'+this.model_name+'_grid').append(add_form.div);
+                confirm_dialog(add_form.id, 'Add');
+            }
+            else
+                console.log('no editable columns');
+
+            /*
             var grid = this.grid;
             var model = this.model;
 
@@ -112,6 +122,7 @@
             model.prepend_data(new_row);
             grid.invalidate();
             $('#server_messages').html('');
+            */
         };
 
         /** Method to save all the modified rows, checks the _isNotEdited flag */
@@ -139,6 +150,7 @@
                             }
                         };
                     };
+                    console.log(this.model.getItem(i));
                     Dajaxice.portcullis.update(callback(i),
                                                {'model_name': this.model_name, 'data': this.model.getItem(i)});
                 }
@@ -352,9 +364,7 @@
             
             //Make button that triggers dialog
             var onclick = "confirm_dialog('m2m_" + row + "_" + cell + "', null, null, 'Ok');";
-            console.log(onclick);
             m_input = '<input type="button" value="View" onclick="' + onclick + '" />' + div;
-            console.log(m_input);
         }
 
         return m_input;
@@ -364,6 +374,55 @@
         'DataGrid': DataGrid,
         'confirm_dialog': confirm_dialog
     });
+
+    /** Returns a html div with correct inputs to be used in a dialog for the grid add button. 
+     * 
+     *  Keyword Args
+     *      columns - The DataGrids columns object.
+     *
+     *  Return: Dict with the html div and it's id or null if no columns are editable.
+     *          {
+     *              'div': The html div,
+     *              'id': The div's id
+     *          }
+     * */
+    function get_add_form(columns) 
+    {
+        var dict = {'id': myGrid.model_name+"_add"};
+        var div = "<div id='"+myGrid.model_name+"_add'>" 
+        var ul = "<ul style='list-style: none'>";
+     
+        //If we cycle through all columns and none are editable we'll return null
+        var model_editable = false;
+        $.each(columns, function(i, col) {
+            //continue if can't edit this one
+            if (!col._editable)
+               return true;
+            else
+                model_editable = true;     
+    
+            var li = "<li style='margin-top: 1em'>";
+            var input = col.name+":";
+            switch(col._type) {
+                case 'integer':
+                    console.log(col._type);
+                    input += "<input type='text'/>"; 
+                    break;
+                
+                default:
+                    input += "<input type='text'/>";  
+            }
+
+            li += input + "</li>";
+            ul += li;
+        });
+        div += ul + "</ul></div>";
+        dict['div'] = div;
+
+        if (!model_editable)
+            return null;
+        return dict;
+    }
 
 })(jQuery);
 

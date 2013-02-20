@@ -94,7 +94,6 @@ def update(request, model_name, data):
     m2m = []
     try:
         for field, properties in fields:
-            print 'Adding properties to obj ' + field
             if properties['editable'] and data[field] not in [None, '']:
                 if properties['django_m2m']:
                     m2m.append((field, properties))
