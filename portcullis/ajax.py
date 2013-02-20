@@ -99,11 +99,11 @@ def update(request, model_name, data):
                 if properties['django_m2m']:
                     m2m.append((field, properties))
                     continue
-                
-                if properties['django_related_field']:
+                    
+                elif properties['django_related_field']:
                     cls = models.loading.get_model(
                         properties['django_related_app'], properties['django_related_cls'])
-                    rel_obj = cls.objects.get(pk=data[field])
+                    rel_obj = cls.objects.get(pk=data[field]['pk'])
                     setattr(obj, field, rel_obj)
                 else:
                     setattr(obj, field, data[field])
