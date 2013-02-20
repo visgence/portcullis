@@ -188,7 +188,7 @@
                         {'model_name': self.model_name, 'data': self.model.getItem(selected)}
                     );
                 };
-                confirmDialog('delete_confirm', 'Delete', delete_func);//, function(){return;});
+                confirm_dialog('delete_confirm', 'Delete', delete_func);//, function(){return;});
             }
             else {
                 this.remove_row(selected);
@@ -276,9 +276,34 @@
         this.init();
     }
 
-    /** Use this function to pop up a modal dialog asking for user input. */
-    function confirmDialog(id, action, action_func)//, cancel_func)
+    /** Use this function to pop up a modal dialog asking for user input.
+     * Argurments action, action_func, cancel_func are optional.
+     */
+    function confirm_dialog(id, action, action_func, cancel, cancel_func)
     {
+        if (!cancel)
+            cancel = 'Cancel';
+
+        buttons = [{
+            text: cancel,
+            click: function() {
+                if ( cancel_func )
+                    cancel_func();
+                $(this).dialog('destroy');
+            }
+        }];
+
+        if ( action ) {
+            buttons.push({
+                text: action,
+                click: function() {
+                    if ( action_func )
+                        action_func();
+                    $(this).dialog('destroy');
+                }
+            });
+        }
+
         $('#' + id).dialog({
             autoOpen: true,
             resizable: true,
@@ -289,17 +314,10 @@
             maxWidth: 1000,
             minHeight: 200,
             maxHeight: 1000,
+            height: 500,
+            width: 500,
             dialogClass: "confirmation dialogue",
-            buttons: {
-                action: function() {
-                    action_func();
-                    $(this).dialog('destroy');
-                },
-                'Cancel': function() {
-                    cancel_func();
-                    $(this).dialog('destroy');
-                }
-            }
+            buttons: buttons
         });
     }
 
@@ -333,39 +351,18 @@
             div += ul + "</div>"; 
             
             //Make button that triggers dialog
-            var onclick = "dialog('m2m_"+row+"_"+cell+"')";
-            m_input = "<input type='button' value='View' onclick="+onclick+" />"+div;
+            var onclick = "confirm_dialog('m2m_" + row + "_" + cell + "', null, null, 'Ok');";
+            console.log(onclick);
+            m_input = '<input type="button" value="View" onclick="' + onclick + '" />' + div;
+            console.log(m_input);
         }
 
         return m_input;
     }
 
-    function dialog (id) 
-    {
-        $('#' + id).dialog({
-            autoOpen: true,
-            resizable: true,
-            hide: "fade",
-            show: "fade",
-            modal: true,
-            minWidth: 250,
-            maxWidth: 1000,
-            minHeight: 200,
-            maxHeight: 1000,
-            height: 500,
-            width: 500,
-            dialogClass: "confirmation dialogue",
-            buttons: {
-                'Ok': function() {
-                    $(this).dialog('destroy');
-                },
-            }
-        });
-    }
     $.extend(window, {
         'DataGrid': DataGrid,
-        'confirmDialog': confirmDialog,
-        'dialog': dialog
+        'confirm_dialog': confirm_dialog
     });
 
 })(jQuery);
