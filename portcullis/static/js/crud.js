@@ -16,9 +16,9 @@
 
 (function($) {
     /* Extra html for grids  */
-    var add_button = '<input type="button" value="Add" onclick="myGrid.add_row();"/>';
+    var add_button = '<input type="button" value="Add" onclick="myGrid.add_record();"/>';
     var delete_button = '<input type="button" value="Delete" onclick="myGrid.delete_row();"/>';
-    var save_button = '<input type="button" value="Save" onclick="myGrid.save_all_rows();"/>';
+    //var save_button = '<input type="button" value="Save" onclick="myGrid.save_all_rows();"/>';
     var refresh_button = '<input type="button" value="Refresh" onclick="myGrid.refresh();"/>';
     var message_span = '<span id="server_messages" style="padding-left:1em"></span>';
 
@@ -63,7 +63,6 @@
 
         /** These are the slickGrid options.*/
         this.options = {
-            editable: true,
             enableCellNavigation: true,
             forceFitColumns: true,
             enableColumnReorder: true,
@@ -96,21 +95,29 @@
             );
         };
 
-        /** Method to add a row */
-        this.add_row = function() {
-            var grid = this.grid;
-            var model = this.model;
-
-            var columns = grid.getColumns();
-            var new_row = {};
-
-            for (var i = 0; i < columns.length; i++) {
-                var col = columns[i];
-                new_row[col.field] = '';
-            }
+        /** Method to add a record */
+        this.add_record = function() {
             
-            model.prepend_data(new_row);
-            grid.invalidate();
+            var add_form = get_add_form(this.columns);
+            if (add_form) {
+                $('#'+this.model_name+'_grid').append(add_form.div);
+                confirm_dialog(add_form.id, 'Add', add_record_callback, 'Cancel', null, true);
+            }
+            else
+                console.log('no editable columns');
+
+        }
+
+        /** Method to add new row to beginning of grid
+         *
+         * Keyword Args
+         *    new_row - Dictionary containing new row data.
+         */
+        this.add_row = function(new_row) {
+            self = this;
+            new_row['_isNotEdited'] = false;
+            self.model.prepend_data(new_row);
+            self.save_all_rows(); 
             $('#server_messages').html('');
         };
 
@@ -122,6 +129,7 @@
             // Go through the models, and if a row has been edited, save it.
             for (var i = 0; i < this.model.getLength(); i++) {
                 if (!this.model.getItem(i)._isNotEdited) {
+                    console.log('inside');
                     noneSaved = false;
                     var callback = function(index) {
                         var i = index;
@@ -139,6 +147,7 @@
                             }
                         };
                     };
+                    console.log(this.model.getItem(i));
                     Dajaxice.portcullis.update(callback(i),
                                                {'model_name': this.model_name, 'data': this.model.getItem(i)});
                 }
@@ -252,7 +261,6 @@
                     // Add controls
                     $(add_button).appendTo(self.grid.getTopPanel()); 
                     $(delete_button).appendTo(self.grid.getTopPanel());
-                    $(save_button).appendTo(self.grid.getTopPanel());
                     $(refresh_button).appendTo(self.grid.getTopPanel());
                     $(message_span).appendTo(self.grid.getTopPanel());
                     
@@ -264,7 +272,11 @@
                     });
 
                     self.grid.getSelectionModel().onSelectedRangesChanged.subscribe(function(e, args) {
+                        console.log('row changed');
                         $('#server_messages').html('');
+                    });
+
+                    self.grid.onSelectedRowsChanged.subscribe(function(e, args) {
                     });
 
                     self.refresh();
@@ -279,7 +291,7 @@
     /** Use this function to pop up a modal dialog asking for user input.
      * Argurments action, action_func, cancel_func are optional.
      */
-    function confirm_dialog(id, action, action_func, cancel, cancel_func)
+    function confirm_dialog(id, action, action_func, cancel, cancel_func, destroy)
     {
         if (!cancel)
             cancel = 'Cancel';
@@ -290,6 +302,8 @@
                 if ( cancel_func )
                     cancel_func();
                 $(this).dialog('destroy');
+                if(destroy)
+                    $('#'+id).remove();
             }
         }];
 
@@ -300,6 +314,8 @@
                     if ( action_func )
                         action_func();
                     $(this).dialog('destroy');
+                    if(destroy)
+                        $('#'+id).remove();
                 }
             });
         }
@@ -352,9 +368,7 @@
             
             //Make button that triggers dialog
             var onclick = "confirm_dialog('m2m_" + row + "_" + cell + "', null, null, 'Ok');";
-            console.log(onclick);
             m_input = '<input type="button" value="View" onclick="' + onclick + '" />' + div;
-            console.log(m_input);
         }
 
         return m_input;
@@ -362,8 +376,69 @@
 
     $.extend(window, {
         'DataGrid': DataGrid,
-        'confirm_dialog': confirm_dialog
+        'confirm_dialog': confirm_dialog,
     });
+
+    /** Returns a html div with correct inputs to be used in a dialog for the grid add button. 
+     * 
+     *  Keyword Args
+     *      columns - The DataGrids columns object.
+     *
+     *  Return: Dict with the html div and it's id or null if no columns are editable.
+     *          {
+     *              'div': The html div,
+     *              'id': The div's id
+     *          }
+     * */
+    function get_add_form(columns) 
+    {
+        var dict = {'id': myGrid.model_name+"_add"};
+        var div = "<div id='"+myGrid.model_name+"_add'>" 
+        var ul = "<ul style='list-style: none'>";
+     
+        //If we cycle through all columns and none are editable we'll return null
+        var model_editable = false;
+        $.each(columns, function(i, col) {
+            //continue if can't edit this one
+            if (!col._editable)
+               return true;
+            else
+                model_editable = true;     
+    
+            var li = "<li style='margin-top: 1em'>";
+            var span = "<span class='field' style='display: none'>"+col.field+"</span>";
+            var input = col.name+":";
+            switch(col._type) {
+                case 'integer':
+                    console.log(col._type);
+                    input += span + "<input class='add_form_input' type='text'/>"; 
+                    break;
+                
+                default:
+                    input += span + "<input class='add_form_input' type='text'/>";  
+            }
+
+            li += input + "</li>";
+            ul += li;
+        });
+        div += ul + "</ul></div>";
+        dict['div'] = div;
+
+        if (!model_editable)
+            return null;
+        return dict;
+    }
+
+    function add_record_callback() 
+    {
+        var new_row = {};
+        $('.add_form_input').each(function(i, input) {
+            var field = $(input).prev('span.field').text();
+            new_row[field] = $(input).val(); 
+        });
+
+        myGrid.add_row(new_row);
+    }
 
 })(jQuery);
 
