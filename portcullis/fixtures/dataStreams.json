@@ -1,0 +1,338 @@
+[
+    {
+        "pk": 1,
+        "model": "portcullis.datastream",
+        "fields": {
+            "reduction_type": "mean",
+            "can_post": [
+                "correcthorsebatterystaple"
+            ],
+            "name": "Router Bits In",
+            "color": "blue",
+            "max_value": null,
+            "min_value": null,
+            "owner": 2,
+            "node_id": 0,
+            "scaling_function": 3,
+            "units": "Kbps",
+            "is_public": true,
+            "port_id": 1,
+            "description": ""
+        }
+    },
+    {
+        "pk": 2,
+        "model": "portcullis.datastream",
+        "fields": {
+            "reduction_type": "mean",
+            "can_post": [
+                "correcthorsebatterystaple"
+            ],
+            "name": "Router Bits Out",
+            "color": "red",
+            "max_value": null,
+            "min_value": null,
+            "owner": 2,
+            "node_id": 0,
+            "scaling_function": 3,
+            "units": "Kbps",
+            "is_public": true,
+            "port_id": 2,
+            "description": ""
+        }
+    },
+    {
+        "pk": 3,
+        "model": "portcullis.datastream",
+        "fields": {
+            "reduction_type": "mean",
+            "can_post": [
+                "correcthorsebatterystaple"
+            ],
+            "name": "Evan Bits In",
+            "color": "black",
+            "max_value": null,
+            "min_value": null,
+            "owner": 2,
+            "node_id": 0,
+            "scaling_function": 3,
+            "units": "Kbps",
+            "is_public": true,
+            "port_id": 3,
+            "description": ""
+        }
+    },
+    {
+        "pk": 4,
+        "model": "portcullis.datastream",
+        "fields": {
+            "reduction_type": "mean",
+            "can_post": [
+                "correcthorsebatterystaple"
+            ],
+            "name": "Evan Bits Out",
+            "color": "yellow",
+            "max_value": null,
+            "min_value": null,
+            "owner": 2,
+            "node_id": 0,
+            "scaling_function": 3,
+            "units": "Kbps",
+            "is_public": true,
+            "port_id": 4,
+            "description": ""
+        }
+    },
+    {
+        "pk": 5,
+        "model": "portcullis.datastream",
+        "fields": {
+            "reduction_type": "mean",
+            "can_post": [
+                "correcthorsebatterystaple"
+            ],
+            "name": "Michael Upload",
+            "color": "green",
+            "max_value": null,
+            "min_value": null,
+            "owner": 2,
+            "node_id": 0,
+            "scaling_function": 3,
+            "units": "Kbps",
+            "is_public": true,
+            "port_id": 5,
+            "description": "Bits from Michael's computer to the switch"
+        }
+    },
+    {
+        "pk": 6,
+        "model": "portcullis.datastream",
+        "fields": {
+            "reduction_type": "mean",
+            "can_post": [
+                "correcthorsebatterystaple"
+            ],
+            "name": "Michael Download",
+            "color": "purple",
+            "max_value": null,
+            "min_value": null,
+            "owner": 2,
+            "node_id": 0,
+            "scaling_function": 3,
+            "units": "Kbps",
+            "is_public": true,
+            "port_id": 6,
+            "description": "Bits sent from switch to Michael's computer"
+        }
+    },
+    {
+        "pk": 7,
+        "model": "portcullis.datastream",
+        "fields": {
+            "reduction_type": "mean",
+            "can_post": [
+                "correcthorsebatterystaple"
+            ],
+            "name": "Brett Bits In",
+            "color": "brown",
+            "max_value": null,
+            "min_value": null,
+            "owner": 2,
+            "node_id": 0,
+            "scaling_function": 3,
+            "units": "Kbps",
+            "is_public": true,
+            "port_id": 7,
+            "description": ""
+        }
+    },
+    {
+        "pk": 8,
+        "model": "portcullis.datastream",
+        "fields": {
+            "reduction_type": "mean",
+            "can_post": [
+                "correcthorsebatterystaple"
+            ],
+            "name": "Brett Bits Out",
+            "color": "grey",
+            "max_value": null,
+            "min_value": null,
+            "owner": 2,
+            "node_id": 0,
+            "scaling_function": 3,
+            "units": "Kbps",
+            "is_public": true,
+            "port_id": 8,
+            "description": ""
+        }
+    },
+    {
+        "pk": 9,
+        "model": "portcullis.datastream",
+        "fields": {
+            "reduction_type": "mean",
+            "can_post": [
+                "correcthorsebatterystaple"
+            ],
+            "name": "Jerry Bits In",
+            "color": "orange",
+            "max_value": null,
+            "min_value": null,
+            "owner": 2,
+            "node_id": 0,
+            "scaling_function": 3,
+            "units": "Kbps",
+            "is_public": true,
+            "port_id": 9,
+            "description": ""
+        }
+    },
+    {
+        "pk": 10,
+        "model": "portcullis.datastream",
+        "fields": {
+            "reduction_type": "mean",
+            "can_post": [
+                "correcthorsebatterystaple"
+            ],
+            "name": "Jerry Bits Out",
+            "color": "magenta",
+            "max_value": null,
+            "min_value": null,
+            "owner": 2,
+            "node_id": 0,
+            "scaling_function": 3,
+            "units": "",
+            "is_public": true,
+            "port_id": 10,
+            "description": ""
+        }
+    },
+    {
+        "pk": 11,
+        "model": "portcullis.datastream",
+        "fields": {
+            "reduction_type": "mean",
+            "can_post": [
+                "correcthorsebatterystaple"
+            ],
+            "name": "Visgence Server Bits In",
+            "color": "",
+            "max_value": null,
+            "min_value": null,
+            "owner": 2,
+            "node_id": 0,
+            "scaling_function": 3,
+            "units": "Kbps",
+            "is_public": true,
+            "port_id": 11,
+            "description": ""
+        }
+    },
+    {
+        "pk": 12,
+        "model": "portcullis.datastream",
+        "fields": {
+            "reduction_type": "mean",
+            "can_post": [
+                "correcthorsebatterystaple"
+            ],
+            "name": "Visgence Server Bits Out",
+            "color": "",
+            "max_value": null,
+            "min_value": null,
+            "owner": 2,
+            "node_id": 0,
+            "scaling_function": 3,
+            "units": "Kbps",
+            "is_public": true,
+            "port_id": 12,
+            "description": ""
+        }
+    },
+    {
+        "pk": 16,
+        "model": "portcullis.datastream",
+        "fields": {
+            "reduction_type": "mean",
+            "can_post": [
+                "correcthorsebatterystaple"
+            ],
+            "name": "Computer room temperature, office",
+            "color": "",
+            "max_value": null,
+            "min_value": null,
+            "owner": 2,
+            "node_id": 3,
+            "scaling_function": 4,
+            "units": "Degrees Celsius",
+            "is_public": false,
+            "port_id": 0,
+            "description": "Temperature sensor in the office computer room"
+        }
+    },
+    {
+        "pk": 14,
+        "model": "portcullis.datastream",
+        "fields": {
+            "reduction_type": "mean",
+            "can_post": [
+                "correcthorsebatterystaple"
+            ],
+            "name": "Outside Temperature, Office",
+            "color": "",
+            "max_value": null,
+            "min_value": null,
+            "owner": 2,
+            "node_id": 10,
+            "scaling_function": 1,
+            "units": "Degrees Celsius",
+            "is_public": false,
+            "port_id": 0,
+            "description": "Temperature sensor on office weather stations"
+        }
+    },
+    {
+        "pk": 13,
+        "model": "portcullis.datastream",
+        "fields": {
+            "reduction_type": "mode",
+            "can_post": [
+                "correcthorsebatterystaple"
+            ],
+            "name": "Office Wind Direction",
+            "color": "",
+            "max_value": null,
+            "min_value": null,
+            "owner": 2,
+            "node_id": 10,
+            "scaling_function": 1,
+            "units": "",
+            "is_public": false,
+            "port_id": 1,
+            "description": "Wind vane on the tower at the office"
+        }
+    },
+    {
+        "pk": 15,
+        "model": "portcullis.datastream",
+        "fields": {
+            "reduction_type": "mean",
+            "can_post": [
+                "correcthorsebatterystaple"
+            ],
+            "name": "Office Wind Speed",
+            "color": "",
+            "max_value": null,
+            "min_value": null,
+            "owner": 2,
+            "node_id": 10,
+            "scaling_function": 1,
+            "units": "MPH",
+            "is_public": false,
+            "port_id": 4,
+            "description": "Anemometer on office weather station"
+        }
+    }
+]
