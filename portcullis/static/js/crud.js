@@ -38,11 +38,14 @@
             getLength: function() {
                 return this.data.length;
             },
-            get_cell_data: function(row, col) {
-                return this.data[row][col];
+            get_pk: function(i) {
+                return this.data[i]['pk'];
             },
-            setItem: function(index, item) {
-                this.data[index] = item;
+            get_cell_data: function(i, j) {
+                return this.data[i][j];
+            },
+            setItem: function(i, item) {
+                this.data[i] = item;
             },
             set_data: function(new_data) {
                 this.data = new_data;
@@ -50,8 +53,8 @@
             prepend_data: function(new_row) {
                 this.data.splice(0, 0, new_row); 
             },
-            remove_data: function(index) {
-                this.data.splice(index,1);
+            remove_data: function(i) {
+                this.data.splice(i, 1);
             }
         };
 
@@ -87,13 +90,13 @@
                     
                     // Make sure on refresh to mark everything gotten from the server as unedited.
                     for (var i = 0; i < resp.length; i++)
-                        resp[i]['_isNotEdited'] = true;
+                        resp[i]['modified'] = false;
                     
                     self.model.set_data(resp);
                     self.grid.invalidate();
-                },
-                {model_name: self.model_name}
-            );
+                },{
+                    model_name: self.model_name
+                });
         };
 
         /** Method to add a record */
@@ -108,13 +111,11 @@
             }
             else
                 console.log('no editable columns');
-        }
+        };
 
         /** Method to edit a selected record in the grid. */
         this.edit_record = function() {
             var selected_index = this.grid.getSelectedRows();
-            console.log(this.model.data);
-            console.log(this.model.getItem(selected_index));
             var selected_row = this.model.getItem(selected_index);
             var edit_form = get_grid_form(this.columns, selected_row);
 
@@ -134,9 +135,9 @@
          */
         this.add_row = function(new_row) {
             self = this;
-            new_row['_isNotEdited'] = false;
+            new_row['modified'] = true;
             self.model.prepend_data(new_row);
-            self.save_all_rows(); 
+            self.save_row(0);
             $('#server_messages').html('');
         };
 
@@ -148,53 +149,55 @@
          */
         this.add_edited_row = function(edited_row, index) {
             self = this;
-            edited_row['_isNotEdited'] = false;
+            edited_row['modified'] = true;
+            edited_row['pk'] = self.model.get_pk(index);
             self.model.setItem(index, edited_row);
-            self.save_all_rows(); 
+            self.save_row(index);
             $('#server_messages').html('');
         };
 
-        /** Method to save all the modified rows, checks the _isNotEdited flag */
-        this.save_all_rows = function() {
+        /** Callback method for save_row when a server response has been recieved.
+         *
+         * Keyword Args
+         *    i - Index of row that was being edited
+         *
+         * Return: Function that handles the response object from server.
+         */
+        this.save_callback = function(i) {
             self = this;
-            var noneSaved = true;
 
-            // Go through the models, and if a row has been edited, save it.
-            for (var i = 0; i < this.model.getLength(); i++) {
-                if (!this.model.getItem(i)._isNotEdited) {
-                    noneSaved = false;
-                    var callback = function(index) {
-                        var i = index;
-                        return function(resp) {
-                            if ('errors' in resp) {
-                                self.error(resp['errors'])
-                                return;
-                            }
-                            else {
-                                self.model.setItem(i, resp[0]);
-                                self.model.getItem(i)._isNotEdited = true;
-                                self.grid.invalidateRow(i);
-                                self.grid.render();
-                                self.success('Updated row ' + i);
-                            }
-                            self.clear_row_selection();
-                        };
-                    };
-                    Dajaxice.portcullis.update(callback(i),{
-                        'model_name': this.model_name, 
-                        'data': this.model.getItem(i)
-                    });
+            return function(resp) {
+                if ('errors' in resp) {
+                    self.error(resp['errors']);
+                    return;
                 }
+                else {
+                    self.model.setItem(i, resp[0]);
+                    self.model.getItem(i).modified = false;
+                    self.grid.invalidateRow(i);
+                    self.grid.render();
+                    self.success('Updated row ' + i);
+                }
+                self.clear_row_selection();
+            };
+        };
+
+        /** Saves a specified row if it is modified.
+         *
+         * Keyword Args
+         *    i - Index of row to be saved.
+         */
+        this.save_row = function(i) {
+            
+            if (this.model.getItem(i).modified) {
+                Dajaxice.portcullis.update(this.save_callback(i), {
+                    'model_name': this.model_name, 
+                    'data': this.model.getItem(i)
+                });
             }
+        };
 
-            // Nothing to do.
-            if ( noneSaved ) {
-                $('#server_messages').html('Nothing to save.').css('color', 'green');
-                return;
-            }
-
-        }; // End save_all_rows
-
+        
         /** Method to remove a row from the grid */
         this.remove_row = function(index) {
             this.model.remove_data(index);
@@ -212,7 +215,7 @@
             var row = this.grid.getData()[selected[0]];
             // If there is an id, send an ajax request to delete from server, otherwise, just
             // remove it from the grid.
-            if (this.model.getItem(selected)['_isNotEdited'] === true) {
+            if (this.model.getItem(selected)['modified'] === false) {
                 self = this;
                 var delete_func = function() {
                     Dajaxice.portcullis.destroy(
@@ -300,10 +303,10 @@
                     
                     self.grid.setSelectionModel(new Slick.RowSelectionModel());
 
-                    // Add some listeners
+                    /*
                     self.grid.onCellChange.subscribe(function (e, args) {
                         args.item._isNotEdited = false;
-                    });
+                    });*/
 
                     self.grid.getSelectionModel().onSelectedRangesChanged.subscribe(function(e, args) {
                         var panel = self.grid.getTopPanel();
@@ -478,7 +481,7 @@
         if (!model_editable)
             return null;
         return dict;
-    }
+    } 
 
     /** Callback method for when user clicks add button in add new record dialog */
     function add_record_callback() 
