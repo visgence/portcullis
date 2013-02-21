@@ -135,10 +135,8 @@
          */
         this.add_row = function(new_row) {
             self = this;
-            new_row['modified'] = true;
-            self.model.prepend_data(new_row);
-            self.save_row(0);
-            $('#server_messages').html('');
+            
+            self.save_row(0, new_row, false);
         };
 
         /** Method to add edited row at a given index
@@ -149,32 +147,41 @@
          */
         this.add_edited_row = function(edited_row, index) {
             self = this;
-            edited_row['modified'] = true;
+            
             edited_row['pk'] = self.model.get_pk(index);
-            self.model.setItem(index, edited_row);
-            self.save_row(index);
-            $('#server_messages').html('');
+            self.save_row(index, edited_row, true);
         };
 
         /** Callback method for save_row when a server response has been recieved.
          *
          * Keyword Args
-         *    i - Index of row that was being edited
+         *    i      - Index of row that was being edited
+         *    update - Boolean for if we're updating a row or creating one.
          *
          * Return: Function that handles the response object from server.
          */
-        this.save_callback = function(i) {
+        this.save_callback = function(i, update) {
             self = this;
 
             return function(resp) {
+                //Reset server message
+                $('#server_messages').html('');
+
                 if ('errors' in resp) {
                     self.error(resp['errors']);
                     return;
                 }
                 else {
-                    self.model.setItem(i, resp[0]);
-                    self.model.getItem(i).modified = false;
-                    self.grid.invalidateRow(i);
+                    //Either add new row to beginning or update one.
+                    if (update) {
+                        self.model.setItem(i, resp[0]);
+                        self.grid.invalidateRow(i);
+                    }
+                    else {
+                        self.model.prepend_data(resp[0]);
+                        self.grid.invalidateAllRows();
+                    }
+                    
                     self.grid.render();
                     self.success('Updated row ' + i);
                 }
@@ -185,19 +192,18 @@
         /** Saves a specified row if it is modified.
          *
          * Keyword Args
-         *    i - Index of row to be saved.
+         *    i      - Index of row to be saved.
+         *    row    - Dictinary containing the row data save.
+         *    update - Boolean for if this is an update or a new row.
          */
-        this.save_row = function(i) {
+        this.save_row = function(i, row, update) {
             
-            if (this.model.getItem(i).modified) {
-                Dajaxice.portcullis.update(this.save_callback(i), {
-                    'model_name': this.model_name, 
-                    'data': this.model.getItem(i)
-                });
-            }
+            Dajaxice.portcullis.update(this.save_callback(i, update), {
+                'model_name': this.model_name, 
+                'data': row
+            });
         };
-
-        
+ 
         /** Method to remove a row from the grid */
         this.remove_row = function(index) {
             this.model.remove_data(index);
@@ -245,8 +251,10 @@
         
         /** Stuff to do on error. */
         this.error = function(msg) {
-            console.log('Error: ' + msg);
-            $('#server_messages').html(msg).css('color','red');
+            $('#error_msg').text(msg);
+            confirm_dialog('error_dialog', null, null, "Ok", function() {
+                $('#error_msg').text('');
+            }, false);
         };
 
         /** Stuff to do on success. */
