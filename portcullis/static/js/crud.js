@@ -18,7 +18,7 @@
     /* Extra html for grids  */
     var add_button = '<input type="button" value="Add" onclick="myGrid.add_record();"/>';
     var delete_button = '<input type="button" value="Delete" onclick="myGrid.delete_row();"/>';
-    //var save_button = '<input type="button" value="Save" onclick="myGrid.save_all_rows();"/>';
+    var edit_button = '<input type="button" value="Edit" onclick="myGrid.edit_row();"/>';
     var refresh_button = '<input type="button" value="Refresh" onclick="myGrid.refresh();"/>';
     var message_span = '<span id="server_messages" style="padding-left:1em"></span>';
 
@@ -75,6 +75,7 @@
         /** Method to get data from server and refresh the grid.*/
         this.refresh = function() {
             self = this;
+            this.clear_row_selection();
             Dajaxice.portcullis.read_source(
                 function(resp) {
                     if ( 'errors' in resp ) {
@@ -97,7 +98,9 @@
 
         /** Method to add a record */
         this.add_record = function() {
-            
+            //Clear row selection
+            this.clear_row_selection();
+
             var add_form = get_add_form(this.columns);
             if (add_form) {
                 $('#'+this.model_name+'_grid').append(add_form.div);
@@ -105,7 +108,6 @@
             }
             else
                 console.log('no editable columns');
-
         }
 
         /** Method to add new row to beginning of grid
@@ -190,6 +192,7 @@
                             else if ('success' in resp) {
                                 self.remove_row(selected);
                                 self.success(resp.success);
+                                self.clear_row_selection();
                             }
                             else
                                 self.error('Unknown error has occurred on delete.');
@@ -260,7 +263,6 @@
 
                     // Add controls
                     $(add_button).appendTo(self.grid.getTopPanel()); 
-                    $(delete_button).appendTo(self.grid.getTopPanel());
                     $(refresh_button).appendTo(self.grid.getTopPanel());
                     $(message_span).appendTo(self.grid.getTopPanel());
                     
@@ -272,11 +274,18 @@
                     });
 
                     self.grid.getSelectionModel().onSelectedRangesChanged.subscribe(function(e, args) {
-                        console.log('row changed');
-                        $('#server_messages').html('');
-                    });
+                        var panel = self.grid.getTopPanel();
+                        var serv_msg = $('#server_messages'); 
 
-                    self.grid.onSelectedRowsChanged.subscribe(function(e, args) {
+                        //Add delete button if it's not in panel            
+                        if($(panel).has('input[value="Delete"]').length <= 0)
+                            $(serv_msg).before(delete_button);
+                        
+                        //Add edit button if it's not in panel            
+                        if($(panel).has('input[value="Edit"]').length <= 0)
+                            $(serv_msg).before(edit_button);
+
+                        $(serv_msg).html('');
                     });
 
                     self.refresh();
@@ -284,7 +293,14 @@
                 {'model_name': self.model_name}
             );
         };
-        
+       
+        this.clear_row_selection = function() {
+            var panel = this.grid.getTopPanel();
+            $(panel).find('input[value="Delete"]').remove(); 
+            $(panel).find('input[value="Edit"]').remove(); 
+            this.grid.resetActiveCell(); 
+        };        
+
         this.init();
     }
 
@@ -299,6 +315,7 @@
         buttons = [{
             text: cancel,
             click: function() {
+                console.log('i canceled');
                 if ( cancel_func )
                     cancel_func();
                 $(this).dialog('destroy');
