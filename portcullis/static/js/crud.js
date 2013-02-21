@@ -18,7 +18,7 @@
     /* Extra html for grids  */
     var add_button = '<input type="button" value="Add" onclick="myGrid.add_record();"/>';
     var delete_button = '<input type="button" value="Delete" onclick="myGrid.delete_row();"/>';
-    var edit_button = '<input type="button" value="Edit" onclick="myGrid.edit_row();"/>';
+    var edit_button = '<input type="button" value="Edit" onclick="myGrid.edit_record();"/>';
     var refresh_button = '<input type="button" value="Refresh" onclick="myGrid.refresh();"/>';
     var message_span = '<span id="server_messages" style="padding-left:1em"></span>';
 
@@ -101,7 +101,7 @@
             //Clear row selection
             this.clear_row_selection();
 
-            var add_form = get_add_form(this.columns);
+            var add_form = get_grid_form(this.columns);
             if (add_form) {
                 $('#'+this.model_name+'_grid').append(add_form.div);
                 confirm_dialog(add_form.id, 'Add', add_record_callback, 'Cancel', null, true);
@@ -109,6 +109,23 @@
             else
                 console.log('no editable columns');
         }
+
+        /** Method to edit a selected record in the grid. */
+        this.edit_record = function() {
+            var selected_index = this.grid.getSelectedRows();
+            console.log(this.model.data);
+            console.log(this.model.getItem(selected_index));
+            var selected_row = this.model.getItem(selected_index);
+            var edit_form = get_grid_form(this.columns, selected_row);
+
+            if (edit_form) {
+                var edit_callback = function() {edit_record_callback(selected_index);};
+                $('#'+this.model_name+'_grid').append(edit_form.div);
+                confirm_dialog(edit_form.id, 'Save', edit_callback, 'Cancel', null, true);
+            }
+            else
+                console.log('edit form didnt exist.');
+        };
 
         /** Method to add new row to beginning of grid
          *
@@ -123,6 +140,20 @@
             $('#server_messages').html('');
         };
 
+        /** Method to add edited row at a given index
+         *
+         * Keyword Args
+         *    edited_row - Dict containing the new edited row data.
+         *    index      - Index of the row that was edited.
+         */
+        this.add_edited_row = function(edited_row, index) {
+            self = this;
+            edited_row['_isNotEdited'] = false;
+            self.model.setItem(index, edited_row);
+            self.save_all_rows(); 
+            $('#server_messages').html('');
+        };
+
         /** Method to save all the modified rows, checks the _isNotEdited flag */
         this.save_all_rows = function() {
             self = this;
@@ -131,7 +162,6 @@
             // Go through the models, and if a row has been edited, save it.
             for (var i = 0; i < this.model.getLength(); i++) {
                 if (!this.model.getItem(i)._isNotEdited) {
-                    console.log('inside');
                     noneSaved = false;
                     var callback = function(index) {
                         var i = index;
@@ -147,11 +177,13 @@
                                 self.grid.render();
                                 self.success('Updated row ' + i);
                             }
+                            self.clear_row_selection();
                         };
                     };
-                    console.log(this.model.getItem(i));
-                    Dajaxice.portcullis.update(callback(i),
-                                               {'model_name': this.model_name, 'data': this.model.getItem(i)});
+                    Dajaxice.portcullis.update(callback(i),{
+                        'model_name': this.model_name, 
+                        'data': this.model.getItem(i)
+                    });
                 }
             }
 
@@ -315,7 +347,6 @@
         buttons = [{
             text: cancel,
             click: function() {
-                console.log('i canceled');
                 if ( cancel_func )
                     cancel_func();
                 $(this).dialog('destroy');
@@ -396,10 +427,11 @@
         'confirm_dialog': confirm_dialog,
     });
 
-    /** Returns a html div with correct inputs to be used in a dialog for the grid add button. 
+    /** Returns a html div with inputs to be used in a dialog for the grid add button. 
      * 
      *  Keyword Args
      *      columns - The DataGrids columns object.
+     *      record  - Dict containing data that will be pre-inserted into the input fields.
      *
      *  Return: Dict with the html div and it's id or null if no columns are editable.
      *          {
@@ -407,7 +439,7 @@
      *              'id': The div's id
      *          }
      * */
-    function get_add_form(columns) 
+    function get_grid_form(columns, record) 
     {
         var dict = {'id': myGrid.model_name+"_add"};
         var div = "<div id='"+myGrid.model_name+"_add'>" 
@@ -425,14 +457,16 @@
             var li = "<li style='margin-top: 1em'>";
             var span = "<span class='field' style='display: none'>"+col.field+"</span>";
             var input = col.name+":";
+            var value = ""
+            if (record)
+                value = record[col.field]
             switch(col._type) {
                 case 'integer':
-                    console.log(col._type);
-                    input += span + "<input class='add_form_input' type='text'/>"; 
+                    input += span + "<input class='add_form_input' type='text' value='"+value+"'/>"; 
                     break;
                 
                 default:
-                    input += span + "<input class='add_form_input' type='text'/>";  
+                    input += span + "<input class='add_form_input' type='text' value='"+value+"' />";  
             }
 
             li += input + "</li>";
@@ -446,6 +480,7 @@
         return dict;
     }
 
+    /** Callback method for when user clicks add button in add new record dialog */
     function add_record_callback() 
     {
         var new_row = {};
@@ -455,6 +490,17 @@
         });
 
         myGrid.add_row(new_row);
+    }
+
+    function edit_record_callback (index) 
+    {
+        var edited_row = {};
+        $('.add_form_input').each(function(i, input) {
+            var field = $(input).prev('span.field').text();
+            edited_row[field] = $(input).val(); 
+        });
+
+        myGrid.add_edited_row(edited_row, index);
     }
 
 })(jQuery);
