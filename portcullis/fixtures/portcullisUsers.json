@@ -1,0 +1,16 @@
+[
+    {
+        "pk": 1,
+        "model": "portcullis.PortcullisUser",
+        "fields": {
+            "username": "portcullis",
+            "first_name": "Portcullis",
+            "last_name": "User",
+            "email": "portcullis@visgence.com",
+            "password": "pbkdf2_sha256$10000$S22El37yr4bm$mMrhsyne5bF3ElJPY5O9QbaYH9diQqPXjmWqOkJipeU=",
+            "is_staff": true,
+            "is_active": true,
+            "is_superuser": true
+        }
+    }
+]
