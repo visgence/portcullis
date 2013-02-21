@@ -218,10 +218,12 @@
                 this.error("Error, we don't have exactly 1 data item selected!");
                 return;
             }
-            var row = this.grid.getData()[selected[0]];
+
+            var row = this.model.getItem(selected[0]);
+
             // If there is an id, send an ajax request to delete from server, otherwise, just
             // remove it from the grid.
-            if (this.model.getItem(selected)['modified'] === false) {
+            if ('pk' in row) {
                 self = this;
                 var delete_func = function() {
                     Dajaxice.portcullis.destroy(
@@ -241,15 +243,19 @@
                         {'model_name': self.model_name, 'data': self.model.getItem(selected)}
                     );
                 };
-                confirm_dialog('delete_confirm', 'Delete', delete_func);//, function(){return;});
+                confirm_dialog('delete_confirm', 'Delete', delete_func);
             }
             else {
                 this.remove_row(selected);
                 this.success('Locally removed row: ' + selected + '.');
             }
         };
-        
-        /** Stuff to do on error. */
+       
+        /** Shows a dialog to the user for the given error message.
+         *
+         * Keyword Args
+         *    msg - Error message as a string.
+         */
         this.error = function(msg) {
             $('#error_msg').text(msg);
             confirm_dialog('error_dialog', null, null, "Ok", function() {
