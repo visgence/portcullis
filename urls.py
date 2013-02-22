@@ -2,6 +2,7 @@ from django.conf.urls.defaults import patterns, include, url
 from django.views.generic.simple import redirect_to
 from dajaxice.core import dajaxice_autodiscover, dajaxice_config
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+from settings import APP_PATH, DEBUG
 
 # Uncomment the next two lines to enable the admin:
 from django.contrib import admin
@@ -23,3 +24,7 @@ urlpatterns = patterns(
 )
 
 urlpatterns += staticfiles_urlpatterns()
+
+if DEBUG:
+    urlpatterns += url(r'^images\/(?P<path>.*)$', 'django.views.static.serve', {
+            'document_root': APP_PATH + 'portcullis/static/plugins/slickGrid/images'}),
