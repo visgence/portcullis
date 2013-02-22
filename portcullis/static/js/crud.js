@@ -88,10 +88,6 @@
                     else
                         $('#server_messages').html('');
                     
-                    // Make sure on refresh to mark everything gotten from the server as unedited.
-                    for (var i = 0; i < resp.length; i++)
-                        resp[i]['modified'] = false;
-                    
                     self.model.set_data(resp);
                     self.grid.invalidate();
                 },{
@@ -118,14 +114,14 @@
             var selected_index = this.grid.getSelectedRows();
             var selected_row = this.model.getItem(selected_index);
             var edit_form = get_grid_form(this.columns, selected_row);
-
+            
             if (edit_form) {
                 var edit_callback = function() {edit_record_callback(selected_index);};
                 $('#'+this.model_name+'_grid').append(edit_form.div);
                 confirm_dialog(edit_form.id, 'Save', edit_callback, 'Cancel', null, true);
             }
             else
-                console.log('edit form didnt exist.');
+                this.error('This grid is not editable.');
         };
 
         /** Method to add new row to beginning of grid
@@ -189,7 +185,7 @@
             };
         };
 
-        /** Saves a specified row if it is modified.
+        /** Saves or updates a specified row at a given index
          *
          * Keyword Args
          *    i      - Index of row to be saved.
@@ -204,13 +200,16 @@
             });
         };
  
-        /** Method to remove a row from the grid */
+        /** Removes a row from the grid at a given index
+         *
+         *  Keyword Args
+         *      index - The index to remove the row from.*/
         this.remove_row = function(index) {
             this.model.remove_data(index);
             this.grid.invalidate();
         };
 
-        /** Method to delete the selected row. */
+        /** Deletes a selected row from the grid and removes that object from the database. */
         this.delete_row = function() {
             // get the selected row, right now assume only one.
             var selected = this.grid.getSelectedRows();
@@ -281,29 +280,24 @@
                     for ( var i = 0; i < self.columns.length; i++) {
                         if (self.columns[i]._editable == true) {
                             switch (self.columns[i]._type) {
-                            case 'boolean':
-                                self.columns[i].editor = Slick.Editors.Checkbox;
-                                self.columns[i].formatter = Slick.Formatters.Checkmark;
-                                break;
-                            case 'integer':
-                                self.columns[i].editor = Slick.Editors.Integer;
-                                break;
-                            case 'date':
-                                self.columns[i].editor = Slick.Editors.Date;
-                                break;
-                            case 'text':
-                                self.columns[i].editor = Slick.Editors.LongText;
-                                break;
-                            case 'foreignkey':
-                                self.columns[i].formatter = foreign_key_formatter;
-                                break;
-                            case 'm2m':
-                                self.columns[i].formatter = m2m_formatter;
-                                break;
-                            case 'number':
-                            case 'char':
-                            default:
-                                self.columns[i].editor = Slick.Editors.Text;
+
+                                case 'boolean':
+                                    self.columns[i].formatter = Slick.Formatters.Checkmark;
+                                    break;
+                                case 'foreignkey':
+                                    self.columns[i].formatter = foreign_key_formatter;
+                                    break;
+                                case 'm2m':
+                                    self.columns[i].formatter = m2m_formatter;
+                                    break;
+
+                                case 'number':
+                                case 'char':
+                                case 'integer':
+                                case 'text':
+                                case 'date':
+
+                                default:
                             }
                         }
                     }
@@ -316,11 +310,6 @@
                     $(message_span).appendTo(self.grid.getTopPanel());
                     
                     self.grid.setSelectionModel(new Slick.RowSelectionModel());
-
-                    /*
-                    self.grid.onCellChange.subscribe(function (e, args) {
-                        args.item._isNotEdited = false;
-                    });*/
 
                     self.grid.getSelectionModel().onSelectedRangesChanged.subscribe(function(e, args) {
                         var panel = self.grid.getTopPanel();
@@ -461,27 +450,48 @@
         var dict = {'id': myGrid.model_name+"_add"};
         var div = "<div id='"+myGrid.model_name+"_add'>" 
         var ul = "<ul style='list-style: none'>";
-     
+    
         //If we cycle through all columns and none are editable we'll return null
         var model_editable = false;
         $.each(columns, function(i, col) {
+            
             //continue if can't edit this one
             if (!col._editable)
                return true;
             else
                 model_editable = true;     
-    
+   
+            //Set up html containers for the input
             var li = "<li style='margin-top: 1em'>";
             var span = "<span class='field' style='display: none'>"+col.field+"</span>";
             var input = col.name+":";
             var value = ""
+           
+            //If updateing then we'll set the field with the current value
             if (record)
                 value = record[col.field]
+
             switch(col._type) {
                 case 'integer':
                     input += span + "<input class='add_form_input' type='text' value='"+value+"'/>"; 
                     break;
                 
+                case 'foreignkey': 
+                    var select = "<select class='add_form_input' id='"+value.model_name+"'></select>";
+                    input += span + select;
+                    Dajaxice.portcullis.read_source(function(resp) {
+                        $(resp).each(function(i, obj) {
+                            var option = "<option></option>";
+                            if(obj.pk == value.pk) 
+                                option = "<option selected></option>";
+
+                            $('#'+value.model_name).append($(option)
+                                .attr('class', obj.pk)
+                                .text(obj.__unicode__));
+                        });
+                    }, {'model_name': value.model_name}); 
+                    break;
+
                 default:
                     input += span + "<input class='add_form_input' type='text' value='"+value+"' />";  
             }

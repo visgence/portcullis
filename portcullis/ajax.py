@@ -162,6 +162,9 @@ def serialize_model_objs(objs):
                     'model_name': f.rel.to.__name__
                 }
             else:
+                if '__unicode__' not in obj_dict:
+                    obj_dict['__unicode__'] = obj.__unicode__()
+
                 obj_dict[f.name] = f.value_from_object(obj)
                 if type(obj_dict[f.name]) not in [dict, list, unicode, int, long, float, bool, type(None)]:
                     obj_dict[f.name] = f.value_to_string(obj)
@@ -180,7 +183,7 @@ def serialize_model_objs(objs):
             obj_dict['pk'] = obj.pk
 
         new_objs.append(obj_dict)
-        
+    print new_objs
     return json.dumps(new_objs, indent=4)
 
 
