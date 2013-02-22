@@ -207,11 +207,34 @@ function get_ranges() {
 // scale incoming data
 function scale_data(data)
 {
+
+    var tmpData = new Array();
+
+    var avg_t_diff = 0;
+    var t_diff = null;
+    var n_t_diff = 0;
+    var last_t = 0;
+
+    data.raw_data = data.data;
+
     for(var i=0;i<data.data.length;i++) 
     {
-        data.data[i][0] = data.data[i][0]*1000 - timezone_offset;//converting seconds to milliseconds
-        data.data[i][1] = scaling_functions[data.scaling_function](data.data[i][1]) 
+        if (i > 0 && tmpData[tmpData.length-1] ) {
+            t_diff = data.data[i][0] - last_t;
+            n_t_diff++;
+            avg_t_diff = ((n_t_diff-1)*avg_t_diff + t_diff)/n_t_diff;
+            if ( avg_t_diff > 0 && t_diff > 2*avg_t_diff )            
+                tmpData.push(null);
+        }
+        last_t = data.data[i][0];
+        var tmp = new Array();
+        tmp[0] = data.data[i][0] = data.data[i][0]*1000 - timezone_offset;//converting seconds to milliseconds
+        tmp[1] = scaling_functions[data.scaling_function](data.data[i][1])
+
+        tmpData.push(tmp)
+        
     }
+    data.data = tmpData;
     return data;
 }
 
@@ -273,13 +296,15 @@ function plot_graph(data, options, div) {
 
     var scaled_data = scale_data(data);
     var csv="time,raw reading,scaled value\n";
-    for (var i in scaled_data['data']) {   
-        csv += data['data'][i][0]+",";
-        csv += data['data'][i][1]+",";
-        csv += scaled_data['data'][i][1]+"\n";
+    for (var i=0, j=0; i < scaled_data['data'].length; i++) {
+        if ( data.data[i] ) {
+            csv += data['data'][i][0]+",";
+            csv += data['raw_data'][j][1]+",";
+            csv += scaled_data['data'][i][1]+"\n";
+            j++;
+        }
     }
 
-    scaled_data['raw_data'] = data['data'];
     var plot = $.plot($(div), [scaled_data], options);
     $(div+"_csv").html(csv);
     $('#datapoints_'+data.datastream_id).text(data.num_readings);
