@@ -91,10 +91,11 @@ def genColumns(modelObj):
             field['_editable'] = False
         else:
             field['_editable'] = True
-
+    
         # Figure out the type of field.
         d_type = f.db_type(connections.all()[0])
         if isinstance(f, models.ForeignKey):
+            field['model_name'] = f.rel.to.__name__
             field['_type'] = 'foreignkey'
         elif d_type == 'boolean':
             field['_type'] = 'boolean'

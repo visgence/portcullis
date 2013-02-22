@@ -50,8 +50,8 @@
             set_data: function(new_data) {
                 this.data = new_data;
             },
-            prepend_data: function(new_row) {
-                this.data.splice(0, 0, new_row); 
+            add_data: function(row, i) {
+                this.data.splice(i, 0, row); 
             },
             remove_data: function(i) {
                 this.data.splice(i, 1);
@@ -102,8 +102,11 @@
 
             var add_form = get_grid_form(this.columns);
             if (add_form) {
+                var add_callback = function() {record_callback(0, false);};
+
                 $('#'+this.model_name+'_grid').append(add_form.div);
-                confirm_dialog(add_form.id, 'Add', add_record_callback, 'Cancel', null, true);
+
+                confirm_dialog(add_form.id, 'Add', add_callback, 'Cancel', null, true);
             }
             else
                 console.log('no editable columns');
@@ -113,40 +116,40 @@
         this.edit_record = function() {
             var selected_index = this.grid.getSelectedRows();
             var selected_row = this.model.getItem(selected_index);
+
             var edit_form = get_grid_form(this.columns, selected_row);
-            
             if (edit_form) {
-                var edit_callback = function() {edit_record_callback(selected_index);};
+                var edit_callback = function() {record_callback(selected_index, true);};
+
                 $('#'+this.model_name+'_grid').append(edit_form.div);
+
                 confirm_dialog(edit_form.id, 'Save', edit_callback, 'Cancel', null, true);
             }
             else
                 this.error('This grid is not editable.');
         };
 
-        /** Method to add new row to beginning of grid
+        /** Method to add a row to the grid.
+         *
+         *  The row will either be added to the grid as a new row or
+         *  will replace an existing row specified at the given index
+         *  if updating is true.
          *
          * Keyword Args
-         *    new_row - Dictionary containing new row data.
+         *    row      - Dictionary that will put into the grid as a row.
+         *    index    - Row position for the row to be inserted into.
+         *    updating - Boolean, row will replace the row in grid at index if true
+         *               and will be inserted at index if false.
          */
-        this.add_row = function(new_row) {
+        this.add_row = function(row, index, updating) {
             self = this;
-            
-            self.save_row(0, new_row, false);
-        };
+          
+            //Need pk if updating to know which object to update
+            if(updating)
+                row['pk'] = self.model.get_pk(index);
 
-        /** Method to add edited row at a given index
-         *
-         * Keyword Args
-         *    edited_row - Dict containing the new edited row data.
-         *    index      - Index of the row that was edited.
-         */
-        this.add_edited_row = function(edited_row, index) {
-            self = this;
-            
-            edited_row['pk'] = self.model.get_pk(index);
-            self.save_row(index, edited_row, true);
-        };
+            self.save_row(index, row, updating);
+        }; 
 
         /** Callback method for save_row when a server response has been recieved.
          *
@@ -174,7 +177,7 @@
                         self.grid.invalidateRow(i);
                     }
                     else {
-                        self.model.prepend_data(resp[0]);
+                        self.model.add_data(resp[0]);
                         self.grid.invalidateAllRows();
                     }
                     
@@ -365,6 +368,7 @@
             buttons.push({
                 text: action,
                 click: function() {
+                    console.log('Clicku');
                     if ( action_func )
                         action_func();
                     $(this).dialog('destroy');
@@ -433,6 +437,7 @@
         'confirm_dialog': confirm_dialog,
     });
 
+
     /** Returns a html div with inputs to be used in a dialog for the grid add button. 
      * 
      *  Keyword Args
@@ -448,8 +453,8 @@
     function get_grid_form(columns, record) 
     {
         var dict = {'id': myGrid.model_name+"_add"};
-        var div = "<div id='"+myGrid.model_name+"_add'>" 
-        var ul = "<ul style='list-style: none'>";
+        var div = $("<div></div>").attr("id", myGrid.model_name+'_add');
+        var ul = $("<ul></ul>").css("list-style", "none");
     
         //If we cycle through all columns and none are editable we'll return null
         var model_editable = false;
@@ -462,72 +467,103 @@
                 model_editable = true;     
    
             //Set up html containers for the input
-            var li = "<li style='margin-top: 1em'>";
-            var span = "<span class='field' style='display: none'>"+col.field+"</span>";
-            var input = col.name+":";
-            var value = ""
-           
+            var li = $("<li></li>").css('margin-top', '1em');
+
+            var span = $("<span></span>")
+                .attr('class', 'field')
+                .css('display', 'none')
+                .text(col.field);
+
+            var label = $("<span></span>").text(col.name);
+            var input = null;
+            var value = "";
+
             //If updateing then we'll set the field with the current value
             if (record)
-                value = record[col.field]
+                value = record[col.field];
 
             switch(col._type) {
                 case 'integer':
-                    input += span + "<input class='add_form_input' type='text' value='"+value+"'/>"; 
-                    break;
-                
-                case 'foreignkey': 
-                    var select = "<select class='add_form_input' id='"+value.model_name+"'></select>";
-                    input += span + select;
-                    Dajaxice.portcullis.read_source(function(resp) {
-                        $(resp).each(function(i, obj) {
-                            var option = "<option></option>";
-                            if(obj.pk == value.pk) 
-                                option = "<option selected></option>";
-
-                            $('#'+value.model_name).append($(option)
-                                .attr('class', obj.pk)
-                                .text(obj.__unicode__));
+                    input = $("<input/>");
+                        .val(value)
+                        .attr({ 
+                            'class': 'add_form_input',
+                             'type': 'text' 
                         });
-                    }, {'model_name': value.model_name}); 
+                    break;
+               
+                //Build a select field with options for any foreign keys
+                case 'foreignkey': 
+                    input = $("<select></select>")
+                        .attr({
+                            'id'   : col.model_name,
+                            'class': 'add_form_input foreignkey'
+                        });
+
+                    //Get all objects that the user can select from
+                    Dajaxice.portcullis.read_source( function(resp) {
+
+                        $(resp).each(function(i, obj) {
+                            var option = $("<option></option>")
+                                .attr('class', obj.pk)
+                                .text(obj.__unicode__);
+
+                            if(value != '' && obj.pk == value.pk) 
+                                option.attr('selected', 'selected');
+                            input.append(option);
+
+                        });
+                    }, {'model_name': col.model_name}); 
                     break;
 
                 default:
-                    input += span + "<input class='add_form_input' type='text' value='"+value+"' />";  
+                    input = $("<input/>")
+                        .val(value)
+                        .attr({ 
+                            'class': 'add_form_input',
+                             'type': 'text' 
+                        });
             }
+           
+            //stick input into li and add the li to it's list.
+            li.append(input);
+            ul.append(li);
 
-            li += input + "</li>";
-            ul += li;
+            //IMPORTANT: these must come after input is put into the li because
+            //the input doesn't live in the DOM yet.
+            input.before(label);
+            input.before(span);
         });
-        div += ul + "</ul></div>";
-        dict['div'] = div;
 
+        div.append(ul);
+        dict['div'] = div;
+        
         if (!model_editable)
             return null;
         return dict;
-    } 
-
-    /** Callback method for when user clicks add button in add new record dialog */
-    function add_record_callback() 
-    {
-        var new_row = {};
-        $('.add_form_input').each(function(i, input) {
-            var field = $(input).prev('span.field').text();
-            new_row[field] = $(input).val(); 
-        });
-
-        myGrid.add_row(new_row);
     }
-
-    function edit_record_callback (index) 
+ 
+    /** Callback method for when a user adds or updates a record
+     *
+     * Keyword Args
+     *    index    - The index where the record will be added/edited.
+     *    updating - Boolean, true if updating a record and false if adding one.
+     */
+    function record_callback(index, updating) 
     {
-        var edited_row = {};
+        var row = {};
         $('.add_form_input').each(function(i, input) {
-            var field = $(input).prev('span.field').text();
-            edited_row[field] = $(input).val(); 
-        });
 
-        myGrid.add_edited_row(edited_row, index);
+            var field = $(input).prev('span.field').text();
+            if($(input).hasClass('foreignkey')) {
+                //Need to know which foreignkey we're saveing/updating
+                row[field] = {'pk': $(':selected', input).attr('class')};
+            }
+            else
+                row[field] = $(input).val(); 
+        });
+        console.log(row);
+        myGrid.add_row(row, index, updating);
     }
 
 })(jQuery);

@@ -100,6 +100,7 @@ def update(request, model_name, data):
                     continue
                     
                 elif properties['django_related_field']:
+                    print data
                     cls = models.loading.get_model(
                         properties['django_related_app'], properties['django_related_cls'])
                     rel_obj = cls.objects.get(pk=data[field]['pk'])
@@ -183,7 +184,6 @@ def serialize_model_objs(objs):
             obj_dict['pk'] = obj.pk
 
         new_objs.append(obj_dict)
-    print new_objs
     return json.dumps(new_objs, indent=4)
 
 
