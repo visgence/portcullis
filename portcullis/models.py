@@ -32,7 +32,7 @@ class ScalingFunction(models.Model):
     objects = ScalingFunctionManager()
 
     def __unicode__(self):
-        return "Name: " + self.name + ", ID: %s," % self.id + " Definition: %s" % self.definition 
+        return self.name
 
 
 
