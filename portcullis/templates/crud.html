@@ -15,6 +15,9 @@
 </style>
 <input type="hidden" id="model_name" value="{{model_name}}"/>
 <div id="{{model_name}}_grid" class="grid"></div>
+<div id="error_dialog" style="display:none">
+    <span id="error_msg">&nbsp;</span>
+</div>
 
 <script type="text/javascript">
     var myGrid = new DataGrid();
@@ -22,7 +25,7 @@
 
 <div id="delete_confirm" title="Confirm Deletion" style="display:none">
     <div class="ui-state-highlight ui-conrner-all">
-        <span class="ui-icon ui-icon-alert"></span>
+        <span class="ui-icon ui-icon-alert">&nbsp;</span>
         <p>
             Deleting a {{model_name|title}} may remove any related objects.  This operation cannot be
             undone.
