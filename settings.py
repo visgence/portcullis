@@ -83,7 +83,6 @@ STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
     'dajaxice.finders.DajaxiceFinder'
 #    'django.contrib.staticfiles.finders.DefaultStorageFinder',
-    'dajaxice.finders.DajaxiceFinder'
 )
 
 # Make this unique, and don't share it with anybody.
@@ -134,7 +133,6 @@ INSTALLED_APPS = (
     'dajaxice',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'dajaxice',
     # Uncomment the next line to enable the admin:
     'django.contrib.admin',
     # Uncomment the next line to enable admin documentation:
