@@ -50,6 +50,7 @@ def genColumns(modelObj):
         d_type = f.db_type(connections.all()[0])
         if isinstance(f, models.ForeignKey):
             field['model_name'] = f.rel.to.__name__
+            field['app'] = f.rel.to._meta.app_label
             field['_type'] = 'foreignkey'
         elif d_type == 'boolean':
             field['_type'] = 'boolean'
@@ -74,6 +75,7 @@ def genColumns(modelObj):
             'name':m.name.title(), 
             'id':m.name,
             'model_name': m.rel.to.__name__,
+            'app': m.rel.to._meta.app_label,
             '_type': 'm2m',
             '_editable': True
         })

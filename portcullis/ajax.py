@@ -100,12 +100,13 @@ def update(request, model_name, data):
                 if field['_type'] == 'm2m':
                     m2m.append({
                         'field': field['field'],
-                        'model_name': field['model_name']
+                        'model_name': field['model_name'],
+                        'app': field['app']
                     })
                     continue
                     
                 elif field['_type'] == 'foreignkey':
-                    cls = models.loading.get_model('portcullis', field['model_name'])
+                    cls = models.loading.get_model(field['app'], field['model_name'])
                     rel_obj = cls.objects.get(pk=data[field['field']]['pk'])
                     setattr(obj, field['field'], rel_obj)
                 else:
@@ -115,7 +116,7 @@ def update(request, model_name, data):
        
         #Get all respective objects for many to many fields and add them in.
         for m in m2m:
-            cls = models.loading.get_model('portcullis', m['model_name'])
+            cls = models.loading.get_model(m['app'], m['model_name'])
             m2m_objs = []
             for m2m_obj in data[m['field']]:
                 rel_obj = cls.objects.get(pk=m2m_obj['pk'])
