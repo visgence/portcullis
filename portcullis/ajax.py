@@ -17,7 +17,7 @@ from django.contrib.auth.models import User
 
 # Local imports
 from portcullis.models import DataStream
-from portcullis.views.crud import genModel, genColumns
+from portcullis.views.crud import genColumns
 
 # TODO:  All this needs access checkers!!
 @dajaxice_register
@@ -81,7 +81,7 @@ def update(request, model_name, data):
     '''
 
     cls = models.loading.get_model('portcullis', model_name)
-
+   
     if 'pk' not in data:
         obj = cls()
     else:
@@ -90,29 +90,44 @@ def update(request, model_name, data):
         except Exception as e:
             return json.dumps({'errors': 'Cannot load object to save: Exception: ' + e.message})
 
-    fields = genModel(obj.__class__)['fields'].items()
+    fields = genColumns(obj)
     m2m = []
     try:
-        for field, properties in fields:
-            if properties['editable'] and data[field] not in [None, '']:
-                if properties['django_m2m']:
-                    m2m.append((field, properties))
+        for field in fields:
+            if field['_editable'] and data[field['field']] not in [None, '']:
+               
+                #save inportant m2m stuff for after object save
+                if field['_type'] == 'm2m':
+                    m2m.append({
+                        'field': field['field'],
+                        'model_name': field['model_name'],
+                        'app': field['app']
+                    })
                     continue
                     
-                elif properties['django_related_field']:
-                    print data
-                    cls = models.loading.get_model(
-                        properties['django_related_app'], properties['django_related_cls'])
-                    rel_obj = cls.objects.get(pk=data[field]['pk'])
-                    setattr(obj, field, rel_obj)
+                elif field['_type'] == 'foreignkey':
+                    cls = models.loading.get_model(field['app'], field['model_name'])
+                    rel_obj = cls.objects.get(pk=data[field['field']]['pk'])
+                    setattr(obj, field['field'], rel_obj)
                 else:
-                    setattr(obj, field, data[field])
+                    setattr(obj, field['field'], data[field['field']])
 
         obj.save()
+       
+        #Get all respective objects for many to many fields and add them in.
+        for m in m2m:
+            cls = models.loading.get_model(m['app'], m['model_name'])
+            m2m_objs = []
+            for m2m_obj in data[m['field']]:
+                rel_obj = cls.objects.get(pk=m2m_obj['pk'])
+                m2m_objs.append(rel_obj)
+
+            setattr(obj, m['field'], m2m_objs)
+
     except Exception as e:
         print 'In create_datastream exception: ' + str(e)
         return json.dumps({'errors': 'Can not save object: Exception: ' + str(e)})
-    
+
     return serialize_model_objs([obj.__class__.objects.get(pk = obj.pk)]) 
 
 @dajaxice_register

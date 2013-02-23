@@ -368,7 +368,6 @@
             buttons.push({
                 text: action,
                 click: function() {
-                    console.log('Clicku');
                     if ( action_func )
                         action_func();
                     $(this).dialog('destroy');
@@ -484,21 +483,18 @@
 
             switch(col._type) {
                 case 'integer':
-                    input = $("<input/>");
+                    input = $("<input/>")
                         .val(value)
                         .attr({ 
                             'class': 'add_form_input',
-                             'type': 'text' 
+                            'type' : 'text' 
                         });
                     break;
                
                 //Build a select field with options for any foreign keys
                 case 'foreignkey': 
                     input = $("<select></select>")
-                        .attr({
-                            'id'   : col.model_name,
-                            'class': 'add_form_input foreignkey'
-                        });
+                        .attr({'class': 'add_form_input foreignkey'});
 
                     //Get all objects that the user can select from
                     Dajaxice.portcullis.read_source( function(resp) {
@@ -515,13 +511,40 @@
                         });
                     }, {'model_name': col.model_name}); 
                     break;
+                
+                //Build select multiple for many-to-many fields and their objects.
+                case 'm2m':
+                    input = $("<select></select>")
+                        .attr({
+                            'class'   : 'add_form_input m2m',
+                            'multiple': 'multiple'
+                        });
+                    
+                    //Get all objects that the user can select from
+                    Dajaxice.portcullis.read_source( function(resp) {
 
+                        $(resp).each(function(i, obj) {
+                            var option = $("<option></option>")
+                                .attr('class', obj.pk)
+                                .text(obj.__unicode__);
+
+                            //Pre-select appropriate objects
+                            $(value).each(function(i, val) {
+                                if(val != '' && obj.pk == val.pk) 
+                                    option.attr('selected', 'selected');
+                            });
+
+                            input.append(option);
+                        });
+                    }, {'model_name': col.model_name});
+                    break;
+              
                 default:
                     input = $("<input/>")
                         .val(value)
                         .attr({ 
                             'class': 'add_form_input',
-                             'type': 'text' 
+                            'type' : 'text' 
                         });
             }
            
@@ -556,13 +579,18 @@
 
             var field = $(input).prev('span.field').text();
             if($(input).hasClass('foreignkey')) {
-                //Need to know which foreignkey we're saveing/updating
                 row[field] = {'pk': $(':selected', input).attr('class')};
+            }
+            else if($(input).hasClass('m2m')) {
+                row[field] = new Array();
+                $(':selected', input).each(function(i, sel) {
+                    row[field].push({'pk': $(sel).attr('class')});
+                });
             }
             else
                 row[field] = $(input).val(); 
         });
-        console.log(row);
+
         myGrid.add_row(row, index, updating);
     }
 
