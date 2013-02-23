@@ -28,52 +28,6 @@ def model_grid(request, model_name):
     c = RequestContext(request, {'model_name': model_name})
     return HttpResponse(t.render(c), mimetype="text/html")
 
-def genModel(modelObj):
-   
-    model = {};
-    fields = {}
-
-    for f in get_meta_fields(modelObj):
-    
-        #Check if field is a primary key
-        if f.primary_key and not f.name.endswith('_ptr'):
-            model['id'] = f.name
-        
-        #We don't care about these fields
-        if f.name.endswith('_ptr'):
-            continue
-
-        fields[f.name] = {'django_m2m': False}
-        if f.primary_key or not f.editable:
-            fields[f.name]['editable'] = False
-        else:
-            fields[f.name]['editable'] = True
-
-        # Figure out the type of field.
-        d_type = f.db_type(connections.all()[0])
-        if d_type == 'boolean':
-            fields[f.name]['type'] = 'boolean'
-            #fields[f.name]['validation'] = {'required': True}
-        elif d_type in ['integer', 'serial'] or d_type.startswith('numeric'):
-            fields[f.name]['type'] = 'number'
-        elif d_type.startswith('timestamp'):
-            fields[f.name]['type'] = 'date'
-        # Default is string
-            
-        # If it is a related object, flag it as such
-        if isinstance(f, models.ForeignKey) or isinstance(f, models.OneToOneField):
-            fields[f.name]['django_related_field'] = True
-            fields[f.name]['django_related_app'] = f.rel.to.__module__.partition('.')[0]
-            fields[f.name]['django_related_cls'] = f.rel.to.__name__
-        else:
-            fields[f.name]['django_related_field'] = False
-            
-    for m in get_meta_m2m(modelObj):
-        fields[m.name] = {'editable': False, 'django_related_field': True, 'django_m2m': True}
-        
-    model['fields'] = fields
-    return model
-
 def genColumns(modelObj):
     
     columns = []
@@ -119,6 +73,7 @@ def genColumns(modelObj):
             'field':m.name, 
             'name':m.name.title(), 
             'id':m.name,
+            'model_name': m.rel.to.__name__,
             '_type': 'm2m',
             '_editable': True
         })
