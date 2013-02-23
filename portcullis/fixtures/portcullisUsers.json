@@ -1,16 +1,22 @@
 [
     {
-        "pk": 1,
-        "model": "portcullis.PortcullisUser",
+	"pk": 1,
+    	"model": "auth.user",
         "fields": {
-            "username": "portcullis",
-            "first_name": "Portcullis",
-            "last_name": "User",
-            "email": "portcullis@visgence.com",
+            "username": "admin@visgence.com",
+            "first_name": "Development",
+            "last_name": "Superuser",
+            "email": "admin@visgence.com",
             "password": "pbkdf2_sha256$10000$S22El37yr4bm$mMrhsyne5bF3ElJPY5O9QbaYH9diQqPXjmWqOkJipeU=",
             "is_staff": true,
             "is_active": true,
             "is_superuser": true
         }
-    }
+    },
+    {
+        "pk": 1,
+        "model": "portcullis.PortcullisUser",
+        "fields": {
+        }
+    } 
 ]
