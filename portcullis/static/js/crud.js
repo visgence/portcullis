@@ -100,7 +100,7 @@
             //Clear row selection
             this.clear_row_selection();
 
-            var add_form = get_grid_form(this.columns);
+            var add_form = get_grid_form(this.columns, null, 'Add Record');
             if (add_form) {
                 var add_callback = function() {record_callback(0, false);};
 
@@ -117,7 +117,7 @@
             var selected_index = this.grid.getSelectedRows();
             var selected_row = this.model.getItem(selected_index);
 
-            var edit_form = get_grid_form(this.columns, selected_row);
+            var edit_form = get_grid_form(this.columns, selected_row, 'Edit Record');
             if (edit_form) {
                 var edit_callback = function() {record_callback(selected_index, true);};
 
@@ -171,6 +171,7 @@
                     return;
                 }
                 else {
+                    $('#'+self.model_name + '_add').dialog('close');
                     //Either add new row to beginning or update one.
                     if (update) {
                         self.model.setItem(i, resp[0]);
@@ -235,6 +236,7 @@
                                 return;
                             }
                             else if ('success' in resp) {
+                                $('#delete_confirm').dialog('close');
                                 self.remove_row(selected);
                                 self.success(resp.success);
                                 self.clear_row_selection();
@@ -259,10 +261,22 @@
          *    msg - Error message as a string.
          */
         this.error = function(msg) {
-            $('#error_msg').text(msg);
-            confirm_dialog('error_dialog', null, null, "Ok", function() {
-                $('#error_msg').text('');
-            }, false);
+            console.log('Error: ' + msg);
+            var error_div = $('#error_dialog').clone();
+            $(error_div).attr('id', 'error_dialogue_message');
+            var dlg_msg = $('#dialogue_message')
+            if ( dlg_msg.length >= 1) {
+                var msg_html = $(dlg_msg).html(error_div);
+                $('#error_dialogue_message #error_msg').text(msg);
+                $('#error_dialogue_message').css('display', 'inline');
+                $('#dialogue_message').parent().animate({scrollTop: 0}, 'fast');
+            }
+            else {
+                $('error_dialog').text(msg);
+                confirm_dialog('error_dialog', null, null, "Ok", function() {
+                    $('#error_msg').text('');
+                }, false);
+            }
         };
 
         /** Stuff to do on success. */
@@ -370,9 +384,9 @@
                 click: function() {
                     if ( action_func )
                         action_func();
-                    $(this).dialog('destroy');
+                    /*$(this).dialog('destroy');
                     if(destroy)
-                        $('#'+id).remove();
+                        $('#'+id).remove();*/
                 }
             });
         }
@@ -390,6 +404,13 @@
             height: 500,
             width: 500,
             dialogClass: "confirmation dialogue",
+            close: function() {
+                if ( cancel_func )
+                    cancel_func();
+                $(this).dialog('destroy');
+                if(destroy)
+                    $('#' + id).remove();
+            },  
             buttons: buttons
         });
     }
@@ -449,11 +470,16 @@
      *              'id': The div's id
      *          }
      * */
-    function get_grid_form(columns, record) 
+    function get_grid_form(columns, record, title) 
     {
         var dict = {'id': myGrid.model_name+"_add"};
-        var div = $("<div></div>").attr("id", myGrid.model_name+'_add');
+        var div = $("<div></div>")
+            .attr("id", myGrid.model_name+'_add')
+            .attr('title', title);
         var ul = $("<ul></ul>").css("list-style", "none");
+
+        var msg_div = $('<div></div>').attr('id',  'dialogue_message');
+        $(div).append(msg_div);
     
         //If we cycle through all columns and none are editable we'll return null
         var model_editable = false;

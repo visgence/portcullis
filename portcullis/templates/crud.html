@@ -15,8 +15,14 @@
 </style>
 <input type="hidden" id="model_name" value="{{model_name}}"/>
 <div id="{{model_name}}_grid" class="grid"></div>
+
 <div id="error_dialog" style="display:none">
-    <span id="error_msg">&nbsp;</span>
+    <div class="ui-state-error ui-conrner-all">
+        <span class="ui-icon ui-icon-alert">&nbsp;</span>
+        <p>
+            <span id="error_msg">&nbsp</span>
+        </p>
+    </div>
 </div>
 
 <script type="text/javascript">
