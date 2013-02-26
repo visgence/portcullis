@@ -25,7 +25,7 @@ class Command(BaseCommand):
         sys.stdout.write('Updating git-submodules...')
         sys.stdout.flush()
         repo = git.Repo(APP_PATH)
-        repo.submodule_update()
+        repo.submodule_update(to_latest_revision=false)
         print 'done.'
         
         call_command('syncdb', interactive=False)
