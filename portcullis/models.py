@@ -106,7 +106,6 @@ class Key(models.Model):
     num_uses = models.IntegerField(null = True, blank = True)
     objects = KeyManager()
 
-
     def isCurrent(self):
         '''
         ' Check expiration, return True if this key is current, false if expired.
@@ -133,9 +132,7 @@ class Key(models.Model):
         super(Key, self).save(*args, **kwargs)
 
     def __unicode__(self):
-        return self.key + " Owned by " + self.owner.username
-
-
+        return self.key + " Owned by " + self.owner.username 
 
 
 class DeviceManager(models.Manager):

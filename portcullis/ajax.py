@@ -14,10 +14,13 @@ from dajaxice.decorators import dajaxice_register
 from django.core import serializers
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils.timezone import utc
+from datetime import datetime
 
 # Local imports
 from portcullis.models import DataStream
 from portcullis.views.crud import genColumns
+import constants
 
 # TODO:  All this needs access checkers!!
 @dajaxice_register
@@ -109,6 +112,10 @@ def update(request, model_name, data):
                     cls = models.loading.get_model(field['app'], field['model_name'])
                     rel_obj = cls.objects.get(pk=data[field['field']]['pk'])
                     setattr(obj, field['field'], rel_obj)
+                elif field['_type'] == 'datetime':
+                    dt_obj = datetime.strptime(data[field['field']], constants.DT_FORMAT)
+                    dt_obj = dt_obj.replace(tzinfo = utc)
+                    setattr(obj, field['field'], dt_obj)
                 else:
                     setattr(obj, field['field'], data[field['field']])
 
@@ -168,22 +175,30 @@ def serialize_model_objs(objs):
         fields = obj._meta.fields
         m2m_fields = obj._meta.many_to_many
         obj_dict = {}
-        
+       
         for f in fields:
+
+            #Set value of field for the object.
+            obj_dict[f.name] = f.value_from_object(obj)
+            if type(obj_dict[f.name]) not in [dict, list, unicode, int, long, float, bool, type(None)]:
+                obj_dict[f.name] = f.value_to_string(obj)
+           
             if isinstance(f, models.fields.related.ForeignKey) or \
-                    isinstance(f, models.fields.related.OneToOneField):
+               isinstance(f, models.fields.related.OneToOneField):
                 obj_dict[f.name] = {
                     '__unicode__': getattr(obj, f.name).__unicode__(),
                     'pk': f.value_from_object(obj),
                     'model_name': f.rel.to.__name__
                 }
-            else:
-                if '__unicode__' not in obj_dict:
-                    obj_dict['__unicode__'] = obj.__unicode__()
+                continue
 
-                obj_dict[f.name] = f.value_from_object(obj)
-                if type(obj_dict[f.name]) not in [dict, list, unicode, int, long, float, bool, type(None)]:
-                    obj_dict[f.name] = f.value_to_string(obj)
+            elif isinstance(f, models.fields.DateTimeField):
+                dt_obj = f.value_from_object(obj)
+                if dt_obj is not None:
+                    obj_dict[f.name] = f.value_from_object(obj).strftime(constants.DT_FORMAT)
+
+            if '__unicode__' not in obj_dict:
+                obj_dict['__unicode__'] = obj.__unicode__()
 
         for m in m2m_fields:
             m_objs = getattr(obj, m.name).all()

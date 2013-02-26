@@ -480,7 +480,7 @@
             //If updateing then we'll set the field with the current value
             if (record)
                 value = record[col.field];
-
+           
             switch(col._type) {
                 case 'integer':
                     input = $("<input/>")
@@ -537,6 +537,21 @@
                             input.append(option);
                         });
                     }, {'model_name': col.model_name});
+                    break;
+
+                case 'datetime':
+                    input = $("<input/>")
+                        .val(value)
+                        .attr({ 
+                            'class': 'add_form_input',
+                            'type' : 'text' 
+                        });
+                    $(input).datetimepicker({
+                        showSecond: true,
+                        dateFormat: 'mm/dd/yy',
+                        timeFormat: 'hh:mm:ss',
+                    });
+                    $(input).datetimepicker('setDate', value); 
                     break;
               
                 default:
