@@ -509,15 +509,18 @@
             //If updateing then we'll set the field with the current value
             if (record)
                 value = record[col.field];
-           
+            console.log(col._type);
             switch(col._type) {
                 case 'integer':
+                    console.log('integer');
                     input = $("<input/>")
                         .val(value)
                         .attr({ 
                             'class': 'add_form_input',
                             'type' : 'text' 
                         });
+                    $(input).spinner();
+                    $("button").button();
                     break;
                
                 //Build a select field with options for any foreign keys
