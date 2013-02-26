@@ -508,7 +508,7 @@
             //If updateing then we'll set the field with the current value
             if (record)
                 value = record[col.field];
-            
+             
             switch(col._type) {
                 
                 case 'integer':
@@ -542,7 +542,19 @@
                     });
                     $(input).datetimepicker('setDate', value); 
                     break;
-              
+           
+                case 'color':
+                    input = get_input('add_form_input', 'text', value);
+                    li.append(input);
+                    input.before(label);
+                    $(input).minicolors({
+                        control: 'wheel',
+                        defaultValue: value,
+                        position: 'top',
+                        theme: 'none'     
+                    });
+                    break;
+
                 default:
                     input = get_input('add_form_input', 'text', value);
                     li.append(input);
