@@ -117,11 +117,11 @@
             var selected_index = this.grid.getSelectedRows();
             var selected_row = this.model.getItem(selected_index);
 
-            var edit_form = get_grid_form(this.columns, selected_row, 'Edit Record');
+            var edit_form = get_grid_form(this.model_name+'_grid', this.columns, selected_row, 'Edit Record');
             if (edit_form) {
                 var edit_callback = function() {record_callback(selected_index, true);};
 
-                $('#'+this.model_name+'_grid').append(edit_form.div);
+                //$('#'+this.model_name+'_grid').append(edit_form.div);
 
                 confirm_dialog(edit_form.id, 'Save', edit_callback, 'Cancel', null, true);
             }
@@ -464,8 +464,10 @@
     /** Returns a html div with inputs to be used in a dialog for the grid add button. 
      * 
      *  Keyword Args
+     *      id      - The id of the dom element to append the div after.
      *      columns - The DataGrids columns object.
      *      record  - Dict containing data that will be pre-inserted into the input fields.
+     *      title   - String to put into the title bar of dialog when created.
      *
      *  Return: Dict with the html div and it's id or null if no columns are editable.
      *          {
@@ -473,7 +475,7 @@
      *              'id': The div's id
      *          }
      * */
-    function get_grid_form(columns, record, title) 
+    function get_grid_form(id, columns, record, title) 
     {
         var dict = {'id': myGrid.model_name+"_add"};
         var div = $("<div></div>")
@@ -483,7 +485,10 @@
 
         var msg_div = $('<div></div>').attr('id',  'dialogue_message');
         $(div).append(msg_div);
-    
+       
+        $('#'+id).append(div);
+        div.append(ul);
+
         //If we cycle through all columns and none are editable we'll return null
         var model_editable = false;
         $.each(columns, function(i, col) {
@@ -496,6 +501,8 @@
    
             //Set up html containers for the input
             var li = $("<li></li>").css('margin-top', '1em');
+            ul.append(li);
+            
 
             var span = $("<span></span>")
                 .attr('class', 'field')
@@ -509,18 +516,19 @@
             //If updateing then we'll set the field with the current value
             if (record)
                 value = record[col.field];
-            console.log(col._type);
+            
             switch(col._type) {
                 case 'integer':
-                    console.log('integer');
                     input = $("<input/>")
                         .val(value)
                         .attr({ 
                             'class': 'add_form_input',
                             'type' : 'text' 
                         });
+                    li.append(input);
+                    input.before(label);
+                    input.before(span);
                     $(input).spinner();
-                    $("button").button();
                     break;
                
                 //Build a select field with options for any foreign keys
@@ -542,6 +550,9 @@
 
                         });
                     }, {'model_name': col.model_name}); 
+                    li.append(input);
+                    input.before(label);
+                    input.before(span);
                     break;
                 
                 //Build select multiple for many-to-many fields and their objects.
@@ -569,6 +580,9 @@
                             input.append(option);
                         });
                     }, {'model_name': col.model_name});
+                    li.append(input);
+                    input.before(label);
+                    input.before(span);
                     break;
 
                 case 'datetime':
@@ -578,6 +592,9 @@
                             'class': 'add_form_input',
                             'type' : 'text' 
                         });
+                    li.append(input);
+                    input.before(label);
+                    input.before(span);
                     $(input).datetimepicker({
                         showSecond: true,
                         dateFormat: 'mm/dd/yy',
@@ -593,19 +610,12 @@
                             'class': 'add_form_input',
                             'type' : 'text' 
                         });
+                    li.append(input);
+                    input.before(label);
+                    input.before(span);
             }
-           
-            //stick input into li and add the li to it's list.
-            li.append(input);
-            ul.append(li);
-
-            //IMPORTANT: these must come after input is put into the li because
-            //the input doesn't live in the DOM yet.
-            input.before(label);
-            input.before(span);
         });
 
-        div.append(ul);
         dict['div'] = div;
         
         if (!model_editable)
