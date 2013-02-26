@@ -45,28 +45,26 @@ def genColumns(modelObj):
             field['_editable'] = False
         else:
             field['_editable'] = True
-    
-        # Figure out the type of field.
-        d_type = f.db_type(connections.all()[0])
+
+        #Figure out what each field is and store that type
         if isinstance(f, models.ForeignKey):
             field['model_name'] = f.rel.to.__name__
             field['app'] = f.rel.to._meta.app_label
             field['_type'] = 'foreignkey'
-        elif d_type == 'boolean':
+        elif isinstance(f, models.BooleanField):
             field['_type'] = 'boolean'
-        elif d_type in ['integer', 'serial']:
+        elif isinstance(f, models.IntegerField) or isinstance(f, models.AutoField):
             field['_type'] = 'integer'
-        elif d_type.startswith('numeric'):
-            field['_type'] = 'number'
-        elif d_type.startswith('timestamp'):
+        elif isinstance(f, models.DecimalField):
+            field['_type'] = 'decimal'
+        elif isinstance(f, models.DateTimeField):
             field['_type'] = 'date'
-        elif d_type == 'text':
+        elif isinstance(f, models.TextField):
             field['_type'] = 'text'
-        elif d_type.find('char') > -1:
+        elif isinstance(f, models.CharField):
             field['_type'] = 'char'
         else:
-            field['_type'] = d_type # Any other type will default to a text widget.
-            
+            raise Exception("In genColumns: The field type %s is not handled." % str(type(f))); 
 
         columns.append(field)
     for m in get_meta_m2m(modelObj):
