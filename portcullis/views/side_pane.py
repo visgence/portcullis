@@ -1,6 +1,6 @@
 #System Imports
 from django.http import HttpResponse
-from django.template import RequestContext, loader
+from django.template import Context, RequestContext, loader
 
 #Local Imports
 from portcullis.models import DataStream
@@ -17,21 +17,33 @@ def streams(request):
     #if(response):
     #    return response
 
+    t_subtree = loader.get_template('stream_subtree.html')
+
     #Pull streams that are owned by this user.
     owned_streams = DataStream.objects.filter(owner__username = request.user.username).distinct()
-        
+    owned_subtree = t_subtree.render(Context({'nodes': stream_tree_top(owned_streams)}))
+    print stream_tree_top(owned_streams)
+    print owned_subtree
+
     #Pull streams that are viewable by this user.
     viewable_streams = DataStream.objects.filter(can_read__owner__username = request.user.username).exclude(id__in=owned_streams).distinct()
+    viewable_subtree = t_subtree.render(Context({'nodes': stream_tree_top(viewable_streams)}))
+    print viewable_subtree
 
     #Pull any public streams as well
     public_streams = DataStream.objects.filter(is_public = True).exclude(id__in=viewable_streams).exclude(id__in=owned_streams).distinct()
+    public_subtree = t_subtree.render(Context({'nodes': stream_tree_top(public_streams)}))
+    print public_subtree
 
     t_streams = loader.get_template('user_streams.html')
     c_streams = RequestContext(request, {
             'user':request.user,
-            'owned_streams':owned_streams,
-            'public_streams':public_streams,
-            'viewable_streams':viewable_streams
+            'owned_streams': owned_streams,
+            'viewable_streams': viewable_streams,
+            'public_streams': public_streams,
+            'owned_subtree': owned_subtree,
+            'public_subtree': public_subtree,
+            'viewable_subtree': viewable_subtree
             })
     t_controls = loader.get_template('graph_controls.html')
     c_controls = RequestContext(request)
@@ -53,14 +65,15 @@ def stream_tree_top(streams):
     '''
     nodes = {}
     for s in streams:
+        print s
         # Assume for now that names are unique.
         # TODO: Validate (in save/models, etc.) that no 2 objects can have names such that name and name::other
         #  exist.
-        spart = s.partition('|')
+        spart = s.name.partition('|')
         if spart[2] != '':
             if ''.join(spart[:2]) not in nodes:
-                nodes[ ''.join(spart[:2])] = True
+                nodes[ ''.join(spart[:2])] = False
         else:
-            nodes[spart[0]] = False
+            nodes[spart[0]] = s
 
-        return nodes
+    return nodes

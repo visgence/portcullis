@@ -14,6 +14,7 @@ from dajaxice.decorators import dajaxice_register
 from django.core import serializers
 from django.db import models
 from django.contrib.auth.models import User
+from django.template import Context, loader
 from django.utils.timezone import utc
 from datetime import datetime
 
@@ -132,8 +133,8 @@ def update(request, model_name, data):
             setattr(obj, m['field'], m2m_objs)
 
     except Exception as e:
-        print 'In create_datastream exception: ' + str(e)
-        return json.dumps({'errors': 'Can not save object: Exception: ' + str(e)})
+        print 'In create_datastream exception: %s: %s' % (type(e), e.message)
+        return json.dumps({'errors': 'Can not save object: Exception: %s: %s' % (type(e), e.message)})
 
     return serialize_model_objs([obj.__class__.objects.get(pk = obj.pk)]) 
 
@@ -233,11 +234,37 @@ def stream_subtree(request, name, group):
     # Get all the streams that match to begin with.  Then, based on 'group' filter it more.
     streams = DataStream.objects.filter(name__startswith  = name)
 
-    if group == 'owned':
+    if group == 'public':
+        streams = streams.filter(is_public = True).exclude(owner__user_ptr = request.user)
+    elif group == 'owned':
         streams = streams.filter(owner__user_ptr = request.user)
-    elif group == 'public':
-        streams = streams.filter(is_public = True)
     elif group == 'viewable':
-        streams = streams.exclude(owner__user_ptr = request.user).exclude(is_public = True)
-        
-        
+        streams = streams
+        # TODO: Add check to make sure has read permission
+    else:
+        return json.dumps({'errors': 'Error: %s is not a valid datastream type.' % group})
+
+    level = name.count('|')
+    nodes = {}
+
+    for s in streams:
+        print s.name
+        split_name = s.name.split('|')
+        n_name = split_name[level]
+        print n_name
+
+        # Is this a node or leaf?
+        if len(split_name) > level + 1:
+            if (n_name +'|') not in nodes:
+                nodes[n_name+'|'] = False
+        elif n_name not in nodes:
+            nodes[n_name] = s
+        else:
+            return json.dumps({'errors': 'Duplicate name in Database!'})
+
+    t = loader.get_template('stream_subtree.html')
+    c = Context({
+            'nodes': nodes,
+            'path' : name
+            })
+    return json.dumps({'html':t.render(c)});

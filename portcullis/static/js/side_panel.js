@@ -96,3 +96,37 @@ function load_model_grid(model)
         $('#widget_container').html(data);  
     });
 }
+
+/** Get the html for the next level of the stream sub_tree. */
+function toggle_subtree(event)
+{
+    var toggle_options = {
+        'duration': 0,
+        'easing': 'linear'
+    };
+    
+    var element = $(event.target);
+    if($(element).hasClass('collapse_state'))
+        element = $(element).parent();
+    else if($(element).is('b'))
+        element = $(element).parent();
+
+    div = element.next();
+
+    var toggle_symbol = $(element).children('.collapse_state');
+    if(toggle_symbol.html() == '+') {
+        Dajaxice.portcullis.stream_subtree(function(resp) {
+            if ( 'errors' in resp ) {
+                console.log('Error getting subtree: ' + resp.errors);
+                return false;
+            }
+            $(div).html(resp.html)
+            div.toggle(toggle_options);
+            toggle_symbol.html('-');
+        }, {'name': $(element).attr('id'), group: 'owned'});
+    }  
+    else if(toggle_symbol.html() == "-") {
+        div.toggle(toggle_options);
+        toggle_symbol.html('+');
+    }
+}
