@@ -58,7 +58,7 @@ def genColumns(modelObj):
         elif isinstance(f, models.DecimalField):
             field['_type'] = 'decimal'
         elif isinstance(f, models.DateTimeField):
-            field['_type'] = 'date'
+            field['_type'] = 'datetime'
         elif isinstance(f, models.TextField):
             field['_type'] = 'text'
         elif isinstance(f, models.CharField):
