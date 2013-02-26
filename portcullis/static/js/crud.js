@@ -527,8 +527,8 @@
                         });
                     li.append(input);
                     input.before(label);
-                    input.before(span);
                     $(input).spinner();
+                    input.before(span);
                     break;
                
                 //Build a select field with options for any foreign keys
