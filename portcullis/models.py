@@ -223,6 +223,7 @@ class DataStream(models.Model):
 
     class Meta:
         ordering = ['node_id', 'port_id', 'id']
+        unique_together = (('owner', 'name'),)
 
     def __unicode__(self):
         return "Stream_ID: %s" % self.id  + " Node: %s," % self.node_id + " Port: %s," % self.port_id + " Name: " + self.name

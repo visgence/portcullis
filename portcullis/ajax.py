@@ -218,3 +218,26 @@ def serialize_model_objs(objs):
 
 
 
+@dajaxice_register
+def stream_subtree(request, name, group):
+    '''
+    ' This function will take a partial datastream name, delimited with | and return the next level of the subtree
+    ' that matches.
+    '
+    ' Keyword Args:
+    '    name - The 'path' of the subtree (beggining of the name of the items interested in.)
+    '    group - The group to get the subtree for.  Is this a public group, or an owned group or a
+    '            viewable group.
+    '''
+    
+    # Get all the streams that match to begin with.  Then, based on 'group' filter it more.
+    streams = DataStream.objects.filter(name__startswith  = name)
+
+    if group == 'owned':
+        streams = streams.filter(owner__user_ptr = request.user)
+    elif group == 'public':
+        streams = streams.filter(is_public = True)
+    elif group == 'viewable':
+        streams = streams.exclude(owner__user_ptr = request.user).exclude(is_public = True)
+        
+        

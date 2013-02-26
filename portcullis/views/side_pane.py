@@ -39,3 +39,28 @@ def streams(request):
     return HttpResponse(t_controls.render(c_controls) + t_streams.render(c_streams), mimetype='text/html')
 
 
+def stream_tree_top(streams):
+    '''
+    ' This function should create the top level tree structure for the datastreams, and return it as a dictionary.
+    ' Only the keys should really be necessary, though.
+    '
+    ' Keyword Args:
+    '    streams - An iterable of datastreams.
+    '
+    ' Returns:
+    '    A dictionary containing the top level of the tree as strings.  The values are True for nodes, and
+    '    False for leaves.
+    '''
+    nodes = {}
+    for s in streams:
+        # Assume for now that names are unique.
+        # TODO: Validate (in save/models, etc.) that no 2 objects can have names such that name and name::other
+        #  exist.
+        spart = s.partition('|')
+        if spart[2] != '':
+            if ''.join(spart[:2]) not in nodes:
+                nodes[ ''.join(spart[:2])] = True
+        else:
+            nodes[spart[0]] = False
+
+        return nodes
