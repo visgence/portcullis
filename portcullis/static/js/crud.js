@@ -343,6 +343,9 @@
                         $(serv_msg).html('');
                     });
 
+                    self.grid.onDblClick.subscribe(function(e, args) {
+                        self.edit_record();
+                    });
                     self.refresh();
                 },
                 {'model_name': self.model_name}
