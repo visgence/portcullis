@@ -100,13 +100,10 @@
             //Clear row selection
             this.clear_row_selection();
 
-            var add_form = get_grid_form(this.columns, null, 'Add Record');
-            if (add_form) {
+            var form_id = get_grid_form(this.columns, null, 'Add Record');
+            if (form_id) {
                 var add_callback = function() {record_callback(0, false);};
-
-                $('#'+this.model_name+'_grid').append(add_form.div);
-
-                confirm_dialog(add_form.id, 'Add', add_callback, 'Cancel', null, true);
+                confirm_dialog(form_id, 'Add', add_callback, 'Cancel', null, true);
             }
             else
                 console.log('no editable columns');
@@ -117,13 +114,10 @@
             var selected_index = this.grid.getSelectedRows();
             var selected_row = this.model.getItem(selected_index);
 
-            var edit_form = get_grid_form(this.model_name+'_grid', this.columns, selected_row, 'Edit Record');
-            if (edit_form) {
+            var form_id = get_grid_form(this.model_name+'_grid', this.columns, selected_row, 'Edit Record');
+            if (form_id) {
                 var edit_callback = function() {record_callback(selected_index, true);};
-
-                //$('#'+this.model_name+'_grid').append(edit_form.div);
-
-                confirm_dialog(edit_form.id, 'Save', edit_callback, 'Cancel', null, true);
+                confirm_dialog(form_id, 'Save', edit_callback, 'Cancel', null, true);
             }
             else
                 this.error('This grid is not editable.');
@@ -461,23 +455,22 @@
     });
 
 
-    /** Returns a html div with inputs to be used in a dialog for the grid add button. 
+    /** Creates a hidden div structure filled with various input fields to be shown by a dialog.
      * 
+     *  The divs inputs are determined by the columns that are passed in.  These columns should be
+     *  the cruds current columns so that the div can be built dynamically.
+     *
      *  Keyword Args
      *      id      - The id of the dom element to append the div after.
      *      columns - The DataGrids columns object.
      *      record  - Dict containing data that will be pre-inserted into the input fields.
      *      title   - String to put into the title bar of dialog when created.
      *
-     *  Return: Dict with the html div and it's id or null if no columns are editable.
-     *          {
-     *              'div': The html div,
-     *              'id': The div's id
-     *          }
+     *  Return: Div id or null if no columns are editable.
      * */
     function get_grid_form(id, columns, record, title) 
     {
-        var dict = {'id': myGrid.model_name+"_add"};
+        var div_id = myGrid.model_name+"_add";
         var div = $("<div></div>")
             .attr("id", myGrid.model_name+'_add')
             .attr('title', title);
@@ -496,14 +489,13 @@
             //continue if can't edit this one
             if (!col._editable)
                return true;
-            else
-                model_editable = true;     
+                
+            model_editable = true;     
    
             //Set up html containers for the input
             var li = $("<li></li>").css('margin-top', '1em');
             ul.append(li);
             
-
             var span = $("<span></span>")
                 .attr('class', 'field')
                 .css('display', 'none')
@@ -518,83 +510,31 @@
                 value = record[col.field];
             
             switch(col._type) {
+                
                 case 'integer':
-                    input = $("<input/>")
-                        .val(value)
-                        .attr({ 
-                            'class': 'add_form_input',
-                            'type' : 'text' 
-                        });
+                    input = get_input('add_form_input', 'text', value); 
                     li.append(input);
                     input.before(label);
-                    input.before(span);
                     $(input).spinner();
                     break;
                
-                //Build a select field with options for any foreign keys
                 case 'foreignkey': 
-                    input = $("<select></select>")
-                        .attr({'class': 'add_form_input foreignkey'});
-
-                    //Get all objects that the user can select from
-                    Dajaxice.portcullis.read_source( function(resp) {
-
-                        $(resp).each(function(i, obj) {
-                            var option = $("<option></option>")
-                                .attr('class', obj.pk)
-                                .text(obj.__unicode__);
-
-                            if(value != '' && obj.pk == value.pk) 
-                                option.attr('selected', 'selected');
-                            input.append(option);
-
-                        });
-                    }, {'model_name': col.model_name}); 
+                    input = get_pk_input('add_form_input foreignkey', value, col.model_name); 
                     li.append(input);
                     input.before(label);
-                    input.before(span);
                     break;
                 
-                //Build select multiple for many-to-many fields and their objects.
                 case 'm2m':
-                    input = $("<select></select>")
-                        .attr({
-                            'class'   : 'add_form_input m2m',
-                            'multiple': 'multiple'
-                        });
-                    
-                    //Get all objects that the user can select from
-                    Dajaxice.portcullis.read_source( function(resp) {
-
-                        $(resp).each(function(i, obj) {
-                            var option = $("<option></option>")
-                                .attr('class', obj.pk)
-                                .text(obj.__unicode__);
-
-                            //Pre-select appropriate objects
-                            $(value).each(function(i, val) {
-                                if(val != '' && obj.pk == val.pk) 
-                                    option.attr('selected', 'selected');
-                            });
-
-                            input.append(option);
-                        });
-                    }, {'model_name': col.model_name});
+                    input = get_m2m_input('add_form_input m2m', value, col.model_name); 
                     li.append(input);
                     input.before(label);
-                    input.before(span);
                     break;
 
                 case 'datetime':
-                    input = $("<input/>")
-                        .val(value)
-                        .attr({ 
-                            'class': 'add_form_input',
-                            'type' : 'text' 
-                        });
+                    input = get_input('add_form_input', 'text', value);
                     li.append(input);
                     input.before(label);
-                    input.before(span);
+
                     $(input).datetimepicker({
                         showSecond: true,
                         dateFormat: 'mm/dd/yy',
@@ -604,25 +544,114 @@
                     break;
               
                 default:
-                    input = $("<input/>")
-                        .val(value)
-                        .attr({ 
-                            'class': 'add_form_input',
-                            'type' : 'text' 
-                        });
+                    input = get_input('add_form_input', 'text', value);
                     li.append(input);
                     input.before(label);
-                    input.before(span);
             }
-        });
 
-        dict['div'] = div;
-        
+            input.before(span);
+        });
+ 
         if (!model_editable)
             return null;
-        return dict;
+        return div_id;
     }
- 
+
+    /** Creates and returns a basic input field.
+     *
+     * Keyword Args
+     *    cls   - The class to give the input field.
+     *    type  - The type of input to create.
+     *    value - The value to give to the input field to start with if any.
+     *
+     * Return: The newly created input field 
+     */
+    function get_input(cls, type, value) 
+    {
+        var input = $("<input/>").val(value)
+                                 .attr({ 
+                                     'class': cls,
+                                     'type' : type 
+                                 });
+
+        return input
+    }
+
+    /** Creates and returns a basic select input field.
+     *
+     * This will preload the select field with results from the server. The preloaded objs
+     * will be fetched from the given model name.
+     *
+     * Keyword Args
+     *    cls        - The class to give the input field.
+     *    value      - The value to give to the input field to start with if any.
+     *    model_name - The model name to fetch the objects from for the select field.
+     *
+     * Return: The newly created select field
+     */
+    function get_pk_input (cls, value, model_name) 
+    {
+        var input = $("<select></select>").attr({'class': cls});
+       
+        //Get all objects that the user can select from
+        Dajaxice.portcullis.read_source( function(resp) {
+
+            $(resp).each(function(i, obj) {
+                var option = $("<option></option>")
+                    .attr('class', obj.pk)
+                    .text(obj.__unicode__);
+
+                if(value != '' && obj.pk == value.pk) 
+                    option.attr('selected', 'selected');
+                input.append(option);
+
+            });
+        }, 
+        {'model_name': model_name});
+
+        return input
+    }
+
+    /** Creates and returns a basic select multiple input field.
+     *
+     * This will preload the select field with results from the server. The preloaded objs
+     * will be fetched from the given model name.
+     *
+     * Keyword Args
+     *    cls        - The class to give the input field.
+     *    value      - The value to give to the input field to start with if any.
+     *    model_name - The model name to fetch the objects from for the select field.
+     *
+     * Return: The newly created select multiple field
+     */
+    function get_m2m_input (cls, value, model_name) 
+    {
+        var input = $("<select></select>").attr({
+            'class'   : cls,
+            'multiple': 'multiple'
+        });
+                            
+        //Get all objects that the user can select from
+        Dajaxice.portcullis.read_source( function(resp) {
+
+            $(resp).each(function(i, obj) {
+                var option = $("<option></option>")
+                    .attr('class', obj.pk)
+                    .text(obj.__unicode__);
+
+                //Pre-select appropriate objects
+                $(value).each(function(i, val) {
+                    if(val != '' && obj.pk == val.pk) 
+                        option.attr('selected', 'selected');
+                });
+
+                input.append(option);
+            });
+        }, {'model_name': model_name});
+
+        return input;
+    }
+
     /** Callback method for when a user adds or updates a record
      *
      * Keyword Args
@@ -647,7 +676,7 @@
             else
                 row[field] = $(input).val(); 
         });
-
+        console.log(row);
         myGrid.add_row(row, index, updating);
     }
 

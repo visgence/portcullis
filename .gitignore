@@ -1,6 +1,6 @@
 # Static directory from ./manage collectstatic #
 ################################################
-static/
+/static/
 
 # Compiled Source #
 ###################
