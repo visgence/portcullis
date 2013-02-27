@@ -17,6 +17,7 @@ from django.contrib.auth.models import User
 from django.template import Context, loader
 from django.utils.timezone import utc
 from datetime import datetime
+from collections import OrderedDict
 
 # Local imports
 from portcullis.models import DataStream
@@ -245,7 +246,8 @@ def stream_subtree(request, name, group):
         return json.dumps({'errors': 'Error: %s is not a valid datastream type.' % group})
 
     level = name.count('|')
-    nodes = {}
+    nodes = []
+    leaves = {}
 
     for s in streams:
         print s.name
@@ -255,16 +257,19 @@ def stream_subtree(request, name, group):
 
         # Is this a node or leaf?
         if len(split_name) > level + 1:
-            if (n_name +'|') not in nodes:
-                nodes[n_name+'|'] = False
-        elif n_name not in nodes:
-            nodes[n_name] = s
+            if (n_name) not in nodes:
+                nodes.append(n_name)
+        elif n_name not in leaves:
+            leaves[n_name] = s.id
         else:
             return json.dumps({'errors': 'Duplicate name in Database!'})
 
     t = loader.get_template('stream_subtree.html')
+    nodes.sort()
+    leaves = OrderedDict(sorted(leaves.items(), key = lambda t: t[0]))
     c = Context({
             'nodes': nodes,
+            'leaves': leaves,
             'path' : name
             })
     return json.dumps({'html':t.render(c)});

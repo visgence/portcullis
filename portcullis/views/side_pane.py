@@ -1,6 +1,7 @@
 #System Imports
 from django.http import HttpResponse
 from django.template import Context, RequestContext, loader
+from collections import OrderedDict
 
 #Local Imports
 from portcullis.models import DataStream
@@ -21,19 +22,15 @@ def streams(request):
 
     #Pull streams that are owned by this user.
     owned_streams = DataStream.objects.filter(owner__username = request.user.username).distinct()
-    owned_subtree = t_subtree.render(Context({'nodes': stream_tree_top(owned_streams)}))
-    print stream_tree_top(owned_streams)
-    print owned_subtree
+    owned_subtree = t_subtree.render(Context(stream_tree_top(owned_streams)))
 
     #Pull streams that are viewable by this user.
     viewable_streams = DataStream.objects.filter(can_read__owner__username = request.user.username).exclude(id__in=owned_streams).distinct()
-    viewable_subtree = t_subtree.render(Context({'nodes': stream_tree_top(viewable_streams)}))
-    print viewable_subtree
+    viewable_subtree = t_subtree.render(Context(stream_tree_top(viewable_streams)))
 
     #Pull any public streams as well
     public_streams = DataStream.objects.filter(is_public = True).exclude(id__in=viewable_streams).exclude(id__in=owned_streams).distinct()
-    public_subtree = t_subtree.render(Context({'nodes': stream_tree_top(public_streams)}))
-    print public_subtree
+    public_subtree = t_subtree.render(Context(stream_tree_top(public_streams)))
 
     t_streams = loader.get_template('user_streams.html')
     c_streams = RequestContext(request, {
@@ -63,17 +60,22 @@ def stream_tree_top(streams):
     '    A dictionary containing the top level of the tree as strings.  The values are True for nodes, and
     '    False for leaves.
     '''
-    nodes = {}
+    nodes = []
+    leaves = {}
     for s in streams:
-        print s
         # Assume for now that names are unique.
         # TODO: Validate (in save/models, etc.) that no 2 objects can have names such that name and name::other
         #  exist.
         spart = s.name.partition('|')
         if spart[2] != '':
-            if ''.join(spart[:2]) not in nodes:
-                nodes[ ''.join(spart[:2])] = False
+            if spart[0] not in nodes:
+                nodes.append(spart[0])
         else:
-            nodes[spart[0]] = s
+            leaves[spart[0]] = s.id
 
-    return nodes
+    nodes.sort()
+
+    return {'nodes': nodes, 'leaves': OrderedDict(sorted(leaves.items(), key = lambda t: t[0]))}
+
+
+
