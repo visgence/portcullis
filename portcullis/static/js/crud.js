@@ -100,7 +100,7 @@
             //Clear row selection
             this.clear_row_selection();
 
-            var form_id = get_grid_form(this.columns, null, 'Add Record');
+            var form_id = get_grid_form(this.model_name+'_grid', this.columns, null, 'Add Record');
             if (form_id) {
                 var add_callback = function() {record_callback(0, false);};
                 confirm_dialog(form_id, 'Add', add_callback, 'Cancel', null, true);
@@ -517,7 +517,15 @@
                     input.before(label);
                     $(input).spinner();
                     break;
-               
+
+                case 'decimal':
+                    input = get_input('add_form_input', 'text', value); 
+                    li.append(input);
+                    input.before(label);
+                    $(input).spinner();
+                    console.log(col);
+                    break;
+
                 case 'foreignkey': 
                     input = get_pk_input('add_form_input foreignkey', value, col.model_name); 
                     li.append(input);
@@ -638,30 +646,32 @@
      */
     function get_m2m_input (cls, value, model_name) 
     {
-        var input = $("<select></select>").attr({
-            'class'   : cls,
-            'multiple': 'multiple'
-        });
-                            
+        var div = $('<div></div>').attr({'class': cls});
+        var ul = $('<ul></ul>').css('list-style', 'none');                   
+        div.append(ul);
+
         //Get all objects that the user can select from
         Dajaxice.portcullis.read_source( function(resp) {
 
-            $(resp).each(function(i, obj) {
-                var option = $("<option></option>")
-                    .attr('class', obj.pk)
-                    .text(obj.__unicode__);
+            $(resp).each(function(i, obj) { 
+                
+                var li = $('<li></li>');
+                var checkbox = get_input('', 'checkbox', obj.pk);
+                var label = $('<label></label>').text(obj.__unicode__);
 
-                //Pre-select appropriate objects
+                 //Pre-select appropriate objects
                 $(value).each(function(i, val) {
                     if(val != '' && obj.pk == val.pk) 
-                        option.attr('selected', 'selected');
+                        checkbox.attr('checked', 'checked');
                 });
 
-                input.append(option);
+                ul.append(li);
+                li.append(checkbox);
+                checkbox.after(label);
             });
         }, {'model_name': model_name});
 
-        return input;
+        return div;
     }
 
     /** Callback method for when a user adds or updates a record
@@ -681,8 +691,8 @@
             }
             else if($(input).hasClass('m2m')) {
                 row[field] = new Array();
-                $(':selected', input).each(function(i, sel) {
-                    row[field].push({'pk': $(sel).attr('class')});
+                $(':checked', input).each(function(i, sel) {
+                    row[field].push({'pk': $(sel).val()});
                 });
             }
             else

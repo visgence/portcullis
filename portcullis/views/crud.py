@@ -64,7 +64,9 @@ def genColumns(modelObj):
             field['_type'] = 'text'
         elif isinstance(f, models.CharField):
             field['_type'] = 'char'
-            if re.search('color', f.name.lower()):
+
+            #Try and see if this field was meant to hold colors
+            if re.match('color$', f.name.lower()):
                 field['_type'] = 'color'
         else:
             raise Exception("In genColumns: The field type %s is not handled." % str(type(f))); 
