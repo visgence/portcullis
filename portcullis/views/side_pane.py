@@ -22,15 +22,21 @@ def streams(request):
 
     #Pull streams that are owned by this user.
     owned_streams = DataStream.objects.filter(owner__username = request.user.username).distinct()
-    owned_subtree = t_subtree.render(Context(stream_tree_top(owned_streams)))
+    c_dict = stream_tree_top(owned_streams)
+    c_dict.update({'group':'owned'})
+    owned_subtree = t_subtree.render(Context(c_dict))
 
     #Pull streams that are viewable by this user.
     viewable_streams = DataStream.objects.filter(can_read__owner__username = request.user.username).exclude(id__in=owned_streams).distinct()
-    viewable_subtree = t_subtree.render(Context(stream_tree_top(viewable_streams)))
+    c_dict = stream_tree_top(viewable_streams)
+    c_dict.update({'group':'viewable'})
+    viewable_subtree = t_subtree.render(Context(c_dict))
 
     #Pull any public streams as well
     public_streams = DataStream.objects.filter(is_public = True).exclude(id__in=viewable_streams).exclude(id__in=owned_streams).distinct()
-    public_subtree = t_subtree.render(Context(stream_tree_top(public_streams)))
+    c_dict = stream_tree_top(public_streams)
+    c_dict.update({'group':'public'})
+    public_subtree = t_subtree.render(Context(c_dict))
 
     t_streams = loader.get_template('user_streams.html')
     c_streams = RequestContext(request, {

@@ -123,7 +123,7 @@ function toggle_subtree(event)
             $(div).html(resp.html)
             div.toggle(toggle_options);
             toggle_symbol.html('-');
-        }, {'name': $(element).attr('id'), group: 'owned'});
+        }, {'name': $(element).attr('id'), group: $(element).attr('group')});
     }  
     else if(toggle_symbol.html() == "-") {
         div.toggle(toggle_options);

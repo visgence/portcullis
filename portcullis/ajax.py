@@ -18,6 +18,7 @@ from django.template import Context, loader
 from django.utils.timezone import utc
 from datetime import datetime
 from collections import OrderedDict
+from sys import stderr
 
 # Local imports
 from portcullis.models import DataStream
@@ -134,7 +135,8 @@ def update(request, model_name, data):
             setattr(obj, m['field'], m2m_objs)
 
     except Exception as e:
-        print 'In create_datastream exception: %s: %s' % (type(e), e.message)
+        stderr.write('In create_datastream exception: %s: %s\n' % (type(e), e.message))
+        stderr.flush()
         return json.dumps({'errors': 'Can not save object: Exception: %s: %s' % (type(e), e.message)})
 
     return serialize_model_objs([obj.__class__.objects.get(pk = obj.pk)]) 
@@ -235,6 +237,8 @@ def stream_subtree(request, name, group):
     # Get all the streams that match to begin with.  Then, based on 'group' filter it more.
     streams = DataStream.objects.filter(name__startswith  = name)
 
+    # TODO: This section needs to be fixed, write now at least viewable is broken.
+
     if group == 'public':
         streams = streams.filter(is_public = True).exclude(owner__user_ptr = request.user)
     elif group == 'owned':
@@ -250,10 +254,8 @@ def stream_subtree(request, name, group):
     leaves = {}
 
     for s in streams:
-        print s.name
         split_name = s.name.split('|')
         n_name = split_name[level]
-        print n_name
 
         # Is this a node or leaf?
         if len(split_name) > level + 1:
@@ -270,6 +272,7 @@ def stream_subtree(request, name, group):
     c = Context({
             'nodes': nodes,
             'leaves': leaves,
-            'path' : name
+            'path' : name,
+            'group': group
             })
     return json.dumps({'html':t.render(c)});

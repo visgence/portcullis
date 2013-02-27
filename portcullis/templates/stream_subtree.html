@@ -3,7 +3,7 @@
 <ul class="streams">
     {% for node in nodes %}
         <li>
-            <div id="{{path}}{{node}}|" class="subtree_toggle clickable" onclick="toggle_subtree(event);">
+            <div id="{{path}}{{node}}|" group="{{group}}" class="subtree_toggle clickable" onclick="toggle_subtree(event);">
                 <span class="collapse_state">+</span>
                 {{node}}
                 </div>
