@@ -487,8 +487,8 @@
         $.each(columns, function(i, col) {
             
             //continue if can't edit this one
-            if (!col._editable)
-               return true;
+            //if (!col._editable)
+            //   return true;
                 
             model_editable = true;     
    
@@ -517,10 +517,16 @@
             switch(col._type) {
                 
                 case 'integer':
-                    input = get_input('add_form_input', 'text', value); 
-                    td2.append(input);
+                    if(col._editable) {
+                        input = get_input('add_form_input', 'text', value); 
+                        td2.append(input);
+                        $(input).spinner();
+                    }
+                    else {
+                        input = $("<span></span>").append(value);
+                        td2.append(input);
+                    }
                     td1.append(label);
-                    $(input).spinner();
                     break;
                
                 case 'foreignkey': 
@@ -549,7 +555,13 @@
                     break;
               
                 default:
-                    input = get_input('add_form_input', 'text', value);
+
+                    if(col._editable) {
+                        input = get_input('add_form_input', 'text', value);
+                    }
+                    else {
+                        input = $("<span></span>").append(value);
+                    }
                     td2.append(input);
                     td1.append(label);
             }
