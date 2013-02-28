@@ -474,28 +474,33 @@
         var div = $("<div></div>")
             .attr("id", myGrid.model_name+'_add')
             .attr('title', title);
-        var ul = $("<ul></ul>").css("list-style", "none");
+        var table = $("<table></table>");
 
         var msg_div = $('<div></div>').attr('id',  'dialogue_message');
         $(div).append(msg_div);
        
         $('#'+id).append(div);
-        div.append(ul);
+        div.append(table);
 
         //If we cycle through all columns and none are editable we'll return null
         var model_editable = false;
         $.each(columns, function(i, col) {
             
             //continue if can't edit this one
-            if (!col._editable)
-               return true;
+            //if (!col._editable)
+            //   return true;
                 
             model_editable = true;     
    
             //Set up html containers for the input
-            var li = $("<li></li>").css('margin-top', '1em');
-            ul.append(li);
+            var tr = $("<tr></tr>");
+            table.append(tr);
+            td1 = $("<td></td>")
+            td2 = $("<td></td>")
             
+            tr.append(td1)
+            tr.append(td2)
+
             var span = $("<span></span>")
                 .attr('class', 'field')
                 .css('display', 'none')
@@ -512,10 +517,16 @@
             switch(col._type) {
                 
                 case 'integer':
-                    input = get_input('add_form_input', 'text', value); 
-                    li.append(input);
-                    input.before(label);
-                    $(input).spinner();
+                    if(col._editable) {
+                        input = get_input('add_form_input', 'text', value); 
+                        td2.append(input);
+                        $(input).spinner();
+                    }
+                    else {
+                        input = $("<span></span>").append(value);
+                        td2.append(input);
+                    }
+                    td1.append(label);
                     break;
 
                 case 'decimal':
@@ -528,20 +539,20 @@
 
                 case 'foreignkey': 
                     input = get_pk_input('add_form_input foreignkey', value, col.model_name); 
-                    li.append(input);
-                    input.before(label);
+                    td2.append(input);
+                    td1.append(label);
                     break;
                 
                 case 'm2m':
                     input = get_m2m_input('add_form_input m2m', value, col.model_name); 
-                    li.append(input);
-                    input.before(label);
+                    td2.append(input);
+                    td1.append(label);
                     break;
 
                 case 'datetime':
                     input = get_input('add_form_input', 'text', value);
-                    li.append(input);
-                    input.before(label);
+                    td2.append(input);
+                    td1.append(label);
 
                     $(input).datetimepicker({
                         showSecond: true,
@@ -564,9 +575,15 @@
                     break;
 
                 default:
-                    input = get_input('add_form_input', 'text', value);
-                    li.append(input);
-                    input.before(label);
+
+                    if(col._editable) {
+                        input = get_input('add_form_input', 'text', value);
+                    }
+                    else {
+                        input = $("<span></span>").append(value);
+                    }
+                    td2.append(input);
+                    td1.append(label);
             }
 
             input.before(span);

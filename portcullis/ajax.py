@@ -14,8 +14,11 @@ from dajaxice.decorators import dajaxice_register
 from django.core import serializers
 from django.db import models
 from django.contrib.auth.models import User
+from django.template import Context, loader
 from django.utils.timezone import utc
 from datetime import datetime
+from collections import OrderedDict
+from sys import stderr
 
 # Local imports
 from portcullis.models import DataStream
@@ -132,8 +135,9 @@ def update(request, model_name, data):
             setattr(obj, m['field'], m2m_objs)
 
     except Exception as e:
-        print 'In create_datastream exception: ' + str(e)
-        return json.dumps({'errors': 'Can not save object: Exception: ' + str(e)})
+        stderr.write('In create_datastream exception: %s: %s\n' % (type(e), e.message))
+        stderr.flush()
+        return json.dumps({'errors': 'Can not save object: Exception: %s: %s' % (type(e), e.message)})
 
     return serialize_model_objs([obj.__class__.objects.get(pk = obj.pk)]) 
 
@@ -218,3 +222,57 @@ def serialize_model_objs(objs):
 
 
 
+@dajaxice_register
+def stream_subtree(request, name, group):
+    '''
+    ' This function will take a partial datastream name, delimited with | and return the next level of the subtree
+    ' that matches.
+    '
+    ' Keyword Args:
+    '    name - The 'path' of the subtree (beggining of the name of the items interested in.)
+    '    group - The group to get the subtree for.  Is this a public group, or an owned group or a
+    '            viewable group.
+    '''
+    
+    # Get all the streams that match to begin with.  Then, based on 'group' filter it more.
+    streams = DataStream.objects.filter(name__startswith  = name)
+
+    # TODO: This section needs to be fixed, write now at least viewable is broken.
+
+    if group == 'public':
+        streams = streams.filter(is_public = True).exclude(owner__user_ptr = request.user)
+    elif group == 'owned':
+        streams = streams.filter(owner__user_ptr = request.user)
+    elif group == 'viewable':
+        streams = streams
+        # TODO: Add check to make sure has read permission
+    else:
+        return json.dumps({'errors': 'Error: %s is not a valid datastream type.' % group})
+
+    level = name.count('|')
+    nodes = []
+    leaves = {}
+
+    for s in streams:
+        split_name = s.name.split('|')
+        n_name = split_name[level]
+
+        # Is this a node or leaf?
+        if len(split_name) > level + 1:
+            if (n_name) not in nodes:
+                nodes.append(n_name)
+        elif n_name not in leaves:
+            leaves[n_name] = s.id
+        else:
+            return json.dumps({'errors': 'Duplicate name in Database!'})
+
+    t = loader.get_template('stream_subtree.html')
+    nodes.sort()
+    leaves = OrderedDict(sorted(leaves.items(), key = lambda t: t[0]))
+    c = Context({
+            'nodes': nodes,
+            'leaves': leaves,
+            'path' : name,
+            'group': group
+            })
+    return json.dumps({'html':t.render(c)});
