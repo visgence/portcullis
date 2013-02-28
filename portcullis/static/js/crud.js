@@ -100,7 +100,7 @@
             //Clear row selection
             this.clear_row_selection();
 
-            var form_id = get_grid_form(this.columns, null, 'Add Record');
+            var form_id = get_grid_form(this.model_name+'_grid', this.columns, null, 'Add Record');
             if (form_id) {
                 var add_callback = function() {record_callback(0, false);};
                 confirm_dialog(form_id, 'Add', add_callback, 'Cancel', null, true);
