@@ -398,8 +398,8 @@
             maxWidth: 1000,
             minHeight: 200,
             maxHeight: 1000,
-            height: 500,
-            width: 500,
+            height: 600,
+            width: 600,
             dialogClass: "confirmation dialogue",
             close: function() {
                 if ( cancel_func )
@@ -531,10 +531,9 @@
 
                 case 'decimal':
                     input = get_input('add_form_input', 'text', value); 
-                    li.append(input);
-                    input.before(label);
+                    td2.append(input);
+                    td1.append(label);
                     $(input).spinner();
-                    console.log(col);
                     break;
 
                 case 'foreignkey': 
@@ -545,6 +544,14 @@
                 
                 case 'm2m':
                     input = get_m2m_input('add_form_input m2m', value, col.model_name); 
+                    td2.append(input);
+                    td1.append(label);
+                    break;
+
+                case 'boolean':
+                    input = get_input('add_form_input', 'checkbox', '');
+                    if(value)
+                        input.attr('checked', 'checked');
                     td2.append(input);
                     td1.append(label);
                     break;
@@ -564,8 +571,8 @@
            
                 case 'color':
                     input = get_input('add_form_input', 'text', value);
-                    li.append(input);
-                    input.before(label);
+                    td2.append(input);
+                    td1.append(label);
                     $(input).minicolors({
                         control: 'wheel',
                         defaultValue: value,
@@ -575,7 +582,6 @@
                     break;
 
                 default:
-
                     if(col._editable) {
                         input = get_input('add_form_input', 'text', value);
                     }
@@ -703,20 +709,37 @@
         $('.add_form_input').each(function(i, input) {
 
             var field = $(input).prev('span.field').text();
-            if($(input).hasClass('foreignkey')) {
-                row[field] = {'pk': $(':selected', input).attr('class')};
-            }
-            else if($(input).hasClass('m2m')) {
-                row[field] = new Array();
-                $(':checked', input).each(function(i, sel) {
-                    row[field].push({'pk': $(sel).val()});
-                });
-            }
-            else
-                row[field] = $(input).val(); 
+            row[field] = field_value(input);      
         });
         console.log(row);
         myGrid.add_row(row, index, updating);
+    }
+
+    /** Get's a field input from the add/edit dialog and returns it's value.
+     *
+     * Keyword Args
+     *    input - Html input that contains the desired value.
+     *
+     * Return: Value of input field
+     */
+    function field_value (input) 
+    {
+        if($(input).hasClass('foreignkey')) {
+            return {'pk': $(':selected', input).attr('class')};
+        }
+        else if($(input).hasClass('m2m')) {
+            var array = new Array();
+            $(':checked', input).each(function(i, sel) {
+                array.push({'pk': $(sel).val()});
+            });
+            return array;
+        }
+        else if($(input).hasClass('ui-spinner-input'))
+            return $(input).spinner('value');
+        else if($(input).attr('type') == "checkbox")
+            return $(input).attr('checked') ? true:false; 
+        else
+            return $(input).val();
     }
 
 })(jQuery);
