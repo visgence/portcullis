@@ -8,7 +8,6 @@
 
 # System imports
 from django.http import HttpResponse
-from django.contrib.auth.models import AnonymousUser
 try: import simplejson as json
 except ImportError: import json
 
@@ -22,25 +21,18 @@ def check_access(request):
     '  (just a PortcullisUser Object with nothing set).
     ' If the request user is not active, return an error.
     '''
-    if not request.user.is_active:
-        return HttpResponse(json.dumps({'errors': 'Error: User is not active.'}), mimetype='application/json')
 
-    if isinstance(request.user, AnonymousUser):
-        return PortcullisUser(is_active=True)
-
-    try:
-        return request.user.portcullisuser
-    except Exception as e:
-        
-
-# TODO: Make useful for a single page app.
-    if(request.user.username == ''):
-        return HttpResponseRedirect("/portcullis/greeting/?next=%s" % urlquote(request.get_full_path()))
-
-    t = loader.get_template('login.html');
-
-    if(not request.user.is_active):
-        c = Context({'user':request.user,'access_error':'User is not active'});
-        return HttpResponse(t.render(c))
-
-    return 0;
+    if request.user.is_authenticated():
+        if request.user.is_active:
+            try:
+                return request.user.portcullisuser
+            except Exception as e:
+                return HttpResponse(json.dumps(
+                        {'errors': 'Error: User %s is not a PortcullisUser.' % request.user.username}
+                        ), mimetype='application/json')
+        else:
+            return HttpResponse(json.dumps({'errors': 'Error: User %s is not active.' % request.user.username}),
+                                mimetype='application/json')
+    # Anonymous user
+    else:
+        return PortcullisUser()
