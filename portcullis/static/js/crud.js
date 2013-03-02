@@ -82,7 +82,7 @@
             Dajaxice.portcullis.read_source(
                 function(resp) {
                     if ( 'errors' in resp ) {
-                        self.error(mesg);
+                        self.error(resp.errors);
                         return;
                     }
                     else
@@ -266,7 +266,7 @@
                 $('#dialogue_message').parent().animate({scrollTop: 0}, 'fast');
             }
             else {
-                $('error_dialog').text(msg);
+                $('#error_msg').text(msg);
                 confirm_dialog('error_dialog', null, null, "Ok", function() {
                     $('#error_msg').text('');
                 }, false);
