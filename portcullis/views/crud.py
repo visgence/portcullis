@@ -12,6 +12,7 @@ from django.db import models, connections
 from django.http import HttpResponse
 from django.template import RequestContext, loader
 from django.core.urlresolvers import reverse
+import re
 try: import simplejson as json
 except ImportError: import json
 
@@ -66,6 +67,10 @@ def genColumns(modelObj):
             field['_type'] = 'text'
         elif isinstance(f, models.CharField):
             field['_type'] = 'char'
+
+            #Try and see if this field was meant to hold colors
+            if re.match('color$', f.name.lower()):
+                field['_type'] = 'color'
         else:
             raise Exception("In genColumns: The field type %s is not handled." % str(type(f))); 
 

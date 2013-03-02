@@ -398,8 +398,8 @@
             maxWidth: 1000,
             minHeight: 200,
             maxHeight: 1000,
-            height: 500,
-            width: 500,
+            height: 600,
+            width: 600,
             dialogClass: "confirmation dialogue",
             close: function() {
                 if ( cancel_func )
@@ -513,7 +513,7 @@
             //If updateing then we'll set the field with the current value
             if (record)
                 value = record[col.field];
-            
+             
             switch(col._type) {
                 
                 case 'integer':
@@ -528,7 +528,14 @@
                     }
                     td1.append(label);
                     break;
-               
+
+                case 'decimal':
+                    input = get_input('add_form_input', 'text', value); 
+                    td2.append(input);
+                    td1.append(label);
+                    $(input).spinner();
+                    break;
+
                 case 'foreignkey': 
                     input = get_pk_input('add_form_input foreignkey', value, col.model_name); 
                     td2.append(input);
@@ -537,6 +544,14 @@
                 
                 case 'm2m':
                     input = get_m2m_input('add_form_input m2m', value, col.model_name); 
+                    td2.append(input);
+                    td1.append(label);
+                    break;
+
+                case 'boolean':
+                    input = get_input('add_form_input', 'checkbox', '');
+                    if(value)
+                        input.attr('checked', 'checked');
                     td2.append(input);
                     td1.append(label);
                     break;
@@ -553,9 +568,20 @@
                     });
                     $(input).datetimepicker('setDate', value); 
                     break;
-              
-                default:
+           
+                case 'color':
+                    input = get_input('add_form_input', 'text', value);
+                    td2.append(input);
+                    td1.append(label);
+                    $(input).minicolors({
+                        control: 'wheel',
+                        defaultValue: value,
+                        position: 'top',
+                        theme: 'none'     
+                    });
+                    break;
 
+                default:
                     if(col._editable) {
                         input = get_input('add_form_input', 'text', value);
                     }
@@ -643,30 +669,32 @@
      */
     function get_m2m_input (cls, value, model_name) 
     {
-        var input = $("<select></select>").attr({
-            'class'   : cls,
-            'multiple': 'multiple'
-        });
-                            
+        var div = $('<div></div>').attr({'class': cls});
+        var ul = $('<ul></ul>').css('list-style', 'none');                   
+        div.append(ul);
+
         //Get all objects that the user can select from
         Dajaxice.portcullis.read_source( function(resp) {
 
-            $(resp).each(function(i, obj) {
-                var option = $("<option></option>")
-                    .attr('class', obj.pk)
-                    .text(obj.__unicode__);
+            $(resp).each(function(i, obj) { 
+                
+                var li = $('<li></li>');
+                var checkbox = get_input('', 'checkbox', obj.pk);
+                var label = $('<label></label>').text(obj.__unicode__);
 
-                //Pre-select appropriate objects
+                 //Pre-select appropriate objects
                 $(value).each(function(i, val) {
                     if(val != '' && obj.pk == val.pk) 
-                        option.attr('selected', 'selected');
+                        checkbox.attr('checked', 'checked');
                 });
 
-                input.append(option);
+                ul.append(li);
+                li.append(checkbox);
+                checkbox.after(label);
             });
         }, {'model_name': model_name});
 
-        return input;
+        return div;
     }
 
     /** Callback method for when a user adds or updates a record
@@ -681,20 +709,37 @@
         $('.add_form_input').each(function(i, input) {
 
             var field = $(input).prev('span.field').text();
-            if($(input).hasClass('foreignkey')) {
-                row[field] = {'pk': $(':selected', input).attr('class')};
-            }
-            else if($(input).hasClass('m2m')) {
-                row[field] = new Array();
-                $(':selected', input).each(function(i, sel) {
-                    row[field].push({'pk': $(sel).attr('class')});
-                });
-            }
-            else
-                row[field] = $(input).val(); 
+            row[field] = field_value(input);      
         });
         console.log(row);
         myGrid.add_row(row, index, updating);
+    }
+
+    /** Get's a field input from the add/edit dialog and returns it's value.
+     *
+     * Keyword Args
+     *    input - Html input that contains the desired value.
+     *
+     * Return: Value of input field
+     */
+    function field_value (input) 
+    {
+        if($(input).hasClass('foreignkey')) {
+            return {'pk': $(':selected', input).attr('class')};
+        }
+        else if($(input).hasClass('m2m')) {
+            var array = new Array();
+            $(':checked', input).each(function(i, sel) {
+                array.push({'pk': $(sel).val()});
+            });
+            return array;
+        }
+        else if($(input).hasClass('ui-spinner-input'))
+            return $(input).spinner('value');
+        else if($(input).attr('type') == "checkbox")
+            return $(input).attr('checked') ? true:false; 
+        else
+            return $(input).val();
     }
 
 })(jQuery);
