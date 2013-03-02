@@ -54,38 +54,6 @@ def read_source(request, model_name):
 
     return serialize_model_objs(objs)  
 
-@dajaxice_register
-def update_model_obj(request, data, model_name):
-    '''
-    ' Updates a given models object with new data. 
-    ' 
-    ' Keyword Args: 
-    '    data       - The new data to update the object with.
-    '    model_name - The model name that the updating object belongs to. 
-    '''
-
-    cls = models.loading.get_model('portcullis', model_name)
-
-    try:
-         obj = cls.objects.get(pk=data['pk'])
-    except Exception as e:
-        return json.dumps({'errors': 'Can not load object: Exception: ' + str(e)})
-
-    return alter_model_obj(obj, data) 
-
-@dajaxice_register
-def create_model_obj(request, data, model_name):
-    '''
-    ' Creates a given model object with using the data given.
-    ' 
-    ' Keyword Args: 
-    '    data       - The data to create the object with.
-    '    model_name - The model name that the new object belongs to. 
-    '''
-    
-    cls = models.loading.get_model('portcullis', model_name)
-    obj = cls() 
-    return alter_model_obj(obj, data) 
     
 @dajaxice_register
 def update(request, model_name, data):
