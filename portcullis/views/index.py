@@ -11,7 +11,7 @@ from django.http import HttpResponse
 from django.template import RequestContext, loader
 
 # Local imports
-from portcullis.views.side_pane import streams
+from portcullis.views.side_pane import skeleton
 from portcullis.views.login import greeting
 from portcullis.views.savedView import savedView
 
@@ -26,16 +26,17 @@ def index(request, content = None, content_id = None):
     '''
 
     if content == 'savedView':
-        side_pane = streams(request)
+        side_pane = skeleton(request)
         content_pane = savedView(request, content_id).content
     else:
         content_t = loader.get_template('content_container.html')
         content_c = RequestContext(request, {}) 
-        side_pane = streams(request)
+        side_pane = skeleton(request)
         content_pane = content_t.render(content_c)
 
     t = loader.get_template('main_page.html')
     c = RequestContext(request, { 'greeting': greeting(request),
                                   'side_pane': side_pane.content,
-                                 'content_pane':content_pane})
+                                  'content_pane':content_pane
+                                  })
     return HttpResponse(t.render(c), mimetype="text/html")

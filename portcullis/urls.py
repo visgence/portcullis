@@ -6,7 +6,8 @@ urlpatterns = patterns(
     url(r'^$', 'index.index', name='portcullis-index'),
     url(r'^login/$', 'login.user_login'),
     url(r'^logout/$', 'login.logout'),
-    url(r'^streams/$', 'side_pane.streams'),
+    url(r'^side_pane/$', 'side_pane.skeleton', name='side_pane-skeleton'),
+    url(r'^streams/$', 'side_pane.streams', name='side_pane-streams'),
     url(r'^(?P<content>savedView)/(?P<content_id>.+)/$', 'index.index', name='portcullis-saved-view'),
     url(r'^createSavedView/$', 'savedView.createSavedView', name='portcullis-saveView'),
     url(r'^model_editor/(?P<model_name>.+)/$', 'crud.model_grid', name='portcullis-model-editor')

@@ -7,6 +7,23 @@ from collections import OrderedDict
 from portcullis.models import DataStream
 from check_access import check_access
 
+def skeleton(request):
+    '''
+    Render the side_pane skeleton.  The other stuff will be loaded in later with ajax.
+    '''
+    if request.user.is_authenticated() and request.user.is_active:
+        logged_in = True
+    else:
+        logged_in = False
+
+
+    t = loader.get_template('side_pane.html')
+    c = RequestContext(request, {
+            'streams': streams(request).content,
+            'logged_in': logged_in
+            })
+    return HttpResponse(t.render(c), mimetype='text/html')
+
 def streams(request):
     '''
     Grab all relevent streams to display as checkboxes in the user portal.  We make sure to remove any duplicate streams from each various section.

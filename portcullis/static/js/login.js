@@ -26,10 +26,11 @@ function post_login(data)
     else {
         $('#greeting').html(data.greeting);
         $('#login_error').text('');
-        $.get('/portcullis/streams/', function(data) {
-            $('#side_pane_content').html(data);
+        $.get('/portcullis/side_pane/', function(data) {
+            $('#side_pane').html(data);
             ready_datepickers();
             ready_checkboxes();
+            ready_tabs();
         });
         $('.logged_out_hide').removeClass('logged_out_hide');
     }

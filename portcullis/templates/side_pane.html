@@ -1,0 +1,37 @@
+<div id="tabs">
+    <ul>
+        <li><a href="{% url side_pane-streams %}">Graphs</a></li>
+        {% if logged_in %}
+            <li><a href="#utilites">Utilities</a></li>
+        {% endif %}
+    </ul>
+    <div id="graphs"></div>
+    
+    {% if logged_in %}
+        <div id="utilites">
+            <ul>
+                <li>
+                    <span id="manage_streams" class="clickable_text" onclick="load_model_grid('datastream');">
+                        Manage Streams
+                    </span>
+                </li>
+                <li>
+                    <span id="manage_users" class="clickable_text" onclick="load_model_grid('portcullisuser');">
+                        Manage Users
+                    </span>
+                </li>
+                <li>
+                    <span id="manage_key" class="clickable_text" onclick="load_model_grid('key');">
+                        Manage Keys
+                    </span>
+                </li>
+                <li>
+                    <span id="manage_scaline_functions" class="clickable_text"
+                          onclick="load_model_grid('scalingfunction');">
+                          Manage Scaling Functions
+                    </span>
+            </ul>
+        </div>
+    {% endif %}
+    
+</div> {# End tabs div #}
