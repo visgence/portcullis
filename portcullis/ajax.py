@@ -12,6 +12,7 @@ try: import simplejson as json
 except ImportError: import json
 from dajaxice.decorators import dajaxice_register
 from django.core import serializers
+from django.core.exceptions import FieldError, ObjectDoesNotExist
 from django.db import models
 from django.contrib.auth.models import User
 from django.template import Context, loader
@@ -48,10 +49,14 @@ def read_source(request, model_name):
     # Filter the objects for the owner only, if there is one.
     try:
         objs = cls.objects.filter(owner = portcullisUser)
-    except Exception as e:
-        print 'Exception type: %s: Message: %s' % (str(type(e)), e.message)
+    # There was not an owner field, return all objects for now, later maybe try something else.
+    except FieldError:
         objs = cls.objects.all()
-
+    except Exception as e:
+        stderr.write('Unknown error occurred in read_source: %s: %s\n' % (str(type(e)), e.message))
+        stderr.fluch()
+        return json.dumps({'errors': 'Unknown error occurred in read_source: %s: %s' % (type(e), e.message)})
+                     
     return serialize_model_objs(objs)  
 
     
@@ -69,12 +74,21 @@ def update(request, model_name, data):
     '    The modified object serialized as json. 
     '''
 
+    portcullisUser = check_access(request)
+    
+    if not isinstance(portcullisUser, PortcullisUser):
+        return portcullisUser.content
+    elif request.user.is_anonymous():
+        return json.dumps({'errors': 'User must be logged in to use this feature.'})
+
     cls = models.loading.get_model('portcullis', model_name)
    
     if 'pk' not in data:
         obj = cls()
     else:
         try:
+            obj = cls.objects.get(pk = data['pk'], owner = portcullisUser)
+        except FieldError: # This object does not have an owner
             obj = cls.objects.get(pk = data['pk'])
         except Exception as e:
             return json.dumps({'errors': 'Cannot load object to save: Exception: ' + e.message})
@@ -93,10 +107,23 @@ def update(request, model_name, data):
                         'app': field['app']
                     })
                     continue
-                    
+
+                # Do not allow a user to change the owner (unless perhaps admin, but for future...)
+                elif field['field'] == 'owner':
+                    # Only assign an owner if it is empty, and only to the current user.
+                    # Just in case, do not try to reassign the owner if updating...
+                    try:
+                        getattr(obj, field['field'])
+                    except ObjectDoesNotExist as e:
+                        setattr(obj, field['field'], portcullisUser)
+                    except Exception as e:
+                        stderr.write('Error getting the owner field: %s: %s' % (type(e), e.message))
+                        stderr.flush()
+                        return json.dumps({'errors': 'Error setting the owner field: %s: %s' % (type(e), e.message)})
                 elif field['_type'] == 'foreignkey':
-                    cls = models.loading.get_model(field['app'], field['model_name'])
-                    rel_obj = cls.objects.get(pk=data[field['field']]['pk'])
+                    print 'ForeignKeyField: %s' % field['field']
+                    rel_cls = models.loading.get_model(field['app'], field['model_name'])
+                    rel_obj = rel_cls.objects.get(pk=data[field['field']]['pk'])
                     setattr(obj, field['field'], rel_obj)
                 elif field['_type'] == 'datetime':
                     dt_obj = datetime.strptime(data[field['field']], constants.DT_FORMAT)
@@ -107,15 +134,21 @@ def update(request, model_name, data):
 
         obj.save()
        
-        #Get all respective objects for many to many fields and add them in.
-        for m in m2m:
-            cls = models.loading.get_model(m['app'], m['model_name'])
-            m2m_objs = []
-            for m2m_obj in data[m['field']]:
-                rel_obj = cls.objects.get(pk=m2m_obj['pk'])
-                m2m_objs.append(rel_obj)
+        try:
+            #Get all respective objects for many to many fields and add them in.
+            for m in m2m:
+                cls = models.loading.get_model(m['app'], m['model_name'])
+                m2m_objs = []
+                for m2m_obj in data[m['field']]:
+                    rel_obj = cls.objects.get(pk=m2m_obj['pk'])
+                    m2m_objs.append(rel_obj)
 
-            setattr(obj, m['field'], m2m_objs)
+                setattr(obj, m['field'], m2m_objs)
+
+        except Exception as e:
+            stderr.write('Error setting ManyToMany fields: %s: %s' % (type(e), e.message))
+            stderr.flush()
+            json.dumps({'errors': 'Error setting ManyToMany fields: %s: %s' % (type(e), e.message)})
 
     except Exception as e:
         stderr.write('In create_datastream exception: %s: %s\n' % (type(e), e.message))
@@ -130,9 +163,24 @@ def destroy(request, model_name, data):
     ' Receive a model_name and data object via ajax, and remove that item,
     ' returning either a success or error message.
     '''
+    
+    portcullisUser = check_access(request)
+    
+    if not isinstance(portcullisUser, PortcullisUser):
+        return portcullisUser.content
+    elif request.user.is_anonymous():
+        return json.dumps({'errors': 'User must be logged in to use this feature.'})
+
     cls = models.loading.get_model('portcullis', model_name)
     try:
+        ds = cls.objects.get(pk = data['pk'], owner = portcullisUser)
+    except FieldError:
         ds = cls.objects.get(pk = data['pk'])
+    except cls.DoesNotExist:
+        stderr.write("User %s attempted to delete an object which does not belong to him/her!" %
+                     portcullisUser.username)
+        stderr.flush()
+        return json.dumps({'errors': 'Could not delete object.  Either it does not exist, or you do not own it.'})
     except Exception as e:
         return json.dumps({'errors': 'Could not delete: Exception: %s: %s' % (str(type(e)), e.message)})
 
@@ -147,6 +195,13 @@ def get_columns(request, model_name):
     ' Keyword args:
     '   model_name - The name of the model to represent.
     '''
+    portcullisUser = check_access(request)
+    
+    if not isinstance(portcullisUser, PortcullisUser):
+        return portcullisUser.content
+    elif request.user.is_anonymous():
+        return json.dumps({'errors': 'User must be logged in to use this feature.'})
+
     cls = models.loading.get_model('portcullis', model_name)
     return json.dumps(genColumns(cls))
 
