@@ -24,6 +24,9 @@ def model_grid(request, model_name):
     ' View to return the html that will hold a models crud. 
     '''
 
+#    if request.user.is_anonymous():
+#        return HttpResponse('Must be logged in to use the model interface', mimetype="text/html")
+
     t = loader.get_template('crud.html')
     c = RequestContext(request, {'model_name': model_name})
     return HttpResponse(t.render(c), mimetype="text/html")

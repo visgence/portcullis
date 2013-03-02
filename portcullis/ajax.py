@@ -19,9 +19,10 @@ from django.utils.timezone import utc
 from datetime import datetime
 from collections import OrderedDict
 from sys import stderr
+from check_access import check_access
 
 # Local imports
-from portcullis.models import DataStream
+from portcullis.models import DataStream, PortcullisUser
 from portcullis.views.crud import genColumns
 import constants
 
@@ -35,9 +36,23 @@ def read_source(request, model_name):
     '    model_name - The model name to get serialized data from
     '''
 
+    portcullisUser = check_access(request)
+
+    if not isinstance(portcullisUser, PortcullisUser):
+        return portcullisUser.content
+    elif request.user.is_anonymous():
+        return json.dumps({'errors': 'User must be logged in to use this feature.'})
+
     cls = models.loading.get_model('portcullis', model_name)
 
-    return serialize_model_objs(cls.objects.all())  
+    # Filter the objects for the owner only, if there is one.
+    try:
+        objs = cls.objects.filter(owner = portcullisUser)
+    except Exception as e:
+        print 'Exception type: %s: Message: %s' % (str(type(e)), e.message)
+        objs = cls.objects.all()
+
+    return serialize_model_objs(objs)  
 
 @dajaxice_register
 def update_model_obj(request, data, model_name):

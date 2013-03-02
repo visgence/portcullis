@@ -19,9 +19,10 @@ except ImportError: import json
 from datetime import datetime, timedelta
 
 # Local Imports
-from portcullis.models import SavedView, Key, DataStream
+from portcullis.models import SavedView, Key, DataStream, PortcullisUser
 from graphs.models import SavedDSGraph
 from graphs.data_reduction import reductFunc
+from check_access import check_access
 
 def savedView(request, token):
     '''
@@ -60,15 +61,17 @@ def savedView(request, token):
     return HttpResponse(t.render(c))
 
 @commit_on_success
-@require_POST
+#@require_POST
 def createSavedView(request):
     '''
     ' Create a savedView and return the token or link for that shared view.
     '''
 
-    try:
-        portcullisUser = request.user.portcullisuser
-    except AttributeError:
+    portcullisUser = check_access(request)
+
+    if not isinstance(portcullisUser, PortcullisUser):
+        return portcullisUser
+    if request.user.is_anonymous():
         # TODO: Should not be a return, should be a raise, but don't have a 403 right now,
         #But should be okay, because save has not been called yet.
         return HttpResponseForbidden('Must be logged in to create saved view')
