@@ -69,7 +69,7 @@ def createSavedView(request):
 
     portcullisUser = check_access(request)
 
-    if not isinstance(portcullisUser, PortcullisUser):
+    if isinstance(portcullisUser, HttpResponse):
         return portcullisUser
     if request.user.is_anonymous():
         # TODO: Should not be a return, should be a raise, but don't have a 403 right now,

@@ -15,6 +15,7 @@ from django.core import serializers
 from django.core.exceptions import FieldError, ObjectDoesNotExist
 from django.db import models
 from django.contrib.auth.models import User
+from django.http import HttpResponse
 from django.template import Context, loader
 from django.utils.timezone import utc
 from datetime import datetime
@@ -39,7 +40,7 @@ def read_source(request, model_name):
 
     portcullisUser = check_access(request)
 
-    if not isinstance(portcullisUser, PortcullisUser):
+    if isinstance(portcullisUser, HttpResponse):
         return portcullisUser.content
     elif request.user.is_anonymous():
         return json.dumps({'errors': 'User must be logged in to use this feature.'})
@@ -76,7 +77,7 @@ def update(request, model_name, data):
 
     portcullisUser = check_access(request)
     
-    if not isinstance(portcullisUser, PortcullisUser):
+    if isinstance(portcullisUser, HttpResponse):
         return portcullisUser.content
     elif request.user.is_anonymous():
         return json.dumps({'errors': 'User must be logged in to use this feature.'})
@@ -166,7 +167,7 @@ def destroy(request, model_name, data):
     
     portcullisUser = check_access(request)
     
-    if not isinstance(portcullisUser, PortcullisUser):
+    if isinstance(portcullisUser, HttpResponse):
         return portcullisUser.content
     elif request.user.is_anonymous():
         return json.dumps({'errors': 'User must be logged in to use this feature.'})
@@ -178,7 +179,7 @@ def destroy(request, model_name, data):
         ds = cls.objects.get(pk = data['pk'])
     except cls.DoesNotExist:
         stderr.write("User %s attempted to delete an object which does not belong to him/her!" %
-                     portcullisUser.username)
+                     portcullisUser)
         stderr.flush()
         return json.dumps({'errors': 'Could not delete object.  Either it does not exist, or you do not own it.'})
     except Exception as e:
@@ -197,7 +198,7 @@ def get_columns(request, model_name):
     '''
     portcullisUser = check_access(request)
     
-    if not isinstance(portcullisUser, PortcullisUser):
+    if isinstance(portcullisUser, HttpResponse):
         return portcullisUser.content
     elif request.user.is_anonymous():
         return json.dumps({'errors': 'User must be logged in to use this feature.'})
@@ -271,21 +272,29 @@ def stream_subtree(request, name, group):
     '    group - The group to get the subtree for.  Is this a public group, or an owned group or a
     '            viewable group.
     '''
-    
-    # Get all the streams that match to begin with.  Then, based on 'group' filter it more.
+
+    portcullisUser = check_access(request)
+    if isinstance(portcullisUser, HttpResponse):
+        return portcullisUser.content
+
     streams = DataStream.objects.filter(name__startswith  = name)
 
-    # TODO: This section needs to be fixed, write now at least viewable is broken.
+    # Check that we are logged in before trying to filter the streams
+    if isinstance(portcullisUser, PortcullisUser):
+        if group == 'owned':
+            streams = streams.filter(owner = portcullisUser)
+        elif group == 'viewable':
+            streams = streams.filter(can_read__owner = portcullisUser).exclude(owner = portcullisUser)
+        elif group == 'public':
+            streams = streams.filter(is_public = True).exclude(owner = portcullisUser)
+            streams = streams.exclude(can_read__owner = portcullisUser)
+        else:
+            return json.dumps({'errors': 'Error: %s is not a valid datastream type.' % group})    
 
-    if group == 'public':
-        streams = streams.filter(is_public = True).exclude(owner__user_ptr = request.user)
-    elif group == 'owned':
-        streams = streams.filter(owner__user_ptr = request.user)
-    elif group == 'viewable':
-        streams = streams
-        # TODO: Add check to make sure has read permission
+    elif group == 'public':
+        streams = streams.filter(is_public = True)
     else:
-        return json.dumps({'errors': 'Error: %s is not a valid datastream type.' % group})
+        return json.dumps({'errors': 'Error: You must be logged in to see the %s datastream type.' % group})
 
     level = name.count('|')
     nodes = []

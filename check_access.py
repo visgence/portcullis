@@ -35,4 +35,4 @@ def check_access(request):
                                 mimetype='application/json')
     # Anonymous user
     else:
-        return PortcullisUser()
+        return None
