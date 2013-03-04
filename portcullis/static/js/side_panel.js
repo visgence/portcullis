@@ -114,17 +114,23 @@ function toggle_subtree(event)
     div = element.next();
 
     var toggle_symbol = $(element).children('.collapse_state');
-    if(toggle_symbol.html() == '+') {
-        Dajaxice.portcullis.stream_subtree(function(resp) {
-            if ( 'errors' in resp ) {
-                console.log('Error getting subtree: ' + resp.errors);
-                return false;
-            }
-            $(div).html(resp.html)
+    if(toggle_symbol.html() == '+'){
+        if (div.text() == '') {
+            Dajaxice.portcullis.stream_subtree(function(resp) {
+                if ( 'errors' in resp ) {
+                    console.log('Error getting subtree: ' + resp.errors);
+                    return false;
+                }
+                $(div).html(resp.html)
+                div.toggle(toggle_options);
+                toggle_symbol.html('-');
+            }, {'name': $(element).attr('id'), group: $(element).attr('group')});
+        }
+        else {
             div.toggle(toggle_options);
             toggle_symbol.html('-');
-        }, {'name': $(element).attr('id'), group: $(element).attr('group')});
-    }  
+        }
+    }
     else if(toggle_symbol.html() == "-") {
         div.toggle(toggle_options);
         toggle_symbol.html('+');
