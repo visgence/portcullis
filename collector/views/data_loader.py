@@ -211,18 +211,23 @@ def add_reading_bulk(request):
     
 
 @csrf_exempt
-def add_list(request):
+def add_list(request, auth_token = None):
     '''
     Adds multiple readings to the database from a list of lists.  Might it be better to use a list of 
     dictionaries?  This has been renamed from add_bulk_readings so that the old add_bulk_readings can be
     add back for backwards compatability.
     '''
 
-    auth_token = request.REQUEST.get('auth_token')
+    if auth_token is None:
+        auth_token = request.REQUEST.get('auth_token')
+
     try:
         json_text = urllib.unquote(request.REQUEST.get('json'))
     except:
-        return HttpResponse("No json received. Please send a serialized array of arrays in the form [[datastream_id,value1,time1],[datastream_id,value2,time2]].  time is optional.")
+        try:
+            json_text = urllib.unquote(request.REQUEST.get('d'))
+        except:
+            return HttpResponse("No json received. Please send a serialized array of arrays in the form [[datastream_id,value1,time1],[datastream_id,value2,time2]].  time is optional.")
 
     key = Key.objects.validate(auth_token)
     if key is None:
@@ -350,3 +355,5 @@ def validate_stream(stream_id, node_id, port_id):
             return {'error':"\nNode id %s and port id %s does not map to an existing datastream id.\n" % (node_id, port_id)}
 
     return {'error':"Not enough info to uniquely identify a data stream. You must give either a datastream_id or both a node_id and a port_id. Example: \"datastream_id=1\" or \"node_id=1&port_id=3.\"\n\n" }
+
+

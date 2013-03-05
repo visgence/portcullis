@@ -20,6 +20,7 @@ urlpatterns = patterns(
     url(r'^portcullis/', include('portcullis.urls')),
     url(r'^datastreams/', include('datastreams.urls')),
     url(r'^collector/', include('collector.urls')),
+    url(r'^api/', include('collector.shortUrls')),
     url(dajaxice_config.dajaxice_url, include('dajaxice.urls')),
 )
 
