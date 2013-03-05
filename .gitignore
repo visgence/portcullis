@@ -6,9 +6,9 @@
 ###################
 *.pyc
 
-# Custom Devevlopment Files #
-#############################
-dev_*
+# User define database settings #
+#################################
+database_settings.py
 
 # Logs and Databases #
 ######################
