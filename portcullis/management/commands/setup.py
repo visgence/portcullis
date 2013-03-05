@@ -10,6 +10,7 @@
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
 from settings import APP_PATH
+from shutil import copyfile
 import git
 import sys
 
@@ -25,9 +26,9 @@ class Command(BaseCommand):
         sys.stdout.write('Updating git-submodules...')
         sys.stdout.flush()
         repo = git.Repo(APP_PATH)
-        repo.submodule_update(to_latest_revision=false)
-        print 'done.'
-        
+        repo.submodule_update(to_latest_revision=False)
+        print "Done"
+
         call_command('syncdb', interactive=False)
 
         # ORDER OF FIXTURES MATTERS!! Some have dependencies on others.
@@ -45,3 +46,11 @@ class Command(BaseCommand):
         for apps in fixtures:
             for fixture in apps:
                 call_command('loaddata', fixture, verbosity=1)
+
+        try:
+            open(APP_PATH + "database_settings.py")
+        except IOError as e:
+            try:
+                copyfile(APP_PATH + "database_settings_example.py", APP_PATH + "database_settings.py")
+            except IOError as e:
+                raise IOError("Problem copying database_settings_example file: %s" % str(e))
