@@ -13,7 +13,7 @@ except ImportError: import json
 from dajaxice.decorators import dajaxice_register
 from django.core import serializers
 from django.core.exceptions import FieldError, ObjectDoesNotExist
-from django.db import models
+from django.db import models, transaction
 from django.contrib.auth.models import User
 from django.http import HttpResponse
 from django.template import Context, loader
@@ -26,7 +26,7 @@ from check_access import check_access
 # Local imports
 from portcullis.models import DataStream, PortcullisUser
 from portcullis.views.crud import genColumns
-import constants
+from settings import DT_FORMAT
 
 # TODO:  All this needs access checkers!!
 @dajaxice_register
@@ -55,13 +55,13 @@ def read_source(request, model_name):
         objs = cls.objects.all()
     except Exception as e:
         stderr.write('Unknown error occurred in read_source: %s: %s\n' % (str(type(e)), e.message))
-        stderr.fluch()
+        stderr.flush()
         return json.dumps({'errors': 'Unknown error occurred in read_source: %s: %s' % (type(e), e.message)})
                      
     return serialize_model_objs(objs)  
 
-    
 @dajaxice_register
+@transaction.commit_on_success 
 def update(request, model_name, data):
     '''
     ' Modifies a model object with the given data, saves it to the db and 
@@ -98,7 +98,7 @@ def update(request, model_name, data):
     m2m = []
     try:
         for field in fields:
-            if field['_editable'] and data[field['field']] not in [None, '']:
+            if field['_editable'] and data[field['field']] is not None:
                
                 #save inportant m2m stuff for after object save
                 if field['_type'] == 'm2m':
@@ -122,12 +122,11 @@ def update(request, model_name, data):
                         stderr.flush()
                         return json.dumps({'errors': 'Error setting the owner field: %s: %s' % (type(e), e.message)})
                 elif field['_type'] == 'foreignkey':
-                    print 'ForeignKeyField: %s' % field['field']
                     rel_cls = models.loading.get_model(field['app'], field['model_name'])
                     rel_obj = rel_cls.objects.get(pk=data[field['field']]['pk'])
                     setattr(obj, field['field'], rel_obj)
                 elif field['_type'] == 'datetime':
-                    dt_obj = datetime.strptime(data[field['field']], constants.DT_FORMAT)
+                    dt_obj = datetime.strptime(data[field['field']], DT_FORMAT)
                     dt_obj = dt_obj.replace(tzinfo = utc)
                     setattr(obj, field['field'], dt_obj)
                 else:
@@ -149,7 +148,8 @@ def update(request, model_name, data):
         except Exception as e:
             stderr.write('Error setting ManyToMany fields: %s: %s' % (type(e), e.message))
             stderr.flush()
-            json.dumps({'errors': 'Error setting ManyToMany fields: %s: %s' % (type(e), e.message)})
+            transaction.rollback()
+            return json.dumps({'errors': 'Error setting ManyToMany fields: %s: %s' % (type(e), e.message)})
 
     except Exception as e:
         stderr.write('In create_datastream exception: %s: %s\n' % (type(e), e.message))
@@ -238,7 +238,7 @@ def serialize_model_objs(objs):
             elif isinstance(f, models.fields.DateTimeField):
                 dt_obj = f.value_from_object(obj)
                 if dt_obj is not None:
-                    obj_dict[f.name] = f.value_from_object(obj).strftime(constants.DT_FORMAT)
+                    obj_dict[f.name] = f.value_from_object(obj).strftime(DT_FORMAT)
 
             if '__unicode__' not in obj_dict:
                 obj_dict['__unicode__'] = obj.__unicode__()
