@@ -13,6 +13,11 @@ ADMINS = (
 
 MANAGERS = ADMINS
 
+#Global time format for datetime objects
+DT_FORMAT = "%m/%d/%Y %H:%M:%S"
+
+#Import the database settings stored locally.  This allows for different databases
+#under different dev environments without impacting production.
 try: 
     from database_settings import *
 except:
@@ -102,6 +107,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 
 MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
+    'django.middleware.transaction.TransactionMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
