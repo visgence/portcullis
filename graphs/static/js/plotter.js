@@ -204,6 +204,43 @@ function get_ranges() {
     return range_data;
 }
 
+/** Get's and returns the range data for a particular graph.
+ *
+ *  This get's the current start and end ranges for the graph.
+ *
+ * Keyword Args
+ *     g_id - The id of the datastream.
+ *
+ * Return: Dict like object containing xaxis ranges for the graph.
+ *         {
+ *            xaxis: {
+ *              from: beginning x range,
+ *              to  : ending x range
+ *            },
+ *            yaxis: {
+ *              from: beginning y range,
+ *              to  : ending y range
+ *            }
+ *         }
+ */
+function get_graph_range (g_id) 
+{
+    var graph = plots[g_id];
+    var axes = graph.getAxes();
+    var ranges = {
+        xaxis: {
+            from: axes['xaxis']['min'],
+            to  : axes['xaxis']['max']
+        },
+        yaxis: {
+            from: axes['yaxis']['min'],
+            to  : axes['yaxis']['max']
+        }
+    };
+
+    return ranges;
+}
+
 // scale incoming data
 function scale_data(data)
 {
@@ -323,25 +360,10 @@ function zoom_graph(ranges, datastream_id) {
      * ranges        - Dict like object that contains the start and end range for the data set.
      * datastream_id - Id of the datastream to get new data for.
      */
-
-    var options = { 
-        lines: { show: true }, 
-        xaxis: 
-        {     
-            mode: "time", 
-            timeformat: " %m-%d %h:%M %p",
-            min: ranges.xaxis.from,
-            max: ranges.xaxis.to,
-            ticks: 5
-        },
-        selection: {mode: "x"},
-        grid: {
-            clickable: true
-        }
-    };
-
+    
+    console.log(ranges);
     //request data for the new timeframe
-    load_graph(datastream_id, ranges, zoom_graph_callback(ranges));
+    load_graph(datastream_id, ranges, zoom_graph_callback(ranges, true));
 }
 
 
@@ -372,7 +394,7 @@ function load_all_graphs() {
 }
 
 
-function zoom_graph_callback(ranges) {
+function zoom_graph_callback(ranges, select) {
     /*
      * Returns a callback that renders a graph using data recieved from server after a user zooms the graph.
      * If there is no data then an empty graph is rendered with an appropriate message.
@@ -391,10 +413,11 @@ function zoom_graph_callback(ranges) {
         else {
             renderGraph(data, ranges, true);
         }
-        
-        //Highlight zoomed section on overview graph
-        overviewPlots[data.datastream_id].setSelection({xaxis: {from: ranges.xaxis.from, to: ranges.xaxis.to}}, true);
-
+       
+        if (select){
+            //Highlight zoomed section on overview graph
+            overviewPlots[data.datastream_id].setSelection({xaxis: {from: ranges.xaxis.from, to: ranges.xaxis.to}}, true);
+        }
         //If user had datapoint selected then un-select it.
         reset_graph_selection(data.datastream_id);
     };
@@ -532,6 +555,29 @@ function renderOverview(data, ranges)
     overviewPlots[data.datastream_id] = $.plot($("#overview"+data.datastream_id), [scale_data(data)], options);
 }
 
+/** Reloads a graph that has data while preserving they're zoom state. 
+ *
+ *  Keyword Arguments:
+ *      g_id - The datastream id to refresh
+ * */
+function refresh_graph(g_id) 
+{
+    //Only refresh graphs that actually contain data
+    if(g_id in plots) {
+        var ranges = get_graph_range(g_id);
+        load_graph(g_id, ranges, zoom_graph_callback(ranges, false));
+    }
+}
+
+/** Reloads all graphs that have data while preserving they're zoom state. */
+function refresh_graphs () 
+{
+    var divs = $('.portcullis-graph');
+    $(divs).each(function (i, div) {
+        var g_id = $(div).attr('id');
+        refresh_graph(g_id);
+    });
+}
 
 /** Resets a graph back to it's original zoom level
  */

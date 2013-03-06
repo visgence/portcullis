@@ -37,10 +37,7 @@
             <input type="button" value="Zoom Reset" onClick="resetZoom('{{id}}');"/>
             <input type="checkbox" id="zoom_sync_{{id}}" value="{{id}}" class="stream_zoom" checked="checked"/> <label for="zoom_sync_{{id}}">Zoom Sync</label>
             <label for="reduction_select_{{id}}">Reduction Type:</label>
-            <select id="reduction_select_{{id}}" class="reduction_select" 
-                    onchange="load_graph('{{id}}', 
-                              get_ranges(), 
-                              graph_overview_callback());">
+            <select id="reduction_select_{{id}}" class="reduction_select" onchange="refresh_graph('{{id}}');">
                 {% for red in reductions %}
                 {% if red == "mean" %}
                 <option value="{{red}}" selected="selected">{{red|title}}</option>

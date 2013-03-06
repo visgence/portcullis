@@ -47,7 +47,11 @@
             </li> 
         </ul>
     </div>
-    
+
+    <div id="graph_controls_refresh">
+        <input type="button" value="Refresh" onclick="refresh_graphs();"/>
+    </div>
+
     <div id="graph_controls_advanced" class="section_toggle controls_toggle clickable" onclick="toggle_form_section(event);">
         Advanced Options
     </div>
@@ -57,7 +61,7 @@
             <b>Number of datapoints</b> 
         </div>
         <div>
-            <input type="text" name = "granularity" id="granularity" value="{{granularity}}" onChange="load_all_graphs();"/>
+            <input type="text" name = "granularity" id="granularity" value="{{granularity}}" onChange="refresh_graphs();"/>
         </div>
     </div>
 
