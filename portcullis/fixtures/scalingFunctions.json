@@ -8,7 +8,7 @@
         }
     },
     {
-        "pk": 3,
+        "pk": 2,
         "model": "portcullis.scalingfunction",
         "fields": {
             "name": "Kbps",
@@ -16,7 +16,7 @@
         }
     },
     {
-        "pk": 4,
+        "pk": 3,
         "model": "portcullis.scalingfunction",
         "fields": {
             "name": "Temperature, Celsius (LM335)",

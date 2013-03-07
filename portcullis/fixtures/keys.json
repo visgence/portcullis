@@ -1,10 +1,30 @@
 [
     {
-        "pk": "correcthorsebatterystaple",
+        "pk": "superuser_key1",
         "model": "portcullis.Key",
         "fields": {
             "owner": 1
         }
+    },
+    {
+        "pk": "superuser_key2",
+        "model": "portcullis.Key",
+        "fields": {
+            "owner": 1
+        }
+    },
+    {
+        "pk": "staffuser_key3",
+        "model": "portcullis.Key",
+        "fields": {
+            "owner": 2
+        }
+    },
+    {
+        "pk": "normaluser_key4",
+        "model": "portcullis.Key",
+        "fields": {
+            "owner": 3
+        }
     }
 ]
-    
