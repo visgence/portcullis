@@ -28,21 +28,43 @@ function create_plot_select_handler(datastream_id)
     } 
 }//end create_plot_select_handler
 
-function create_plot_click_handler(datastream_id) 
+function create_plot_click_handler(datastream_id, latestPos) 
 {
-    return function (event, pos, item) {
-        if (item) {
-            var value = item['datapoint'][1];
-            var epoch = item['datapoint'][0];
-            var time = new Date(epoch + timezone_offset);
-
-            $('#graph_selection_'+datastream_id).removeAttr('style');
-            $('#selected_value_'+datastream_id).text(value);
-            $('#selected_time_'+datastream_id).text(time.toLocaleString());
+    return function(event, pos, item) {
+        var plot = plots[datastream_id];
+        var axes = plot.getAxes();
+        if (pos.x < axes.xaxis.min || pos.x > axes.xaxis.max ||
+            pos.y < axes.yaxis.min || pos.y > axes.yaxis.max) {
+            return;
         }
-        else
-            reset_graph_selection(datastream_id);
-    };
+
+        var i, j, dataset = plot.getData();
+        for (i = 0; i < dataset.length; ++i) {
+            var series = dataset[i];
+            // Find the nearest points, x-wise
+            for (j = 0; j < series.data.length; ++j) {
+                if(series.data[j] == null)
+                    continue;
+                if (series.data[j][0] > pos.x)
+                    break;
+            }
+
+            // Now Interpolate
+            var y;
+            var p1 = series.data[j - 1];
+            var p2 = series.data[j];
+            if (p1 != null && p2 != null) {
+                y = p1[1] + (p2[1] - p1[1]) * (pos.x - p1[0]) / (p2[0] - p1[0]);
+
+                var time = new Date(pos.x + timezone_offset);
+                $('#graph_selection_'+datastream_id).removeAttr('style');
+                $('#selected_value_'+datastream_id).text(y.toFixed(2));
+                $('#selected_time_'+datastream_id).text(dateToString(time));
+            }
+            else
+                reset_graph_selection(datastream_id);
+        } 
+    }
 }
 
 function set_graph_range_labels(start, end, datastream_id)
@@ -74,7 +96,8 @@ function on_graphs_load() {
         
         //bind main graphs
         $("#sensor" + datastream_id).bind("plotselected",create_plot_select_handler(datastream_id));
-        $("#sensor" + datastream_id).bind("plotclick",create_plot_click_handler(datastream_id));
+        $("#sensor" + datastream_id).bind("plothover",create_plot_click_handler(datastream_id));
+        $("#sensor" + datastream_id).bind("mouseleave", function(){ reset_graph_selection(datastream_id); });
          
         //bind  overview graph 
         $("#overview" + datastream_id).bind("plotselected",create_plot_select_handler(datastream_id));
@@ -99,7 +122,8 @@ function on_graph_load(datastream_id) {
     
     //bind main graph
     $("#sensor" + datastream_id).bind("plotselected",create_plot_select_handler(datastream_id));
-    $("#sensor" + datastream_id).bind("plotclick",create_plot_click_handler(datastream_id));
+    $("#sensor" + datastream_id).bind("plothover",create_plot_click_handler(datastream_id));
+    $("#sensor" + datastream_id).bind("mouseleave", function(){ reset_graph_selection(datastream_id); });
          
     //bind overview graph 
     $("#overview" + datastream_id).bind("plotselected",create_plot_select_handler(datastream_id));
@@ -502,8 +526,10 @@ function renderGraph(data, ranges, shouldScale)
             ticks: 5
         },
         selection: {mode: "x"},
+        crosshair: {mode: "x"},
         grid: {
-            clickable: true
+            hoverable: true,
+            autoHighlight: false
         }
     };
     
