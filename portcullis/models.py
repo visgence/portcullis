@@ -13,10 +13,35 @@ from datetime import timedelta
 # Local Imports
 from graphs.data_reduction import reduction_type_choices
 
+class PortcullisUserManager(models.Manager):
+
+    def getEditable(self, user):
+        '''
+        ' Gets all Portcullis Users that can be edited by a specified PortcullisUser.
+        '
+        ' Superusers (i.e user.is_superuser == true) can edit all PortcullisUsers while anyone
+        ' else simply can edit themselves.
+        '
+        ' Keyword Arguements:
+        '   user - PortcullisUser to filter editable scaling functions by.
+        '
+        ' Return: QuerySet of PortcullisUsers that are editable by the specified PortcullisUser.
+        '''
+
+        #Validate user object
+        if not isinstance(user, PortcullisUser):
+            raise TypeError("%s is not a PortcullisUser" % str(user))
+
+        if user.is_superuser:
+            return self.all()
+
+        return self.filter(pk = user.pk)
+
 class PortcullisUser(User):
     '''
     ' The class that defines users of the system.
     '''
+    objects = PortcullisUserManager()
     # TODO: Add custom user fields/methods
 
     pass
@@ -25,6 +50,25 @@ class PortcullisUser(User):
 class ScalingFunctionManager(models.Manager):
     def get_by_natural_key(self, name):
         return self.get(name = name)
+
+    def getEditable(self, user):
+        '''
+        ' Gets all scaling functions that can be edited by a specified portcullis user.
+        '
+        ' NOTE: For now until permissions evolve more this just returns all scaling functions.
+        '
+        ' Keyword Arguements:
+        '   user - ScalingFuntion to filter editable scaling functions by.
+        '
+        ' Return: QuerySet of ScalingFunctions that are editable by the specified PortcullisUser.
+        '''
+
+        #Validate user object
+        if not isinstance(user, PortcullisUser):
+            raise TypeError("%s is not a PortcullisUser" % str(user))
+
+        #TODO: Get better permissions on this model for PortcullisUsers
+        return self.all()
 
 class ScalingFunction(models.Model):
     name = models.CharField(max_length=32, unique=True)
@@ -98,6 +142,29 @@ class KeyManager(models.Manager):
 
         return key
 
+    def getEditable(self, user):
+        '''
+        ' Gets all keys that can be edited by a specified portcullis user.
+        '
+        ' Super users will have access to all keys for editing. (users with is_superuser = true)
+        '
+        ' Keyword Arguements:
+        '   user - PortcullisUser to filter editable keys by.
+        '
+        ' Return: QuerySet of Keys that are editable by the specified PortcullisUser.
+        '''
+
+        #Validate user object
+        if not isinstance(user, PortcullisUser):
+            raise TypeError("%s is not a PortcullisUser" % str(user))
+
+        if user.is_superuser:
+            return self.all()
+        
+        return self.filter(owner = user)
+
+        
+
 class Key(models.Model):
     key = models.CharField(primary_key=True, max_length=1024, blank = True)
     description = models.TextField(blank = True)
@@ -138,6 +205,27 @@ class Key(models.Model):
 class DeviceManager(models.Manager):
     def get_by_key(self, key):
         return Device.objects.get(key = key)
+
+    def getEditable(self, user):
+        '''
+        ' Gets all device that can be edited by a specified portcullis user.
+        '
+        ' Super users will have access to all Devices for editing. (users with is_superuser = true)
+        '
+        ' Keyword Arguements:
+        '   user - PortcullisUser to filter editable Devices by.
+        '
+        ' Return: QuerySet of Devices that are editable by the specified PortcullisUser.
+        '''
+
+        #Validate user object
+        if not isinstance(user, PortcullisUser):
+            raise TypeError("%s is not a PortcullisUser" % str(user))
+
+        if user.is_superuser:
+            return self.all()
+        
+        return self.filter(owner = user)
 
 class Device(models.Model):
     name = models.CharField(max_length=128)
@@ -201,6 +289,27 @@ class DataStreamManager(models.Manager):
             return '%s is an invalid permission type.' % str(perm)
             
         return ds
+
+    def getEditable(self, user):
+        '''
+        ' Gets all DataStreams that can be edited for a specified portcullis user.
+        '
+        ' Super users will have access to all DataStreams for editing. (users with is_superuser = true)
+        '
+        ' Keyword Arguements:
+        '   user - PortcullisUser to filter editable DataStreams by.
+        '
+        ' Return: QuerySet of DataStreams that are editable by the specified PortcullisUser.
+        '''
+
+        #Validate user object
+        if not isinstance(user, PortcullisUser):
+            raise TypeError("%s is not a PortcullisUser" % str(user))
+
+        if user.is_superuser:
+            return self.all()
+        
+        return self.filter(owner = user)
 
 class DataStream(models.Model):
     node_id = models.IntegerField(null=True, blank=True)
