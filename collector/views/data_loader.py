@@ -1,8 +1,9 @@
 #System Imports
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse
-from django.utils import simplejson
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
+try: import simplejson as json
+except ImportError: import json
 import time
 import urllib
 
@@ -68,7 +69,11 @@ def add_reading_bulk_hash(request):
     if(json_text is None): 
         return HttpResponse("No json received. Please send a serialized array of hashes in the form [{port=port1, node=node1, value=value1, stream=stream1, time=time1}, ...]")
 
-    readings = simplejson.loads(json_text)
+    try:
+        readings = json.loads(json_text)
+    except Exception as e:
+        return HttpResponse('Error: Invalid JSON: %s: %s' % (type(e), e.message), mimetype='text/html')
+    
     insertion_attempts = 0
     insertion_successes = 0
     error_string = ''
@@ -154,8 +159,11 @@ def add_reading_bulk(request):
     key = Key.objects.validate(auth_token)
     if key is None:
         return HttpResponse('Incorrect Authentication!')
+    try:
+        readings = json.loads(json_text)
+    except Exception as e:
+        return HttpResponse('Error: Invalid JSON: %s: %s' % (type(e), e.message), mimetype='text/html')
 
-    readings = simplejson.loads(json_text)
     insertion_attempts = 0
     insertion_successes = 0
     error_string = ''
@@ -217,72 +225,78 @@ def add_list(request, auth_token = None):
     dictionaries?  This has been renamed from add_bulk_readings so that the old add_bulk_readings can be
     add back for backwards compatability.
     '''
-
-    if auth_token is None:
-        auth_token = request.REQUEST.get('auth_token')
-
     try:
-        json_text = urllib.unquote(request.REQUEST.get('json'))
-    except:
+        if auth_token is None:
+            auth_token = request.REQUEST.get('auth_token')
+
         try:
-            json_text = urllib.unquote(request.REQUEST.get('d'))
+            json_text = urllib.unquote(request.REQUEST.get('json'))
         except:
-            return HttpResponse("No json received. Please send a serialized array of arrays in the form [[datastream_id,value1,time1],[datastream_id,value2,time2]].  time is optional.")
-
-    key = Key.objects.validate(auth_token)
-    if key is None:
-        return HttpResponse('Incorrect Authentication!')
-
-    readings = simplejson.loads(json_text)
-    insertion_attempts = 0
-    insertion_successes = 0
-    error_string = ''
-    
-    #Grab all reading from the json
-    for reading in readings:
-        ds_id = None
-        raw_sensor_value = None
-        timestamp = None
-
-        insertion_attempts += 1
-        
-        try:
-            ds_id = reading[0]
-            raw_sensor_value = reading[1]
-            timestamp = reading[2]
-        except:
-            pass
-
-        #If no sensor value then skip this reading
-        if(raw_sensor_value is None or raw_sensor_value == ""):
-            error_string += "\nNo data was passed for insertion! Please be sure to pass some data.\n"
-            continue
-
-        # Get the datastream, if possible
-        ds = DataStream.objects.get_ds_and_validate(ds_id, key, 'post')
-        if not isinstance(ds, DataStream):
-            error_string += '\n' + ds + '\n'
-        else:
             try:
-                insert_reading(ds, raw_sensor_value, timestamp)
-                insertion_successes += 1
-            except SensorReadingCollision as e:
-                error_string += '\n' + str(e) + '\n'
+                json_text = urllib.unquote(request.REQUEST.get('d'))
+            except:
+                return HttpResponse("No json received. Please send a serialized array of arrays in the form [[datastream_id,value1,time1],[datastream_id,value2,time2]].  time is optional.")
 
-    #Give a message based on number of insertions, attempts, errors etc
-    if(error_string is '' and insertion_attempts != 0):
-        success_message = "\n\nTotal Insertion Attempts: %s" % insertion_attempts
-        success_message += "\n\nSuccessful Insertions : %s" % insertion_successes
-        success_message += "\n\nAll records inserted!"
-        return HttpResponse(success_message)
-    else:
-        error_string += "\n\nTotal Insertion Attempts: %s" % insertion_attempts
-        error_string += "\n\nSuccessful Insertions : %s" % insertion_successes
-        failed_insertions = insertion_attempts - insertion_successes
-        error_string += "\n\nFailed Insertions : %s" % failed_insertions
-        return HttpResponse(error_string)
+        key = Key.objects.validate(auth_token)
+        if key is None:
+            return HttpResponse('Incorrect Authentication!')
 
+        try:
+            readings = json.loads(json_text)
+        except Exception as e:
+            return HttpResponse('Error: Invalid JSON: %s: %s' % ( type(e), e.message ), mimetype='text/html')
+                                
+        insertion_attempts = 0
+        insertion_successes = 0
+        error_string = ''
+    
+        #Grab all reading from the json
+        for reading in readings:
+            ds_id = None
+            raw_sensor_value = None
+            timestamp = None
 
+            insertion_attempts += 1
+        
+            try:
+                ds_id = reading[0]
+                raw_sensor_value = reading[1]
+                timestamp = reading[2]
+            except:
+                pass
+
+            #If no sensor value then skip this reading
+            if(raw_sensor_value is None or raw_sensor_value == ""):
+                error_string += "\nNo data was passed for insertion! Please be sure to pass some data.\n"
+                continue
+
+            # Get the datastream, if possible
+            ds = DataStream.objects.get_ds_and_validate(ds_id, key, 'post')
+            if not isinstance(ds, DataStream):
+                error_string += '\n' + ds + '\n'
+            else:
+                try:
+                    insert_reading(ds, raw_sensor_value, timestamp)
+                    insertion_successes += 1
+                except SensorReadingCollision as e:
+                    error_string += '\n' + str(e) + '\n'
+
+        #Give a message based on number of insertions, attempts, errors etc
+        if(error_string is '' and insertion_attempts != 0):
+            success_message = "\n\nTotal Insertion Attempts: %s" % insertion_attempts
+            success_message += "\n\nSuccessful Insertions : %s" % insertion_successes
+            success_message += "\n\nAll records inserted!"
+            return HttpResponse(success_message)
+        else:
+            error_string += "\n\nTotal Insertion Attempts: %s" % insertion_attempts
+            error_string += "\n\nSuccessful Insertions : %s" % insertion_successes
+            failed_insertions = insertion_attempts - insertion_successes
+            error_string += "\n\nFailed Insertions : %s" % failed_insertions
+            return HttpResponse(error_string)
+
+    except Exception as e:
+        message = 'Unexpected error occured! Exception: %s: %s' % (type(e), e.message)
+        return HttpResponse(message, mimetype="text/html")
 
 
 def insert_reading(datastream, raw_sensor_value, timestamp = None):
