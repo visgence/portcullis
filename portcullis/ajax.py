@@ -47,12 +47,9 @@ def read_source(request, model_name):
 
     cls = models.loading.get_model('portcullis', model_name)
 
-    # Filter the objects for the owner only, if there is one.
     try:
-        objs = cls.objects.filter(owner = portcullisUser)
-    # There was not an owner field, return all objects for now, later maybe try something else.
-    except FieldError:
-        objs = cls.objects.all()
+        #Only get the objects that can be edited by the user logged in
+        objs = cls.objects.getEditable(portcullisUser)
     except Exception as e:
         stderr.write('Unknown error occurred in read_source: %s: %s\n' % (str(type(e)), e.message))
         stderr.flush()
