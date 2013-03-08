@@ -34,7 +34,6 @@ class ScalingFunctionsTest(TestCase):
         aUser = User.objects.get(username="superuser")
         self.assertRaises(TypeError, PortcullisUser.objects.getEditable, user=aUser)
 
-
 class PortcullisUserTest(TestCase):
     '''
     ' Unit Tests for the portcullis model PortcullisUser
@@ -70,7 +69,6 @@ class PortcullisUserTest(TestCase):
 
         aUser = User.objects.get(username="superuser")
         self.assertRaises(TypeError, PortcullisUser.objects.getEditable, user=aUser)
-
 
 class KeyTest(TestCase):
     '''
@@ -108,6 +106,78 @@ class KeyTest(TestCase):
 
         aUser = User.objects.get(username="superuser")
         self.assertRaises(TypeError, Key.objects.getEditable, user=aUser)
+    
+    def test_isCurrent_expired_key(self):
+        '''
+        ' Test that an expired key get's false returned from Key's isCurrent
+        '''
+
+        key = Key.objects.get(key = "exp_key")
+        self.assertFalse(key.isCurrent())
+
+    def test_isCurrent_no_uses_key(self):
+        '''
+        ' Test that a key with no uses get's false returned from Key's isCurrent
+        '''
+
+        key = Key.objects.get(key = "no_uses_key")
+        self.assertFalse(key.isCurrent())
+
+    def test_isCurrent_has_uses_key(self):
+        '''
+        ' Test that a key with uses left get's true returned from Key's isCurrent
+        '''
+
+        key = Key.objects.get(key = "valid_uses_key")
+        self.assertTrue(key.isCurrent())
+
+    def test_isCurrent_valid_exp_key(self):
+        '''
+        ' Test that a key with a non expired date get's true returned from Key's isCurrent
+        '''
+
+        key = Key.objects.get(key = "valid_date_key")
+        self.assertTrue(key.isCurrent())
+
+    def test_isCurrent_valid_key(self):
+        '''
+        ' Test that a key with both valid date and num uses get's true returned from Key's isCurrent
+        '''
+
+        key = Key.objects.get(key = "valid_key")
+        self.assertTrue(key.isCurrent())
+
+    def test_validate_bad_token(self):
+        '''
+        ' Test that KeyManager validate returns None if a bad token is supplied.
+        '''
+
+        badToken = "HADUUUUKIN!!"
+        self.assertEquals(Key.objects.validate(badToken), None)
+
+    def test_validate_exp_date(self):
+        '''
+        ' Test that KeyManager validate returns None if an expired date token is supplied.
+        '''
+
+        expToken = Key.objects.get(key = "exp_key")
+        self.assertEquals(Key.objects.validate(expToken.key), None)
+
+    def test_validate_no_uses(self):
+        '''
+        ' Test that KeyManager validate returns None if a token with no uses is supplied.
+        '''
+
+        expToken = Key.objects.get(key = "no_uses_key")
+        self.assertEquals(Key.objects.validate(expToken.key), None)
+    
+    def test_validate_valid_uses(self):
+        '''
+        ' Test that KeyManager validate returns the key supplied if the supplied key has uses left. 
+        '''
+
+        key = Key.objects.get(key = "valid_uses_key")
+        self.assertEquals(Key.objects.validate(key.key), key)
 
 class DeviceTest(TestCase):
     '''
@@ -145,7 +215,6 @@ class DeviceTest(TestCase):
 
         aUser = User.objects.get(username="superuser")
         self.assertRaises(TypeError, Device.objects.getEditable, user=aUser)
-
 
 class DataStreamTest(TestCase):
     '''
@@ -245,4 +314,51 @@ class DataStreamTest(TestCase):
         validKey = Key.objects.get(key="valid_uses_key")
         dStream = DataStream.objects.filter(can_read = validKey)
 
-        self.assertEqual(list(dStream), list(DataStream.objects.get_readable_by_key(validKey)))
+        self.assertEqual(list(dStream), list(DataStream.objects.get_readable_by_key(validKey))) 
+
+    def test_get_viewable_by_user_non_user(self):
+        '''
+        ' Test that a non PortcullisUser passed to DataStreams manager get_viewable_by_user
+        ' throws a TypeError
+        '''
+
+        nonUser = "I are a PortcullisUser huehuehue"
+        self.assertRaises(TypeError, DataStream.objects.get_viewable_by_user, user = nonUser)
+
+    def test_get_viewable_by_user_super_user(self):
+        '''
+        ' Test that a super PortcullisUser passed to DataStreams manager get_viewable_by_user
+        ' gets all DataStreams that he doesn't own.
+        '''
+    
+        sUser = PortcullisUser.objects.get(username="superuser")
+        sStreams = DataStream.objects.all()
+
+        vStreams = DataStream.objects.get_viewable_by_user(sUser)
+        self.assertEqual(list(sStreams), list(vStreams))
+
+    def test_get_viewable_by_user_non_valid_keys(self):
+        '''
+        ' Test that a normal PortcullisUser passed to DataStreams manager get_viewable_by_user
+        ' gets no DataStreams that he has keys for but those keys are all invalid (expired or no more uses)
+        '''
+
+        user = PortcullisUser.objects.get(username="invalidkeysuser")
+        uStreams = DataStream.objects.get_viewable_by_user(user)
+        self.assertEqual(list(uStreams), [])
+
+    def test_get_viewable_by_user_valid_keys(self):
+        '''
+        ' Test that a normal PortcullisUser passed to DataStreams manager get_viewable_by_user
+        ' gets DataStreams that he has valid keys for
+        '''
+
+        user = PortcullisUser.objects.get(username="validkeysuser")
+        d1 = DataStream.objects.get(pk = 3)
+        d2 = DataStream.objects.get(pk = 4)
+        d3 = DataStream.objects.get(pk = 5)
+        d4 = DataStream.objects.get(pk = 6)
+        dStreams = [d1, d2, d3, d4]
+
+        uStreams = DataStream.objects.get_viewable_by_user(user)
+        self.assertEqual(list(uStreams), dStreams)

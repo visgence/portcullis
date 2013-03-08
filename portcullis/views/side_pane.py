@@ -30,24 +30,32 @@ def streams(request):
     Presedence is given to owner, then to readable, then to public for the duplicate removal.
     '''
 
-    # Already filters what is available by username, so don't need to explicitly check access here.
-    #response = check_access(request)
-    #if(response):
-    #    return response
+    user = check_access(request)
+
+    if isinstance(user, HttpResponse):
+        return user.content
+    elif request.user.is_anonymous():
+        user = None
 
     t_subtree = loader.get_template('stream_subtree.html')
 
-    #Pull streams that are owned by this user.
-    owned_streams = DataStream.objects.filter(owner__username = request.user.username).distinct()
-    c_dict = stream_tree_top(owned_streams)
-    c_dict.update({'group':'owned'})
-    owned_subtree = t_subtree.render(Context(c_dict))
+    #Only get owned and viewable streams if we have a logged in PortcullisUser
+    owned_streams = []
+    viewable_streams = []
+    owned_subtree = None
+    viewable_subtree = None
+    if user is not None:
+        #Pull streams that are owned by this user.
+        owned_streams = DataStream.objects.filter(owner = user)
+        c_dict = stream_tree_top(owned_streams)
+        c_dict.update({'group':'owned'})
+        owned_subtree = t_subtree.render(Context(c_dict))
 
-    #Pull streams that are viewable by this user.
-    viewable_streams = DataStream.objects.filter(can_read__owner__username = request.user.username).exclude(id__in=owned_streams).distinct()
-    c_dict = stream_tree_top(viewable_streams)
-    c_dict.update({'group':'viewable'})
-    viewable_subtree = t_subtree.render(Context(c_dict))
+        #Pull streams that are viewable by this user.
+        viewable_streams = DataStream.objects.get_viewable_by_user(user).exclude(id__in=owned_streams).distinct()
+        c_dict = stream_tree_top(viewable_streams)
+        c_dict.update({'group':'viewable'})
+        viewable_subtree = t_subtree.render(Context(c_dict))
 
     #Pull any public streams as well
     public_streams = DataStream.objects.filter(is_public = True).exclude(id__in=viewable_streams).exclude(id__in=owned_streams).distinct()
