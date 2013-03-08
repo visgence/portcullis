@@ -39,7 +39,7 @@
                 return this.data.length;
             },
             get_pk: function(i) {
-                return this.data[i]['pk'];
+                return this.data[i].pk;
             },
             get_cell_data: function(i, j) {
                 return this.data[i][j];
@@ -140,7 +140,7 @@
           
             //Need pk if updating to know which object to update
             if(updating)
-                row['pk'] = self.model.get_pk(index);
+                row.pk = self.model.get_pk(index);
 
             self.save_row(index, row, updating);
         }; 
@@ -161,7 +161,7 @@
                 $('#server_messages').html('');
 
                 if ('errors' in resp) {
-                    self.error(resp['errors']);
+                    self.error(resp.errors);
                     return;
                 }
                 else {
@@ -226,7 +226,7 @@
                     Dajaxice.portcullis.destroy(
                         function(resp) {
                             if ('errors' in resp) {
-                                self.error(resp['errors']);
+                                self.error(resp.errors);
                                 return;
                             }
                             else if ('success' in resp) {
@@ -258,7 +258,7 @@
             console.log('Error: ' + msg);
             var error_div = $('#error_dialog').clone();
             $(error_div).attr('id', 'error_dialogue_message');
-            var dlg_msg = $('#dialogue_message')
+            var dlg_msg = $('#dialogue_message');
             if ( dlg_msg.length >= 1) {
                 var msg_html = $(dlg_msg).html(error_div);
                 $('#error_dialogue_message #error_msg').text(msg);
@@ -289,7 +289,7 @@
 
                     // Add editors to columns
                     for ( var i = 0; i < self.columns.length; i++) {
-                        if (self.columns[i]._editable == true) {
+                        if (self.columns[i]._editable === true) {
                             switch (self.columns[i]._type) {
 
                                 case 'boolean':
@@ -416,16 +416,16 @@
     function foreign_key_formatter(row, cell, columnDef, dataContext) {
         var grid = myGrid.grid;
         var model = myGrid.model;
-        var col = grid.getColumns()[cell]['field'];
+        var col = grid.getColumns()[cell].field;
         var data = model.get_cell_data(row, col);
-        return data['__unicode__'];
+        return data.__unicode__;
     }
 
     /** Custom formatter for Many to Many columns in the data grid */
     function m2m_formatter(row, cell, columnDef, dataContext) {
         var grid = myGrid.grid;
         var model = myGrid.model;
-        var col = grid.getColumns()[cell]['field'];
+        var col = grid.getColumns()[cell].field;
         var data = model.get_cell_data(row, col);
         
         var m_input = ""; 
@@ -435,9 +435,9 @@
             
             var ul = "<ul>";
             for (var i = 0; i < data.length; i++) {
-                var li = "<li>"+data[i]['__unicode__']+"</li>";
+                var li = "<li>"+data[i].__unicode__+"</li>";
                 ul += li;
-            };
+            }
             ul += "</ul>";
             div += ul + "</div>"; 
             
@@ -451,7 +451,7 @@
 
     $.extend(window, {
         'DataGrid': DataGrid,
-        'confirm_dialog': confirm_dialog,
+        'confirm_dialog': confirm_dialog
     });
 
 
@@ -495,11 +495,11 @@
             //Set up html containers for the input
             var tr = $("<tr></tr>");
             table.append(tr);
-            td1 = $("<td></td>")
-            td2 = $("<td></td>")
+            td1 = $("<td></td>");
+            td2 = $("<td></td>");
             
-            tr.append(td1)
-            tr.append(td2)
+            tr.append(td1);
+            tr.append(td2);
 
             var span = $("<span></span>")
                 .attr('class', 'field')
@@ -564,7 +564,7 @@
                     $(input).datetimepicker({
                         showSecond: true,
                         dateFormat: 'mm/dd/yy',
-                        timeFormat: 'hh:mm:ss',
+                        timeFormat: 'hh:mm:ss'
                     });
                     $(input).datetimepicker('setDate', value); 
                     break;
@@ -617,7 +617,7 @@
                                      'type' : type 
                                  });
 
-        return input
+        return input;
     }
 
     /** Creates and returns a basic select input field.
@@ -644,7 +644,7 @@
                     .attr('class', obj.pk)
                     .text(obj.__unicode__);
 
-                if(value != '' && obj.pk == value.pk) 
+                if(value !== '' && obj.pk == value.pk) 
                     option.attr('selected', 'selected');
                 input.append(option);
 
@@ -652,7 +652,7 @@
         }, 
         {'model_name': model_name});
 
-        return input
+        return input;
     }
 
     /** Creates and returns a basic select multiple input field.
@@ -684,7 +684,7 @@
 
                  //Pre-select appropriate objects
                 $(value).each(function(i, val) {
-                    if(val != '' && obj.pk == val.pk) 
+                    if(val !== '' && obj.pk == val.pk) 
                         checkbox.attr('checked', 'checked');
                 });
 
