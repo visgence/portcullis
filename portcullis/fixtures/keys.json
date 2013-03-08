@@ -29,6 +29,30 @@
         }
     },
     {
+        "pk": "exp_key2",
+        "model": "portcullis.Key",
+        "fields": {
+            "owner": 4, 
+            "expiration": "2000-01-01 09:30+00:00"
+        }
+    },
+    {
+        "pk": "valid_date_key2",
+        "model": "portcullis.Key",
+        "fields": {
+            "owner": 4, 
+            "expiration": "2030-01-01 09:30+00:00"
+        }
+    },
+    {
+        "pk": "valid_date_key3",
+        "model": "portcullis.Key",
+        "fields": {
+            "owner": 5, 
+            "expiration": "2030-01-01 09:30+00:00"
+        }
+    },
+    {
         "pk": "valid_date_key",
         "model": "portcullis.Key",
         "fields": {
@@ -53,10 +77,28 @@
         }
     },
     {
+        "pk": "no_uses_key2",
+        "model": "portcullis.Key",
+        "fields": {
+            "owner": 4, 
+            "num_uses": 0
+        }
+    },
+    {
+        "pk": "valid_uses_key2",
+        "model": "portcullis.Key",
+        "fields": {
+            "owner": 5, 
+            "num_uses": 1
+        }
+    },
+    {
         "pk": "valid_key",
         "model": "portcullis.Key",
         "fields": {
-            "owner": 1
+            "owner": 1,
+            "num_uses": 1,
+            "expiration": "2030-01-01 09:30+00:00"
         }
     }
 ]
