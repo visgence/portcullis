@@ -8,8 +8,11 @@
 """
 
 # System imports
-try: import simplejson as json
-except ImportError: import json
+try:
+    import simplejson as json
+except ImportError:
+    import json
+
 from dajaxice.decorators import dajaxice_register
 from django.core import serializers
 from django.core.exceptions import FieldError, ObjectDoesNotExist
@@ -29,12 +32,14 @@ from portcullis.views.crud import genColumns
 from settings import DT_FORMAT
 
 # TODO:  All this needs access checkers!!
+
+
 @dajaxice_register
 def read_source(request, model_name):
     '''
     ' Returns all data from a given model as serialized json.
-    ' 
-    ' Keyword Args: 
+    '
+    ' Keyword Args:
     '    model_name - The model name to get serialized data from
     '''
 
@@ -43,7 +48,9 @@ def read_source(request, model_name):
     if isinstance(portcullisUser, HttpResponse):
         return portcullisUser.content
     elif request.user.is_anonymous():
-        return json.dumps({'errors': 'User must be logged in to use this feature.'})
+        return json.dumps(
+            {'errors': 'User must be logged in to use this feature.'}
+            )
 
     cls = models.loading.get_model('portcullis', model_name)
 
@@ -51,17 +58,18 @@ def read_source(request, model_name):
         #Only get the objects that can be edited by the user logged in
         objs = cls.objects.getEditable(portcullisUser)
     except Exception as e:
-        stderr.write('Unknown error occurred in read_source: %s: %s\n' % (str(type(e)), e.message))
+        stderr.write('Unknown error occurred in read_source: %s: %s\n' % (type(e), e.message))
         stderr.flush()
         return json.dumps({'errors': 'Unknown error occurred in read_source: %s: %s' % (type(e), e.message)})
-                     
-    return serialize_model_objs(objs)  
+
+    return serialize_model_objs(objs)
+
 
 @dajaxice_register
-@transaction.commit_on_success 
+@transaction.commit_manually
 def update(request, model_name, data):
     '''
-    ' Modifies a model object with the given data, saves it to the db and 
+    ' Modifies a model object with the given data, saves it to the db and
     ' returns it as serialized json.
     '
     ' Keyword Args:
@@ -69,26 +77,29 @@ def update(request, model_name, data):
     '    data - The data to modify the object with.
     '
     ' Returns:
-    '    The modified object serialized as json. 
+    '    The modified object serialized as json.
     '''
 
     portcullisUser = check_access(request)
-    
+
     if isinstance(portcullisUser, HttpResponse):
+        transaction.rollback()
         return portcullisUser.content
     elif request.user.is_anonymous():
+        transaction.rollback()
         return json.dumps({'errors': 'User must be logged in to use this feature.'})
 
     cls = models.loading.get_model('portcullis', model_name)
-   
+
     if 'pk' not in data:
         obj = cls()
     else:
         try:
-            obj = cls.objects.get(pk = data['pk'], owner = portcullisUser)
-        except FieldError: # This object does not have an owner
-            obj = cls.objects.get(pk = data['pk'])
+            obj = cls.objects.get(pk=data['pk'], owner=portcullisUser)
+        except FieldError:  # This object does not have an owner
+            obj = cls.objects.get(pk=data['pk'])
         except Exception as e:
+            transaction.rollback()
             return json.dumps({'errors': 'Cannot load object to save: Exception: ' + e.message})
 
     fields = genColumns(obj)
@@ -96,7 +107,7 @@ def update(request, model_name, data):
     try:
         for field in fields:
             if field['_editable'] and data[field['field']] is not None:
-               
+
                 #save inportant m2m stuff for after object save
                 if field['_type'] == 'm2m':
                     m2m.append({
@@ -115,22 +126,30 @@ def update(request, model_name, data):
                     except ObjectDoesNotExist as e:
                         setattr(obj, field['field'], portcullisUser)
                     except Exception as e:
-                        stderr.write('Error getting the owner field: %s: %s' % (type(e), e.message))
+                        transaction.rollback()
+                        error = 'Error getting the owner field: %s: %s' % (type(e), e.message)
+                        stderr.write(error)
                         stderr.flush()
-                        return json.dumps({'errors': 'Error setting the owner field: %s: %s' % (type(e), e.message)})
+                        return json.dumps({'errors': error})
+
                 elif field['_type'] == 'foreignkey':
                     rel_cls = models.loading.get_model(field['app'], field['model_name'])
                     rel_obj = rel_cls.objects.get(pk=data[field['field']]['pk'])
                     setattr(obj, field['field'], rel_obj)
+
                 elif field['_type'] == 'datetime':
-                    dt_obj = datetime.strptime(data[field['field']], DT_FORMAT)
-                    dt_obj = dt_obj.replace(tzinfo = utc)
-                    setattr(obj, field['field'], dt_obj)
+                    if data[field['field']] in [None, '']:
+                        setattr(obj, field['field'], None)
+                    else:
+                        dt_obj = datetime.strptime(data[field['field']], DT_FORMAT)
+                        dt_obj = dt_obj.replace(tzinfo=utc)
+                        setattr(obj, field['field'], dt_obj)
+
                 else:
                     setattr(obj, field['field'], data[field['field']])
 
         obj.save()
-       
+
         try:
             #Get all respective objects for many to many fields and add them in.
             for m in m2m:
@@ -143,17 +162,24 @@ def update(request, model_name, data):
                 setattr(obj, m['field'], m2m_objs)
 
         except Exception as e:
-            stderr.write('Error setting ManyToMany fields: %s: %s' % (type(e), e.message))
+            transaction.rollback()
+            error = 'Error setting ManyToMany fields: %s: %s' % (type(e), e.message)
+            stderr.write(error)
             stderr.flush()
             transaction.rollback()
-            return json.dumps({'errors': 'Error setting ManyToMany fields: %s: %s' % (type(e), e.message)})
+            return json.dumps({'errors': error})
 
     except Exception as e:
-        stderr.write('In create_datastream exception: %s: %s\n' % (type(e), e.message))
+        transaction.rollback()
+        error = 'In create_datastream exception: %s: %s\n' % (type(e), e.message)
+        stderr.write(error)
         stderr.flush()
-        return json.dumps({'errors': 'Can not save object: Exception: %s: %s' % (type(e), e.message)})
+        return json.dumps({'errors': error})
 
-    return serialize_model_objs([obj.__class__.objects.get(pk = obj.pk)]) 
+    transaction.commit()
+
+    return serialize_model_objs([obj.__class__.objects.get(pk=obj.pk)])
+
 
 @dajaxice_register
 def destroy(request, model_name, data):
@@ -161,9 +187,9 @@ def destroy(request, model_name, data):
     ' Receive a model_name and data object via ajax, and remove that item,
     ' returning either a success or error message.
     '''
-    
+
     portcullisUser = check_access(request)
-    
+
     if isinstance(portcullisUser, HttpResponse):
         return portcullisUser.content
     elif request.user.is_anonymous():
@@ -171,30 +197,33 @@ def destroy(request, model_name, data):
 
     cls = models.loading.get_model('portcullis', model_name)
     try:
-        ds = cls.objects.get(pk = data['pk'], owner = portcullisUser)
+        ds = cls.objects.get(pk=data['pk'], owner=portcullisUser)
     except FieldError:
-        ds = cls.objects.get(pk = data['pk'])
+        ds = cls.objects.get(pk=data['pk'])
     except cls.DoesNotExist:
-        stderr.write("User %s attempted to delete an object which does not belong to him/her!" %
-                     portcullisUser)
+        error = "User %s attempted to delete an object which does not belong to him/her!"
+        error = error % portcullisUser
+        stderr.write(error)
         stderr.flush()
-        return json.dumps({'errors': 'Could not delete object.  Either it does not exist, or you do not own it.'})
+        return json.dumps({'errors': error})
     except Exception as e:
-        return json.dumps({'errors': 'Could not delete: Exception: %s: %s' % (str(type(e)), e.message)})
+        return json.dumps({'errors': 'Could not delete: Exception: %s: %s' % (type(e), e.message)})
 
     ds.delete()
     return json.dumps({'success': 'Successfully deleted item with primary key: %s' % data['pk']})
 
+
 @dajaxice_register
 def get_columns(request, model_name):
     '''
-    ' Return a JSON serialized column list for rendering a grid representing a model.
+    ' Return a JSON serialized column list for rendering a grid representing a
+    ' model.
     '
     ' Keyword args:
     '   model_name - The name of the model to represent.
     '''
     portcullisUser = check_access(request)
-    
+
     if isinstance(portcullisUser, HttpResponse):
         return portcullisUser.content
     elif request.user.is_anonymous():
@@ -202,6 +231,7 @@ def get_columns(request, model_name):
 
     cls = models.loading.get_model('portcullis', model_name)
     return json.dumps(genColumns(cls))
+
 
 def serialize_model_objs(objs):
     '''
@@ -215,14 +245,14 @@ def serialize_model_objs(objs):
         fields = obj._meta.fields
         m2m_fields = obj._meta.many_to_many
         obj_dict = {}
-       
+
         for f in fields:
 
             #Set value of field for the object.
             obj_dict[f.name] = f.value_from_object(obj)
             if type(obj_dict[f.name]) not in [dict, list, unicode, int, long, float, bool, type(None)]:
                 obj_dict[f.name] = f.value_to_string(obj)
-           
+
             if isinstance(f, models.fields.related.ForeignKey) or \
                isinstance(f, models.fields.related.OneToOneField):
                 obj_dict[f.name] = {
@@ -257,16 +287,18 @@ def serialize_model_objs(objs):
     return json.dumps(new_objs, indent=4)
 
 
-
 @dajaxice_register
 def stream_subtree(request, name, group):
     '''
-    ' This function will take a partial datastream name, delimited with | and return the next level of the subtree
+    ' This function will take a partial datastream name, delimited
+    ' with '|' and return the next level of the subtree
     ' that matches.
     '
     ' Keyword Args:
-    '    name - The 'path' of the subtree (beggining of the name of the items interested in.)
-    '    group - The group to get the subtree for.  Is this a public group, or an owned group or a
+    '    name - The 'path' of the subtree (beggining of the name of
+    '           the items interested in.)
+    '    group - The group to get the subtree for.  Is this a public
+    '            group, or an owned group or a
     '            viewable group.
     '''
 
@@ -274,22 +306,22 @@ def stream_subtree(request, name, group):
     if isinstance(portcullisUser, HttpResponse):
         return portcullisUser.content
 
-    streams = DataStream.objects.filter(name__startswith  = name)
+    streams = DataStream.objects.filter(name__startswith=name)
 
     # Check that we are logged in before trying to filter the streams
     if isinstance(portcullisUser, PortcullisUser):
         if group == 'owned':
-            streams = streams.filter(owner = portcullisUser)
+            streams = streams.filter(owner=portcullisUser)
         elif group == 'viewable':
-            streams = streams.filter(can_read__owner = portcullisUser).exclude(owner = portcullisUser)
+            streams = streams.filter(can_read__owner=portcullisUser).exclude(owner=portcullisUser)
         elif group == 'public':
-            streams = streams.filter(is_public = True).exclude(owner = portcullisUser)
-            streams = streams.exclude(can_read__owner = portcullisUser)
+            streams = streams.filter(is_public=True).exclude(owner=portcullisUser)
+            streams = streams.exclude(can_read__owner=portcullisUser)
         else:
-            return json.dumps({'errors': 'Error: %s is not a valid datastream type.' % group})    
+            return json.dumps({'errors': 'Error: %s is not a valid datastream type.' % group})
 
     elif group == 'public':
-        streams = streams.filter(is_public = True)
+        streams = streams.filter(is_public=True)
     else:
         return json.dumps({'errors': 'Error: You must be logged in to see the %s datastream type.' % group})
 
@@ -312,11 +344,11 @@ def stream_subtree(request, name, group):
 
     t = loader.get_template('stream_subtree.html')
     nodes.sort()
-    leaves = OrderedDict(sorted(leaves.items(), key = lambda t: t[0]))
+    leaves = OrderedDict(sorted(leaves.items(), key=lambda t: t[0]))
     c = Context({
-            'nodes': nodes,
+            'nodes':  odes,
             'leaves': leaves,
-            'path' : name,
-            'group': group
+            'path':   name,
+            'group':  group
             })
-    return json.dumps({'html':t.render(c)});
+    return json.dumps({'html': t.render(c)})
