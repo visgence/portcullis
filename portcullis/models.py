@@ -275,25 +275,6 @@ class DataStreamManager(models.Manager):
 
         return DataStream.objects.filter(can_read = key)
    
-    def get_owned_by_user(self, user):
-        '''
-        ' Gets all DataStreams owned by a PortcullisUser.
-        ' 
-        ' Note that the only validation on the user that is done is that it
-        ' is indeed a PortcullisUser and if not a TypeError is raised.
-        '
-        ' Keyword Arguments:
-        '   user - PortcullisUser to filter owned DataStreams by.
-        '
-        ' Return: QuerySet of DataStreams that are owned by the PortcullisUser.
-        '''
-
-        #Validate object is a PortcullisUser.
-        if not isinstance(user, PortcullisUser):
-            raise TypeError("%s is not a PortcullisUser." % str(user))
- 
-        return DataStream.objects.filter(owner = user)
-
     def get_viewable_by_user(self, user):
         '''
         ' Gets all DataStreams viewable by a PortcullisUser.
@@ -314,7 +295,7 @@ class DataStreamManager(models.Manager):
 
         #Superusers get everything they don't own.
         if user.is_superuser:
-            return DataStream.objects.exclude(owner = user)
+            return DataStream.objects.all()
 
         keys = Key.objects.filter(owner = user)
         validKeys = []
@@ -322,7 +303,7 @@ class DataStreamManager(models.Manager):
             if key.isCurrent():
                 validKeys.append(key)
 
-        return DataStream.objects.filter(can_read__in = validKeys).exclude(owner = user).distinct()
+        return DataStream.objects.filter(can_read__in = validKeys).distinct()
         
     def get_ds_and_validate(self, ds_id, obj, perm = 'read'):
         '''
