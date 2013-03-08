@@ -30,6 +30,7 @@ class Command(BaseCommand):
         print "Done"
 
         call_command('syncdb', interactive=False)
+        call_command('migrate')
 
         # ORDER OF FIXTURES MATTERS!! Some have dependencies on others.
         print "Loading fixtures..."

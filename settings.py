@@ -142,6 +142,7 @@ INSTALLED_APPS = (
     'graphs',
     'collector',
     'snmpPoller',
+    'south'
 )
 
 # A sample logging configuration. The only tangible logging

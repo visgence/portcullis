@@ -86,7 +86,9 @@ def shared_graph(request, token, id):
         'end':           graph.end,
         'reduction':     graph.reduction_type,
         'granularity':   graph.granularity,
-        'datastream_id': graph.datastream.id
+        'datastream_id': graph.datastream.id,
+        'zoom_start':    graph.zoom_start,
+        'zoom_end':      graph.zoom_end
         }
 
     return HttpResponse(getStreamData(params, key, request.user), mimetype="application/json")
@@ -109,6 +111,13 @@ def getStreamData(g_params, auth, user = None):
     ds_id = g_params['datastream_id']
     granularity = int(g_params['granularity'])
     reduction_type = g_params['reduction']
+    zoom_start = None
+    zoom_end = None
+
+    if 'zoom_start' in g_params:
+        zoom_start = g_params['zoom_start']
+    if 'zoom_end' in g_params:
+        zoom_end = g_params['zoom_end']
 
     
     ds = DataStream.objects.get_ds_and_validate(ds_id, auth, 'read')
@@ -122,7 +131,7 @@ def getStreamData(g_params, auth, user = None):
         if not isinstance(ds, DataStream):
             print 'User verification failed: ' + ds
             stream_data = {
-                'data':[],
+                'data':                [],
                 'permission':       False,
                 'ds_label':            ds,
                 "datastream_id":    ds_id,
@@ -166,7 +175,9 @@ def getStreamData(g_params, auth, user = None):
         "units":            ds.units,
         "permission":       True,
         "xmax":             end,
-        "xmin":             start
+        "xmin":             start,
+        "zoom_start":       zoom_start,
+        "zoom_end":         zoom_end
         }
 
 

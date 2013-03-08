@@ -11,8 +11,8 @@ class SavedDSGraph(SavedWidget):
     end = models.IntegerField()
     reduction_type = models.CharField(max_length=32, choices=reduction_type_choices())
     granularity = models.IntegerField()
-    zoom_start = models.IntegerField()
-    zoom_end = models.IntegerField()
+    zoom_start = models.IntegerField(null = True, blank = True)
+    zoom_end = models.IntegerField(null = True, blank = True)
 
     def __unicode__(self):
         return 'SavedDSGraph: %d' % self.id

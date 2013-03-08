@@ -385,7 +385,6 @@ function zoom_graph(ranges, datastream_id) {
      * datastream_id - Id of the datastream to get new data for.
      */
     
-    console.log(ranges);
     //request data for the new timeframe
     load_graph(datastream_id, ranges, zoom_graph_callback(ranges, true));
 }
@@ -479,6 +478,9 @@ function graph_overview_callback() {
 
             //Make a full copy of the data since the two graphs need their own copy to work.
             var dData = $.extend(true, {}, data);
+            // Do not give the zoom info to the overview.
+            dData.zoom_start = undefined;
+            dData.zoom_end = undefined;
             renderGraph(data, ranges, true);
             renderOverview(dData, ranges);
             ready_minicolors(data.datastream_id);
@@ -514,6 +516,23 @@ function renderGraph(data, ranges, shouldScale)
 {
     var result = $.Deferred();
     var dataStreamId = data.datastream_id;
+    var xmin = null;
+    var xmax = null;
+
+    if (data.zoom_start)
+        xmin = data.zoom_start * 1000 - timezone_offset;
+    else if (data.xmin)
+        xmin = data.xmin * 1000 - timezone_offset;
+    else
+        xmin = ranges.xaxis.from;
+
+    if (data.zoom_end)
+        xmax = data.zoom_end * 1000 - timezone_offset;
+    else if ( data.xmax )
+        xmax = data.xmax * 1000 - timezone_offset;
+    else
+        xmax = ranges.xaxis.to;
+
     var options = 
     { 
         lines: { show: true }, 
@@ -521,8 +540,8 @@ function renderGraph(data, ranges, shouldScale)
         {     
             mode: "time", 
             timeformat: " %m-%d %h:%M %p",
-            min: !data['xmin'] ? ranges.xaxis.from : data['xmin']*1000 - timezone_offset,
-            max: !data['xmax'] ? ranges.xaxis.to : data['xmax']*1000 - timezone_offset,
+            min: xmin,
+            max: xmax,
             ticks: 5
         },
         selection: {mode: "x"},
@@ -737,6 +756,17 @@ function saveView()
     view['graphs'] = $.makeArray($('.portcullis-graph').map(function(index, domElement) {
         var graph = new Object();
         graph['ds_id'] = this.id;
+        try {
+            var zrange = get_graph_range(this.id);
+            graph['zoom_start'] = Math.round(zrange.xaxis.from/1000.0 + timezone_offset/1000.0);
+            graph['zoom_end'] = Math.round(zrange.xaxis.to/1000.0 + timezone_offset/1000.0);
+        } catch (e) {
+            console.log('Error getting zoom ranges: ' + e);
+            // graph has no data here, so it is not zoomed
+            graph['zoom_start'] = null;
+            graph['zoom_end'] = null;
+        }
+        
         graph['reduction'] = $('#reduction_select_'+this.id).val();
         return graph;
     }));
@@ -750,7 +780,13 @@ function saveView()
 
     $.post('/portcullis/createSavedView/', {'jsonData': JSON.stringify(view), 'csrfmiddlewaretoken': csrf},
            function (data) {
-               $('#savedViewLink').html(data['html']);
+               if ( 'errors' in data ) {
+                   span = '<span></span>';
+                   $(span).css('color', 'red').html(data.errors);
+                   $('#savedViewLink').html(data.errors);
+               }
+               else
+                   $('#savedViewLink').html(data['html']);
            });
 }
 
