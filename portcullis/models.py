@@ -251,6 +251,31 @@ class DataStreamManager(models.Manager):
     def get_writable_by_key(self, key):
         return DataStream.objects.filter(can_post = key)
 
+    def get_readable_by_key(self, key):
+        '''
+        ' Gets all DataStreams that can be read by a specified Key.
+        '
+        ' Validate Key which means that if the key has a number of uses left 
+        ' one will be subtracted from it.
+        '
+        ' Keyword Arguments:
+        '   key - Key object to filter readable DataStreams by.
+        '
+        ' Return: QuerySet of DataStreams that are readable by the specified Key.
+        '''
+
+        #Validate object is a Key
+        if not isinstance(key, Key):
+            raise TypeError("%s is not a Key object." % str(key))
+
+        #Make sure key is valid
+        vKey = Key.objects.validate(key.key)
+        if vKey is None:
+            raise Exception("%s is not a valid key." % str(vKey))
+
+        return DataStream.objects.filter(can_read = key)
+    
+        
     def get_ds_and_validate(self, ds_id, obj, perm = 'read'):
         '''
         ' Return a DataStream that corresponds to the datastream id given if the obj has

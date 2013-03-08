@@ -1,6 +1,11 @@
+
+#System Imports
 from django.test import TestCase
-from portcullis.models import Key, PortcullisUser, DataStream, Device, ScalingFunction
 from django.contrib.auth.models import User
+from datetime import datetime
+
+#Local Imports
+from portcullis.models import Key, PortcullisUser, DataStream, Device, ScalingFunction
 
 
 class ScalingFunctionsTest(TestCase):
@@ -147,7 +152,7 @@ class DataStreamTest(TestCase):
     ' Unit Tests for the portcullis model DataStream
     '''
 
-    fixtures = ['portcullisUsers.json', 'scalingFunctions.json', 'datastreams.json']
+    fixtures = ['portcullisUsers.json', 'keys.json', 'scalingFunctions.json', 'datastreams.json']
 
     def test_get_editable_datastreams_by_superuser(self):
         '''
@@ -179,42 +184,65 @@ class DataStreamTest(TestCase):
         aUser = User.objects.get(username="superuser")
         self.assertRaises(TypeError, DataStream.objects.getEditable, user=aUser)
 
+    def test_get_readable_by_non_key(self):
+        '''
+        ' Test that a non Key object raises an exception when using DataStream's get_readable_by_key
+        '''
+        
+        nonKey = "I am a Key... NOT!!!!"
+        self.assertRaises(TypeError, DataStream.objects.get_readable_by_key, key=nonKey)
 
+    def test_get_readable_by_date_expired_key(self):
+        '''
+        ' Test that a Key which has an expired date raises an exception when using DataStream's get_readable_by_key
+        '''
+        
+        expKey = Key.objects.get(key="exp_key")
+        try:
+            DataStream.objects.get_readable_by_key(expKey)
+        except Exception as e:
+            self.assertEqual(str(e), "None is not a valid key.")
 
-"""
-class PermissionTest(TestCase):
-    fixtures = ['portcullis.xml']
+    def test_get_readable_by_no_uses_key(self):
+        '''
+        ' Test that a Key which has no more uses raises an exception when using DataStream's get_readable_by_key
+        '''
 
-    def test_device_by_key(self):
-        '''Can we get a device by a key'''
+        noUsesKey = Key.objects.get(key="no_uses_key")
+        try:
+            DataStream.objects.get_readable_by_key(noUsesKey)
+        except Exception as e:
+            self.assertEqual(str(e), "None is not a valid key.")
 
-        myKey = Key.objects.validate("apple")
-        self.assertEqual(myKey.key, "apple")
+    def test_get_readable_by_valid_key(self):
+        '''
+        ' Test that a Key which is valid returns a QuerySet of appropriate DataStreams when using DataStream's 
+        ' get_readable_by_key
+        '''
 
-        myBadKey = Key.objects.validate("foo")
-        self.assertEqual(myBadKey, None)
+        validKey = Key.objects.get(key="valid_key")
+        dStream = DataStream.objects.filter(can_read = validKey)
 
-        myDevice = Device.objects.get_by_key(myKey)
-        self.assertEqual(myDevice.name, "device 1")
+        self.assertEqual(list(dStream), list(DataStream.objects.get_readable_by_key(validKey)))
 
-    def test_get_writable_by_device(self):
-        '''Get all streams that are writable by a given device'''
+    def test_get_readable_by_valid_date_key(self):
+        '''
+        ' Test that a Key which is valid by it's date returns a QuerySet of appropriate DataStreams when using DataStream's 
+        ' get_readable_by_key
+        '''
 
-        myDevice = Device.objects.get(name = "device 2")
-        dataStreams = DataStream.objects.get_writable_by_device(myDevice).order_by('name')
-        self.assertEqual(dataStreams[0].name, "stream 2")
+        validKey = Key.objects.get(key="valid_date_key")
+        dStream = DataStream.objects.filter(can_read = validKey)
 
-        myDevice = Device.objects.get(name = "device 3")
-        dataStreams = DataStream.objects.get_writable_by_device(myDevice).order_by('name')
-        self.assertEqual(len(dataStreams), 3)
-        self.assertEqual(dataStreams[0].name, "stream 1")
-        self.assertEqual(dataStreams[1].name, "stream 2")
-        self.assertEqual(dataStreams[2].name, "stream 3")
+        self.assertEqual(list(dStream), list(DataStream.objects.get_readable_by_key(validKey)))
 
-    def test_get_writable_by_key(self):
-        '''Get all streams that are writable by a given key'''
+    def test_get_readable_by_valid_uses_key(self):
+        '''
+        ' Test that a Key which is valid by it's num_uses returns a QuerySet of appropriate DataStreams when using DataStream's 
+        ' get_readable_by_key
+        '''
 
-        myKey = Key.objects.validate('pear')
-        dataStreams = DataStream.objects.get_writable_by_key(myKey)
-        self.assertEquals(dataStreams[0].name, "stream 2")
-"""
+        validKey = Key.objects.get(key="valid_uses_key")
+        dStream = DataStream.objects.filter(can_read = validKey)
+
+        self.assertEqual(list(dStream), list(DataStream.objects.get_readable_by_key(validKey)))
