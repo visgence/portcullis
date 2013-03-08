@@ -89,8 +89,8 @@ class KeyManager(models.Manager):
         except ObjectDoesNotExist:
             return None
 
-        key.use()
         if key.isCurrent():
+            key.use()
             return key
         return None
 
@@ -181,7 +181,7 @@ class Key(models.Model):
         ' A null expiration does not expire by date.
         '''
         if ((self.expiration is None or timezone.now() < self.expiration) and
-            (self.num_uses is None or self.num_uses >= 0)):
+            (self.num_uses is None or self.num_uses > 0)):
             return True
         return False
 
@@ -274,7 +274,55 @@ class DataStreamManager(models.Manager):
             raise Exception("%s is not a valid key." % str(vKey))
 
         return DataStream.objects.filter(can_read = key)
-    
+   
+    def get_owned_by_user(self, user):
+        '''
+        ' Gets all DataStreams owned by a PortcullisUser.
+        ' 
+        ' Note that the only validation on the user that is done is that it
+        ' is indeed a PortcullisUser and if not a TypeError is raised.
+        '
+        ' Keyword Arguments:
+        '   user - PortcullisUser to filter owned DataStreams by.
+        '
+        ' Return: QuerySet of DataStreams that are owned by the PortcullisUser.
+        '''
+
+        #Validate object is a PortcullisUser.
+        if not isinstance(user, PortcullisUser):
+            raise TypeError("%s is not a PortcullisUser." % str(user))
+ 
+        return DataStream.objects.filter(owner = user)
+
+    def get_viewable_by_user(self, user):
+        '''
+        ' Gets all DataStreams viewable by a PortcullisUser.
+        '
+        ' If user is a superuser (i.e is_superuser == true) then all streams that are
+        ' not owned by the user are returned. Otherwise all valid keys for the user are 
+        ' used to filter DataSreams by, excluding the user as the owner.
+        '
+        ' Keyword Arguements:
+        '   user - PortcullisUsert o filter viewable DataStreams by.
+        '
+        ' Return: QuerySet of DataStreams that are viewable (and not owned) by the PortcullisUser.
+        '''
+
+        #Validate object is a PortcullisUser.
+        if not isinstance(user, PortcullisUser):
+            raise TypeError("%s is not a PortcullisUser." % str(user))
+
+        #Superusers get everything they don't own.
+        if user.is_superuser:
+            return DataStream.objects.exclude(owner = user)
+
+        keys = Key.objects.filter(owner = user)
+        validKeys = []
+        for key in keys:
+            if key.isCurrent():
+                validKeys.append(key)
+
+        return DataStream.objects.filter(can_read__in = validKeys).exclude(owner = user).distinct()
         
     def get_ds_and_validate(self, ds_id, obj, perm = 'read'):
         '''
