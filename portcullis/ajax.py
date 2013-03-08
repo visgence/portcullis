@@ -90,13 +90,10 @@ def update(request, model_name, data):
         return json.dumps({'errors': 'User must be logged in to use this feature.'})
 
     cls = models.loading.get_model('portcullis', model_name)
-
     if 'pk' not in data:
         obj = cls()
     else:
         try:
-            obj = cls.objects.get(pk=data['pk'], owner=portcullisUser)
-        except FieldError:  # This object does not have an owner
             obj = cls.objects.get(pk=data['pk'])
         except Exception as e:
             transaction.rollback()
@@ -176,9 +173,9 @@ def update(request, model_name, data):
         stderr.flush()
         return json.dumps({'errors': error})
 
+    serialized_model = serialize_model_objs([obj.__class__.objects.get(pk=obj.pk)])
     transaction.commit()
-
-    return serialize_model_objs([obj.__class__.objects.get(pk=obj.pk)])
+    return serialized_model
 
 
 @dajaxice_register
