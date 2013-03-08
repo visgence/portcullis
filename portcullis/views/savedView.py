@@ -9,7 +9,7 @@
 
 # System Imports
 from django.core.urlresolvers import reverse
-from django.db.transaction import commit_on_success
+from django.db import transaction
 from django.http import HttpResponse, Http404, HttpResponseForbidden
 from django.template import RequestContext, Context, loader
 from django.views.decorators.http import require_POST
@@ -60,7 +60,7 @@ def savedView(request, token):
 
     return HttpResponse(t.render(c))
 
-@commit_on_success
+@transaction.commit_manually
 @require_POST
 def createSavedView(request):
     '''
@@ -70,18 +70,22 @@ def createSavedView(request):
     portcullisUser = check_access(request)
 
     if isinstance(portcullisUser, HttpResponse):
+        transaction.rollback()
         return portcullisUser
     if request.user.is_anonymous():
+        transaction.rollback()
         # TODO: Should not be a return, should be a raise, but don't have a 403 right now,
         #But should be okay, because save has not been called yet.
         return HttpResponseForbidden('Must be logged in to create saved view')
 
     if 'jsonData' not in request.POST:
+        transaction.rollback()
         raise Http404('Unrecognized data')
 
     try:
         jsonData = json.loads(request.POST['jsonData'])
     except Exception as e:
+        transaction.rollback()
         return HttpResponse(json.dumps({'errors': 'Ivalid json: %s' % e.message}, mimetype="application/json"))
 
     expires = timezone.now() + timedelta(days=7)
@@ -95,6 +99,7 @@ def createSavedView(request):
         end = jsonData['end']
         gran = jsonData['granularity']
     except Exception as e:
+        transaction.rollback()
         message = 'Error getting json data: %s: %s:' % (type(e), e.message)
         return HttpResponse(json.dumps({'errors': message}), mimetype="application/json")
 
@@ -102,8 +107,10 @@ def createSavedView(request):
         try:
             ds = DataStream.objects.get(id = graphData['ds_id'])
         except DataStream.DoesNotExist:
+            transaction.rollback()
             return HttpResponse(json.dumps({'errors': 'Datastream does not exist.'}), mimetype="application/json")
         except Exception as e:
+            transaction.rollback()
             return HttpResponse(json.dumps(
                     {'errors': 'Unknown error occurred: %s: %s' % (type(e), e.message)},
                     mimetype="application/json"))
@@ -117,16 +124,23 @@ def createSavedView(request):
             zoom_start = graphData['zoom_start']
             zoom_end = graphData['zoom_end']
         except Exception as e:
+            transaction.rollback()
             message = 'Error getting json data for datastream %d: %s' % (ds.id, e.message)
             return HttpResponse(json.dumps({'errors': message}), mimetype='application/json')
         
         graph = SavedDSGraph(datastream = ds, start = start, end = end,
                              reduction_type = graphData['reduction'], granularity = gran,
                              zoom_start = zoom_start, zoom_end = zoom_end)
-        graph.save()
-        savedView.widget.add(graph)
+        try:
+            graph.save()
+            savedView.widget.add(graph)
+        except Exception as e:
+            transaction.rollback()
+            return HttpResponse(json.dumps({'errors': 'Error saving graph: %s' % e.message}),mimetype='application/json')
         
     link = reverse('portcullis-saved-view', args = ['savedView', key.key])
 
+    transaction.commit()
+    
     return HttpResponse(json.dumps({'html':'<a href="%s">%s</a>' % (link, link)}), mimetype='application/json')
     
