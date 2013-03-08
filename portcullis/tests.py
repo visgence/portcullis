@@ -316,27 +316,6 @@ class DataStreamTest(TestCase):
 
         self.assertEqual(list(dStream), list(DataStream.objects.get_readable_by_key(validKey))) 
 
-    def test_get_owned_by_user_non_user(self):
-        '''
-        ' Test that a non PortcullisUser passed to DataStreams manager get_owned_by_user
-        ' throws a TypeError
-        '''
-
-        nonUser = "I are a PortcullisUser huehuehue"
-        self.assertRaises(TypeError, DataStream.objects.get_owned_by_user, user = nonUser)
-
-    def test_get_owned_by_user(self):
-        '''
-        ' Test that a PortcullisUser passed to DataStreams manager get_owned_by_user
-        ' get's all owned DataStreams by that user.
-        '''
-
-        user = PortcullisUser.objects.get(username="staffuser")
-        uStreams = DataStream.objects.filter(owner=user)
-
-        oStreams = DataStream.objects.get_owned_by_user(user)
-        self.assertEqual(list(uStreams), list(oStreams))
-
     def test_get_viewable_by_user_non_user(self):
         '''
         ' Test that a non PortcullisUser passed to DataStreams manager get_viewable_by_user
@@ -353,7 +332,7 @@ class DataStreamTest(TestCase):
         '''
     
         sUser = PortcullisUser.objects.get(username="superuser")
-        sStreams = DataStream.objects.exclude(owner = sUser)
+        sStreams = DataStream.objects.all()
 
         vStreams = DataStream.objects.get_viewable_by_user(sUser)
         self.assertEqual(list(sStreams), list(vStreams))
@@ -378,7 +357,8 @@ class DataStreamTest(TestCase):
         d1 = DataStream.objects.get(pk = 3)
         d2 = DataStream.objects.get(pk = 4)
         d3 = DataStream.objects.get(pk = 5)
-        dStreams = [d1, d2, d3]
+        d4 = DataStream.objects.get(pk = 6)
+        dStreams = [d1, d2, d3, d4]
 
         uStreams = DataStream.objects.get_viewable_by_user(user)
         self.assertEqual(list(uStreams), dStreams)
