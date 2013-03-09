@@ -90,7 +90,6 @@ def update(request, model_name, data):
         return json.dumps({'errors': 'User must be logged in to use this feature.'})
 
     cls = models.loading.get_model('portcullis', model_name)
-    
     if 'pk' not in data:
         obj = cls()
     else:
@@ -178,9 +177,9 @@ def update(request, model_name, data):
         stderr.flush()
         return json.dumps({'errors': error})
 
+    serialized_model = serialize_model_objs([obj.__class__.objects.get(pk=obj.pk)])
     transaction.commit()
-
-    return serialize_model_objs([obj.__class__.objects.get(pk=obj.pk)])
+    return serialized_model
 
 
 @dajaxice_register
