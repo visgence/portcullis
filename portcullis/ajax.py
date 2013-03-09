@@ -347,7 +347,7 @@ def stream_subtree(request, name, group):
     nodes.sort()
     leaves = OrderedDict(sorted(leaves.items(), key=lambda t: t[0]))
     c = Context({
-            'nodes':  odes,
+            'nodes':  nodes,
             'leaves': leaves,
             'path':   name,
             'group':  group
