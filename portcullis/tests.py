@@ -13,7 +13,7 @@ class ScalingFunctionsTest(TestCase):
     ' Unit Tests for the portcullis model ScalingFunctions
     '''
 
-    fixtures = ['portcullisUsers.json', 'scalingFunctions.json']
+    fixtures = ['test_portcullisUsers.json', 'test_scalingFunctions.json']
 
     def test_get_editable_scalingFunctions_by_user(self):
         '''
@@ -39,7 +39,7 @@ class PortcullisUserTest(TestCase):
     ' Unit Tests for the portcullis model PortcullisUser
     '''
 
-    fixtures = ['portcullisUsers.json']
+    fixtures = ['test_portcullisUsers.json']
 
     def test_get_editable_users_by_superuser(self):
         '''
@@ -75,7 +75,7 @@ class KeyTest(TestCase):
     ' Unit Tests for the portcullis model Key
     '''
 
-    fixtures = ['portcullisUsers.json', 'keys.json']
+    fixtures = ['test_portcullisUsers.json', 'test_keys.json']
 
     def test_get_editable_keys_by_superuser(self):
         '''
@@ -184,7 +184,7 @@ class DeviceTest(TestCase):
     ' Unit Tests for the portcullis model Device
     '''
 
-    fixtures = ['portcullisUsers.json', 'devices.json']
+    fixtures = ['test_portcullisUsers.json', 'test_devices.json']
 
     def test_get_editable_devices_by_superuser(self):
         '''
@@ -221,7 +221,7 @@ class DataStreamTest(TestCase):
     ' Unit Tests for the portcullis model DataStream
     '''
 
-    fixtures = ['portcullisUsers.json', 'keys.json', 'scalingFunctions.json', 'datastreams.json']
+    fixtures = ['test_portcullisUsers.json', 'test_keys.json', 'test_scalingFunctions.json', 'test_datastreams.json']
 
     def test_get_editable_datastreams_by_superuser(self):
         '''
