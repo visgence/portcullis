@@ -3,6 +3,7 @@
 " Contributing Authors:
 "    Evan Salazar   (Visgence, Inc)
 "    Jeremiah Davis (Visgence, Inc)
+"    Bretton Murphy (Visgence, Inc)
 "
 " (c) 2013 Visgence, Inc.
 """
@@ -94,9 +95,8 @@ def update(request, model_name, data):
         obj = cls()
     else:
         try:
-            if cls.objects.is_editable_by_user(portcullisUser, data['pk']):
-                obj = cls.objects.get(pk=data['pk'])
-            else:
+            obj = cls.objects.get_editable_by_user(portcullisUser, pk=data['pk'])
+            if obj is None:
                 transaction.rollback()
                 return json.dumps({'errors': 'User %s does not have permission to edit this object' % str(portcullisUser)})
         except Exception as e:
