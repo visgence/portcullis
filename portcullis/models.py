@@ -56,9 +56,7 @@ class PortcullisUserManager(models.Manager):
         except PortcullisUser.DoesNotExist as e:
             raise PortcullisUser.DoesNotExist("A Portcullis User does not exist for the primary key %s." % str(pk))
 
-        if user.is_superuser:
-            return u
-        if u == user:
+        if user.is_superuser or u == user:
             return u
 
         return None
@@ -73,6 +71,19 @@ class PortcullisUser(User):
 
     pass
 
+    def can_view(self, user):
+        '''
+        ' Checks if a PortcullusUser instance is allowed to view/read a user or not.
+        '
+        ' Keyword Arguments: 
+        '   user - PortcullisUser to check if the user can be viewed them.
+        '
+        ' Return: True if user is allowed to view and False otherwise.
+        '''
+        #TODO: currently just a wrapper until our permissions become more robust.
+
+        return self.is_editable_by_user(user)
+            
     def is_editable_by_user(self, user):
         '''
         ' Checks if a PortcullusUser instance is allowed to edited by a user or not.
@@ -87,9 +98,7 @@ class PortcullisUser(User):
         if not isinstance(user, PortcullisUser):
             raise TypeError("%s is not a PortcullisUser" % str(user))
 
-        if user.is_superuser:
-            return True
-        if user == self:
+        if user.is_superuser or user == self:
             return True
 
         return False
@@ -115,8 +124,10 @@ class ScalingFunctionManager(models.Manager):
         if not isinstance(user, PortcullisUser):
             raise TypeError("%s is not a PortcullisUser" % str(user))
 
-        #TODO: Get better permissions on this model for PortcullisUsers
-        return self.all()
+        if user.is_superuser:
+            return self.all()
+
+        return self.none()
 
     def get_editable_by_user(self, user, pk):
         '''
@@ -129,9 +140,13 @@ class ScalingFunctionManager(models.Manager):
         ' Return: ScalingFunction that user is allowed to edit or None if not.
         '''
         #TODO: This will need to be updated once we add some kind of ownership to scaling functions.
+
         #Validate user object
         if not isinstance(user, PortcullisUser):
             raise TypeError("%s is not a PortcullisUser" % str(user))
+
+        if not user.is_superuser:
+            return None
 
         try:
             sf = self.get(id = pk)
@@ -149,6 +164,24 @@ class ScalingFunction(models.Model):
     def __unicode__(self):
         return self.name
 
+    def can_view(self, user):
+        '''
+        ' Checks if a ScalingFunction instance is allowed to view/read a user or not.
+        '
+        ' Keyword Arguments: 
+        '   user - PortcullisUser to check if the scaling function can be viewed them.
+        '
+        ' Return: True if user is allowed to view and False otherwise.
+        '''
+        #TODO: Currently all users can read/view scaling functions. Maybe different when permissions become
+        #      more robust.
+
+        #Validate user object
+        if not isinstance(user, PortcullisUser):
+            raise TypeError("%s is not a PortcullisUser" % str(user))
+
+        return True
+
     def is_editable_by_user(self, user):
         '''
         ' Checks if a ScalingFunction instance is allowed to edited by a user or not.
@@ -158,8 +191,6 @@ class ScalingFunction(models.Model):
         '
         ' Return: True if user is allowed to edit and False otherwise.
         '''
-        #TODO:This does not currently fail unless given a bogus PortcullisUser object. 
-        #     We need to have some kind of ownership relationship on this model.
 
         #Validate user object
         if not isinstance(user, PortcullisUser):
@@ -168,7 +199,7 @@ class ScalingFunction(models.Model):
         if user.is_superuser:
             return True
 
-        return True
+        return False
 
 
 class KeyManager(models.Manager):
@@ -272,9 +303,7 @@ class KeyManager(models.Manager):
         except Key.DoesNotExist as e:
             raise Key.DoesNotExist("A key does not exist for the primary key %s" % str(pk))
 
-        if user.is_superuser:
-            return key
-        if key.owner == user:
+        if user.is_superuser or key.owner == user:
             return key
 
         return None
@@ -288,6 +317,19 @@ class Key(models.Model):
     num_uses = models.IntegerField(null = True, blank = True)
     objects = KeyManager()
 
+
+    def can_view(self, user):
+        '''
+        ' Checks if a Key instance is allowed to view/read a user or not.
+        '
+        ' Keyword Arguments: 
+        '   user - PortcullisUser to check if the key can be viewed them.
+        '
+        ' Return: True if user is allowed to view and False otherwise.
+        '''
+        #TODO: Currently just a wrapper until permissions become more robust.
+
+        return self.is_editable_by_user(user)
 
     def is_editable_by_user(self, user):
         '''
@@ -303,9 +345,7 @@ class Key(models.Model):
         if not isinstance(user, PortcullisUser):
             raise TypeError("%s is not a PortcullisUser" % str(user))
 
-        if user.is_superuser:
-            return True
-        if user == self.owner:
+        if user.is_superuser or user == self.owner:
             return True
 
         return False
@@ -384,9 +424,7 @@ class DeviceManager(models.Manager):
         except Device.DoesNotExist as e:
             raise Device.DoesNotExist("A device does not exist for the primary key %s." % str(pk))
 
-        if user.is_superuser:
-            return d
-        if d.owner == user:
+        if user.is_superuser or d.owner == user:
             return d
 
         return None
@@ -399,6 +437,20 @@ class Device(models.Model):
     key = models.ForeignKey(Key, null = True, blank = True, on_delete=models.SET_NULL)
     owner = models.ForeignKey(PortcullisUser)
     objects = DeviceManager()
+
+
+    def can_view(self, user):
+        '''
+        ' Checks if a Device instance is allowed to view/read a user or not.
+        '
+        ' Keyword Arguments: 
+        '   user - PortcullisUser to check if the device can be viewed them.
+        '
+        ' Return: True if user is allowed to view and False otherwise.
+        '''
+        #TODO: Currently just a wrapper until permissions become more robust.
+
+        return self.is_editable_by_user(user)
 
     def is_editable_by_user(self, user):
         '''
@@ -414,9 +466,7 @@ class Device(models.Model):
         if not isinstance(user, PortcullisUser):
             raise TypeError("%s is not a PortcullisUser" % str(user))
 
-        if user.is_superuser:
-            return True
-        if user == self.owner:
+        if user.is_superuser or user == self.owner:
             return True
 
         return False
@@ -518,7 +568,7 @@ class DataStreamManager(models.Manager):
                 return 'Invalid DataStream!'
 
         if perm == 'read':
-            if not ds.canRead(obj):
+            if not ds.can_view(obj):
                 return '%s cannot read DataStream %s!' % (str(obj), str(ds.id))
         elif perm == 'post':
             if not ds.canPost(obj):
@@ -569,9 +619,7 @@ class DataStreamManager(models.Manager):
         except DataStream.DoesNotExist as e:
             raise DataStream.DoesNotExist("A Data Stream does not exist for the primary key %s" % str(pk))
 
-        if user.is_superuser:
-            return ds
-        if ds.owner == user:
+        if user.is_superuser or ds.owner == user:
             return ds
 
         return None
@@ -617,14 +665,12 @@ class DataStream(models.Model):
         if not isinstance(user, PortcullisUser):
             raise TypeError("%s is not a PortcullisUser" % str(user))
 
-        if user.is_superuser:
-            return True
-        if user == self.owner:
+        if user.is_superuser or user == self.owner:
             return True
 
         return False
 
-    def canRead(self, obj):
+    def can_view(self, obj):
         '''
         ' Return True if the obj has permission to read this DataStream, False otherwise.
         '
@@ -646,12 +692,14 @@ class DataStream(models.Model):
                                                 (Q(num_uses__gt = 0) | Q(num_uses = None))
                                                  ).values_list('owner', flat = True):
                 return True
-        
-        if isinstance(obj, Key):
+
+        elif isinstance(obj, Key):
             if obj.isCurrent():
                 return obj in self.can_read.all()
             else:
                 return False
+        else:
+            raise TypeError("%s is not a PortcullisUser or a Key" % str(obj))
 
         return False
 
