@@ -489,6 +489,10 @@ function graph_overview_callback() {
 
         //set the graphs title
         $("#graph_title" + data.datastream_id).text(data.ds_label);
+
+        // For saved views, refresh the graph
+        if ( data.zoom_start )
+            refresh_graph(data.datastream_id);
     };
 }
 
