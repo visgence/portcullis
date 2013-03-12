@@ -15,17 +15,28 @@ class ScalingFunctionsTest(TestCase):
 
     fixtures = ['test_portcullisUsers.json', 'test_scalingFunctions.json']
 
-    def test_get_editable_by_user(self):
+    def test_get_editable_normaluser(self):
         '''
-        ' Test that a user get's all scalingFunctions using get_editable from ScalingFunctions
+        ' Test that a non superuser gets back an empty QuerySet using get_editable from ScalingFunctions
         '''
 
         user = PortcullisUser.objects.get(username="normaluser")
+        scalingFunctions = ScalingFunction.objects.none()
+
+        scalingFuns = ScalingFunction.objects.get_editable(user)
+        self.assertEqual(list(scalingFunctions), list(scalingFuns))
+   
+    def test_get_editable_superuser(self):
+        '''
+        ' Test that a superuser gets back all scaling functions using get_editable from ScalingFunctions
+        '''
+
+        user = PortcullisUser.objects.get(username="superuser")
         scalingFunctions = ScalingFunction.objects.all()
 
         scalingFuns = ScalingFunction.objects.get_editable(user)
         self.assertEqual(list(scalingFunctions), list(scalingFuns))
-    
+
     def test_get_editable__non_portcullis_user(self):
         '''
         ' Test that a non portcullisUser object raises an exception when using PortcullisUser's get_editable
@@ -37,10 +48,21 @@ class ScalingFunctionsTest(TestCase):
     def test_is_editable_by_user_normaluser(self):
         '''
         ' Test that ScalingFuncitons method is_editable_by_user returns
-        ' true when a normal user checks if they can edit a given scaling function.
+        ' false when a nonsuper user checks if they can edit a given scaling function.
         '''
 
         user = PortcullisUser.objects.get(username="normaluser")
+        sf = ScalingFunction.objects.get(pk = 1)
+
+        self.assertFalse(sf.is_editable_by_user(user))
+
+    def test_is_editable_by_user_superuser(self):
+        '''
+        ' Test that ScalingFuncitons method is_editable_by_user returns
+        ' true when a superuser checks if they can edit a given scaling function.
+        '''
+
+        user = PortcullisUser.objects.get(username="superuser")
         sf = ScalingFunction.objects.get(pk = 1)
 
         self.assertTrue(sf.is_editable_by_user(user))
@@ -56,21 +78,21 @@ class ScalingFunctionsTest(TestCase):
 
         self.assertRaises(TypeError, sc.is_editable_by_user, user = user)
 
-    def test_get_editable_by_user_correctUser(self):
+    def test_get_editable_by_user_nonSuperUser(self):
         '''
         ' Test that ScalingFunction manager method get_editable_by_user returns
-        ' a scaling function when given a user and a scaling function pk owned by that user.
+        ' None when given a non superuser and a scaling function pk.
         '''
 
         user = PortcullisUser.objects.get(username="normaluser")
         sf = ScalingFunction.objects.get(pk = 1)
 
-        self.assertEquals(ScalingFunction.objects.get_editable_by_user(user, 1), sf)
+        self.assertIsNone(ScalingFunction.objects.get_editable_by_user(user, 1), sf)
 
     def test_get_editable_by_user_superuser(self):
         '''
         ' Test that ScalingFunction manager method is_editable_by_user returns
-        ' a scaling function when given a superuser and some other users scaling function pk.
+        ' a scaling function when given a superuser and a scaling function pk.
         '''
 
         user = PortcullisUser.objects.get(username="superuser")
@@ -92,10 +114,10 @@ class ScalingFunctionsTest(TestCase):
     def test_get_editable_by_user_does_not_exist(self):
         '''
         ' Test that ScalingFunction manager method is_editable_by_user returns
-        ' a ScalingFunction.DoesNotExist when given a pk of a non existent user.
+        ' a ScalingFunction.DoesNotExist when given a pk of a non existent scaling function.
         '''
 
-        user = PortcullisUser.objects.get(username="normaluser")
+        user = PortcullisUser.objects.get(username="superuser")
         pk = -1
 
         self.assertRaises(ScalingFunction.DoesNotExist, ScalingFunction.objects.get_editable_by_user, user = user, pk = pk)
