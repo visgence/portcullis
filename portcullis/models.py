@@ -51,7 +51,11 @@ class PortcullisUserManager(models.Manager):
         if not isinstance(user, PortcullisUser):
             raise TypeError("%s is not a PortcullisUser" % str(user))
 
-        u = self.get(id = pk)
+        try:
+            u = self.get(id = pk)
+        except PortcullisUser.DoesNotExist as e:
+            raise PortcullisUser.DoesNotExist("A Portcullis User does not exist for the primary key %s." % str(pk))
+
         if user.is_superuser:
             return True
         if u == user:
@@ -108,7 +112,11 @@ class ScalingFunctionManager(models.Manager):
         if not isinstance(user, PortcullisUser):
             raise TypeError("%s is not a PortcullisUser" % str(user))
 
-        sf = self.get(id = pk)
+        try:
+            sf = self.get(id = pk)
+        except ScalingFunction.DoesNotExist as e:
+            raise ScalingFunction.DoesNotExist("A scaling function does not exist for the primary key %s." % str(pk))
+
         return True
 
 
@@ -220,10 +228,14 @@ class KeyManager(models.Manager):
         if not isinstance(user, PortcullisUser):
             raise TypeError("%s is not a PortcullisUser" % str(user))
 
-        key = self.get(key = pk)
+        try:
+            key = self.get(key = pk)
+        except Key.DoesNotExist as e:
+            raise Key.DoesNotExist("A key does not exist for the primary key %s" % str(pk))
+
         if user.is_superuser:
             return True
-        if ds.owner == user:
+        if key.owner == user:
             return True
 
         return False
@@ -306,7 +318,11 @@ class DeviceManager(models.Manager):
         if not isinstance(user, PortcullisUser):
             raise TypeError("%s is not a PortcullisUser" % str(user))
 
-        d = self.get(id = pk)
+        try:
+            d = self.get(id = pk)
+        except Device.DoesNotExist as e:
+            raise Device.DoesNotExist("A device does not exist for the primary key %s." % str(pk))
+
         if user.is_superuser:
             return True
         if d.owner == user:
@@ -466,7 +482,11 @@ class DataStreamManager(models.Manager):
         if not isinstance(user, PortcullisUser):
             raise TypeError("%s is not a PortcullisUser" % str(user))
 
-        ds = self.get(id = pk)
+        try:
+            ds = self.get(id = pk)
+        except DataStream.DoesNotExist as e:
+            raise DataStream.DoesNotExist("A Data Stream does not exist for the primary key %s" % str(pk))
+
         if user.is_superuser:
             return True
         if ds.owner == user:
@@ -517,7 +537,7 @@ class DataStream(models.Model):
             return True
 
         if isinstance(obj, PortcullisUser):
-            if obj == self.owner:
+            if obj == self.owner or obj.is_superuser:
                 return True
             elif obj.id in self.can_read.filter( (Q(expiration__gt = timezone.now()) | Q(expiration = None)) &
                                                 (Q(num_uses__gt = 0) | Q(num_uses = None))
@@ -544,7 +564,7 @@ class DataStream(models.Model):
         '          Returns false otherwise.
         '''
         if isinstance(obj, PortcullisUser):
-            if obj == self.owner:
+            if obj == self.owner or obj.is_superuser:
                 return True
             elif obj.id in self.can_post.filter( (Q(expiration__gt = timezone.now()) | Q(expiration = None)) &
                                                 (Q(num_uses__gt = 0) | Q(num_uses = None) )
