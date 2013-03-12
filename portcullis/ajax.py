@@ -16,7 +16,7 @@ except ImportError:
 
 from dajaxice.decorators import dajaxice_register
 from django.core import serializers
-from django.core.exceptions import FieldError, ObjectDoesNotExist
+from django.core.exceptions import FieldError, ObjectDoesNotExist, ValidationError
 from django.db import models, transaction
 from django.contrib.auth.models import User
 from django.http import HttpResponse
@@ -107,7 +107,7 @@ def update(request, model_name, data):
     m2m = []
     try:
         for field in fields:
-            if field['_editable'] and data[field['field']] is not None:
+            if field['_editable']:
 
                 #save inportant m2m stuff for after object save
                 if field['_type'] == 'm2m':
@@ -118,37 +118,32 @@ def update(request, model_name, data):
                     })
                     continue
 
-                # Do not allow a user to change the owner (unless perhaps admin, but for future...)
-                elif field['field'] == 'owner':
-                    # Only assign an owner if it is empty, and only to the current user.
-                    # Just in case, do not try to reassign the owner if updating...
-                    try:
-                        getattr(obj, field['field'])
-                    except ObjectDoesNotExist as e:
-                        setattr(obj, field['field'], portcullisUser)
-                    except Exception as e:
-                        transaction.rollback()
-                        error = 'Error getting the owner field: %s: %s' % (type(e), e.message)
-                        stderr.write(error)
-                        stderr.flush()
-                        return json.dumps({'errors': error})
+                # Handle empy data
+                elif data[field['field']] in [None, '']:
+                    if field['_type'] in ['text', 'char', 'color']:
+                        setattr(obj, field['field'], '')
+                    else:
+                        setattr(obj, field['field'], None)
 
                 elif field['_type'] == 'foreignkey':
+                    # Make sure that user has permission to add this object
+                    # TODO: is_editable_by_user should be replaced by yet-to-be written is_assignable_etc
                     rel_cls = models.loading.get_model(field['app'], field['model_name'])
                     rel_obj = rel_cls.objects.get(pk=data[field['field']]['pk'])
-                    setattr(obj, field['field'], rel_obj)
+                    if rel_obj.is_editable_by_user(portcullisUser):
+                        setattr(obj, field['field'], rel_obj)
+                    else:
+                        transaction.rollback()
+                        error = 'Error: You do not have permission to assign this object: %s' % rel_obj
+                        return json.dumps({'errors': error})
 
                 elif field['_type'] == 'datetime':
-                    if data[field['field']] in [None, '']:
-                        setattr(obj, field['field'], None)
-                    else:
-                        dt_obj = datetime.strptime(data[field['field']], DT_FORMAT)
-                        dt_obj = dt_obj.replace(tzinfo=utc)
-                        setattr(obj, field['field'], dt_obj)
+                    dt_obj = datetime.strptime(data[field['field']], DT_FORMAT)
+                    dt_obj = dt_obj.replace(tzinfo=utc)
+                    setattr(obj, field['field'], dt_obj)
 
                 else:
                     setattr(obj, field['field'], data[field['field']])
-
         obj.save()
 
         try:
@@ -158,7 +153,12 @@ def update(request, model_name, data):
                 m2m_objs = []
                 for m2m_obj in data[m['field']]:
                     rel_obj = cls.objects.get(pk=m2m_obj['pk'])
-                    m2m_objs.append(rel_obj)
+                    if rel_obj.is_editable_by_user(portcullisUser):
+                        m2m_objs.append(rel_obj)
+                    else:
+                        transaction.rollback()
+                        errors = 'Error: You do not have permission to assign this object: %s' % rel_obj
+                        return json.dumps({'errors': error})
 
                 setattr(obj, m['field'], m2m_objs)
 
@@ -175,6 +175,14 @@ def update(request, model_name, data):
         error = 'In create_datastream exception: %s: %s\n' % (type(e), e.message)
         stderr.write(error)
         stderr.flush()
+        return json.dumps({'errors': error})
+
+    # Run validations
+    try:
+        obj.full_clean()
+    except ValidationError as e:
+        transaction.rollback()
+        error = 'ValidationError: %s: %s' % (e.message, e.message_dict[NON_FIELD_ERRORS])
         return json.dumps({'errors': error})
 
     serialized_model = serialize_model_objs([obj.__class__.objects.get(pk=obj.pk)])
