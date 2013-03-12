@@ -193,24 +193,20 @@ def destroy(request, model_name, data):
 
     if isinstance(portcullisUser, HttpResponse):
         return portcullisUser.content
-    elif request.user.is_anonymous():
+    elif portcullisUser is None:
         return json.dumps({'errors': 'User must be logged in to use this feature.'})
 
     cls = models.loading.get_model('portcullis', model_name)
     try:
-        ds = cls.objects.get(pk=data['pk'], owner=portcullisUser)
-    except FieldError:
-        ds = cls.objects.get(pk=data['pk'])
-    except cls.DoesNotExist:
-        error = "User %s attempted to delete an object which does not belong to him/her!"
-        error = error % portcullisUser
-        stderr.write(error)
-        stderr.flush()
-        return json.dumps({'errors': error})
+        obj = cls.objects.get_editable_by_user(portcullisUser, data['pk'])
+        if obj is None:
+            error = "User %s does not have permission to delete this object." % portcullisUser
+            return json.dumps({'errors': error})
     except Exception as e:
-        return json.dumps({'errors': 'Could not delete: Exception: %s: %s' % (type(e), e.message)})
+        error = "There was an error for user %s trying to delete this object: %s" % (portcullisUser, str(e))
+        return json.dumps({'errors': error})
 
-    ds.delete()
+    obj.delete()
     return json.dumps({'success': 'Successfully deleted item with primary key: %s' % data['pk']})
 
 
