@@ -130,7 +130,7 @@ def update(request, model_name, data):
                     # TODO: is_editable_by_user should be replaced by yet-to-be written is_assignable_etc
                     rel_cls = models.loading.get_model(field['app'], field['model_name'])
                     rel_obj = rel_cls.objects.get(pk=data[field['field']]['pk'])
-                    if rel_obj.is_editable_by_user(portcullisUser):
+                    if rel_obj.can_view(portcullisUser):
                         setattr(obj, field['field'], rel_obj)
                     else:
                         transaction.rollback()
