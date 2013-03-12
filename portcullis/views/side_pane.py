@@ -33,9 +33,7 @@ def streams(request):
     user = check_access(request)
 
     if isinstance(user, HttpResponse):
-        return user.content
-    elif request.user.is_anonymous():
-        user = None
+        return user
 
     t_subtree = loader.get_template('stream_subtree.html')
 
@@ -77,7 +75,6 @@ def streams(request):
     c_controls = RequestContext(request)
     
     return HttpResponse(t_controls.render(c_controls) + t_streams.render(c_streams), mimetype='text/html')
-
 
 def stream_tree_top(streams):
     '''

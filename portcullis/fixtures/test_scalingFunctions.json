@@ -1,0 +1,26 @@
+[
+    {
+        "pk": 1,
+        "model": "portcullis.scalingfunction",
+        "fields": {
+            "name": "identity",
+            "definition": "return x;"
+        }
+    },
+    {
+        "pk": 2,
+        "model": "portcullis.scalingfunction",
+        "fields": {
+            "name": "Kbps",
+            "definition": "return (x * 8 / 1000);"
+        }
+    },
+    {
+        "pk": 3,
+        "model": "portcullis.scalingfunction",
+        "fields": {
+            "name": "Temperature, Celsius (LM335)",
+            "definition": "return (x/2.046 -273.15) * 1.8 + 32;"
+        }
+    }    
+]

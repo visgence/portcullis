@@ -1,0 +1,112 @@
+[
+    {
+	    "pk": 1,
+    	"model": "auth.user",
+        "fields": {
+            "username": "superuser",
+            "first_name": "super",
+            "last_name": "user",
+            "email": "superuser@test.com",
+            "groups": [],
+            "user_permissions": [],
+            "password": "pbkdf2_sha256$10000$S22El37yr4bm$mMrhsyne5bF3ElJPY5O9QbaYH9diQqPXjmWqOkJipeU=",
+            "is_staff": false,
+            "is_active": false,
+            "is_superuser": true
+        }
+    },
+    {
+        "pk":1,
+        "model": "portcullis.PortcullisUser",
+        "fields": {
+        }
+    },
+    {
+	    "pk": 2,
+    	"model": "auth.user",
+        "fields": {
+            "username": "staffuser",
+            "first_name": "staff",
+            "last_name": "user",
+            "email": "staffuser@test.com",
+            "groups": [],
+            "user_permissions": [],
+            "password": "pbkdf2_sha256$10000$S22El37yr4bm$mMrhsyne5bF3ElJPY5O9QbaYH9diQqPXjmWqOkJipeU=",
+            "is_staff": true,
+            "is_active": false,
+            "is_superuser": false
+        }
+    },
+    {
+        "pk":2,
+        "model": "portcullis.PortcullisUser",
+        "fields": {
+        }
+    },
+    {	    
+        "pk": 3,
+    	"model": "auth.user",
+        "fields": {
+            "username": "normaluser",
+            "first_name": "noraml",
+            "last_name": "user",
+            "email": "normaluser@test.com",
+            "groups": [],
+            "user_permissions": [],
+            "password": "pbkdf2_sha256$10000$S22El37yr4bm$mMrhsyne5bF3ElJPY5O9QbaYH9diQqPXjmWqOkJipeU=",
+            "is_staff": false,
+            "is_active": true,
+            "is_superuser": false
+        }
+    },
+    {
+        "pk":3,
+        "model": "portcullis.PortcullisUser",
+        "fields": {
+        }
+    },
+    {	    
+        "pk": 4,
+    	"model": "auth.user",
+        "fields": {
+            "username": "invalidkeysuser",
+            "first_name": "invalidkeys",
+            "last_name": "user",
+            "email": "invalidkeysuser@test.com",
+            "groups": [],
+            "user_permissions": [],
+            "password": "pbkdf2_sha256$10000$S22El37yr4bm$mMrhsyne5bF3ElJPY5O9QbaYH9diQqPXjmWqOkJipeU=",
+            "is_staff": false,
+            "is_active": true,
+            "is_superuser": false
+        }
+    },
+    {
+        "pk":4,
+        "model": "portcullis.PortcullisUser",
+        "fields": {
+        }
+    },
+    {	    
+        "pk": 5,
+    	"model": "auth.user",
+        "fields": {
+            "username": "validkeysuser",
+            "first_name": "validkeys",
+            "last_name": "user",
+            "email": "validkeysuser@test.com",
+            "groups": [],
+            "user_permissions": [],
+            "password": "pbkdf2_sha256$10000$S22El37yr4bm$mMrhsyne5bF3ElJPY5O9QbaYH9diQqPXjmWqOkJipeU=",
+            "is_staff": false,
+            "is_active": true,
+            "is_superuser": false
+        }
+    },
+    {
+        "pk":5,
+        "model": "portcullis.PortcullisUser",
+        "fields": {
+        }
+    }
+]

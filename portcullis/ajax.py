@@ -56,7 +56,7 @@ def read_source(request, model_name):
 
     try:
         #Only get the objects that can be edited by the user logged in
-        objs = cls.objects.getEditable(portcullisUser)
+        objs = cls.objects.get_editable(portcullisUser)
     except Exception as e:
         stderr.write('Unknown error occurred in read_source: %s: %s\n' % (type(e), e.message))
         stderr.flush()
@@ -94,7 +94,11 @@ def update(request, model_name, data):
         obj = cls()
     else:
         try:
-            obj = cls.objects.get(pk=data['pk'])
+            if cls.objects.is_editable_by_user(portcullisUser, data['pk']):
+                obj = cls.objects.get(pk=data['pk'])
+            else:
+                transaction.rollback()
+                return json.dumps({'errors': 'User %s does not have permission to edit this object' % str(portcullisUser)})
         except Exception as e:
             transaction.rollback()
             return json.dumps({'errors': 'Cannot load object to save: Exception: ' + e.message})
@@ -343,7 +347,7 @@ def stream_subtree(request, name, group):
     nodes.sort()
     leaves = OrderedDict(sorted(leaves.items(), key=lambda t: t[0]))
     c = Context({
-            'nodes':  odes,
+            'nodes':  nodes,
             'leaves': leaves,
             'path':   name,
             'group':  group

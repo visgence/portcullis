@@ -4,10 +4,7 @@
         "model": "portcullis.datastream",
         "fields": {
             "reduction_type": "mean",
-            "can_post": [
-                "key1"
-            ],
-            "name": "superuser_ds1",
+            "name": "Bits In",
             "color": "blue",
             "max_value": null,
             "min_value": null,
@@ -28,7 +25,7 @@
             "can_post": [
                 "key2"
             ],
-            "name": "staffuser_ds1",
+            "name": "Bits Out",
             "color": "red",
             "max_value": null,
             "min_value": null,
@@ -46,15 +43,7 @@
         "model": "portcullis.datastream",
         "fields": {
             "reduction_type": "mean",
-            "can_post": [
-                "key3"
-            ],
-            "can_read": [
-                "exp_key2",
-                "valid_date_key3",
-                "valid_uses_key2"
-            ],
-            "name": "staffuser_ds2",
+            "name": "Bandwidth",
             "color": "black",
             "max_value": null,
             "min_value": null,
@@ -72,71 +61,14 @@
         "model": "portcullis.datastream",
         "fields": {
             "reduction_type": "mean",
-            "can_post": [
-                "key3"
-            ],
-            "can_read": [
-                "no_uses_key2",
-                "exp_key2",
-                "valid_date_key3",
-                "valid_uses_key2"
-            ],
-            "name": "normaluser_ds1",
+            "name": "Wind Speed",
             "color": "yellow",
             "max_value": null,
             "min_value": null,
             "owner": 3,
             "node_id": 0,
             "scaling_function": 3,
-            "units": "Kbps",
-            "is_public": true,
-            "port_id": 4,
-            "description": ""
-        }
-    },
-    {
-        "pk": 5,
-        "model": "portcullis.datastream",
-        "fields": {
-            "reduction_type": "mean",
-            "can_post": [],
-            "can_read": [
-                "no_uses_key2",
-                "exp_key2",
-                "valid_date_key3",
-                "valid_uses_key2"
-            ],
-            "name": "invalidkeyuser_ds",
-            "color": "black",
-            "max_value": null,
-            "min_value": null,
-            "owner": 4,
-            "node_id": 0,
-            "scaling_function": 3,
-            "units": "Kbps",
-            "is_public": true,
-            "port_id": 4,
-            "description": ""
-        }
-    },
-    {
-        "pk": 6,
-        "model": "portcullis.datastream",
-        "fields": {
-            "reduction_type": "mean",
-            "can_post": [],
-            "can_read": [
-                "valid_date_key3",
-                "valid_uses_key2"
-            ],
-            "name": "validkeyuser_ds",
-            "color": "black",
-            "max_value": null,
-            "min_value": null,
-            "owner": 5,
-            "node_id": 0,
-            "scaling_function": 3,
-            "units": "Kbps",
+            "units": "MPH",
             "is_public": true,
             "port_id": 4,
             "description": ""

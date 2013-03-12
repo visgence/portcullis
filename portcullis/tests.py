@@ -13,99 +13,99 @@ class ScalingFunctionsTest(TestCase):
     ' Unit Tests for the portcullis model ScalingFunctions
     '''
 
-    fixtures = ['portcullisUsers.json', 'scalingFunctions.json']
+    fixtures = ['test_portcullisUsers.json', 'test_scalingFunctions.json']
 
     def test_get_editable_scalingFunctions_by_user(self):
         '''
-        ' Test that a user get's all scalingFunctions using getEditable from PortcullisUsers
+        ' Test that a user get's all scalingFunctions using get_editable from PortcullisUsers
         '''
 
         user = PortcullisUser.objects.get(username="normaluser")
         scalingFunctions = ScalingFunction.objects.all()
 
-        scalingFuns = ScalingFunction.objects.getEditable(user)
+        scalingFuns = ScalingFunction.objects.get_editable(user)
         self.assertEqual(list(scalingFunctions), list(scalingFuns))
     
     def test_get_editable_scalingFunctions_non_portcullis_user(self):
         '''
-        ' Test that a non portcullisUser object raises an exception when using PortcullisUser's getEditable
+        ' Test that a non portcullisUser object raises an exception when using PortcullisUser's get_editable
         '''
 
         aUser = User.objects.get(username="superuser")
-        self.assertRaises(TypeError, PortcullisUser.objects.getEditable, user=aUser)
+        self.assertRaises(TypeError, PortcullisUser.objects.get_editable, user=aUser)
 
 class PortcullisUserTest(TestCase):
     '''
     ' Unit Tests for the portcullis model PortcullisUser
     '''
 
-    fixtures = ['portcullisUsers.json']
+    fixtures = ['test_portcullisUsers.json']
 
     def test_get_editable_users_by_superuser(self):
         '''
-        ' Test that a superuser get's all users using getEditable from PortcullisUsers
+        ' Test that a superuser get's all users using get_editable from PortcullisUsers
         '''
 
         sUser = PortcullisUser.objects.get(username="superuser")
         users = PortcullisUser.objects.all()
 
-        sPortcullisUsers = PortcullisUser.objects.getEditable(sUser)
+        sPortcullisUsers = PortcullisUser.objects.get_editable(sUser)
         self.assertEqual(list(sPortcullisUsers), list(users))
     
     def test_get_editable_users_by_normal_user(self):
         '''
-        ' Test that a non superuser get's only his/her users using getEditable from PortcullisUsers
+        ' Test that a non superuser get's only his/her users using get_editable from PortcullisUsers
         '''
 
         nUser = PortcullisUser.objects.get(username="normaluser")
 
-        nPortcullisUsers = PortcullisUser.objects.getEditable(nUser)
+        nPortcullisUsers = PortcullisUser.objects.get_editable(nUser)
         self.assertEqual([nUser], list(nPortcullisUsers))
 
     def test_get_editable_users_non_portcullis_user(self):
         '''
-        ' Test that a non portcullisUser object raises an exception when using PortcullisUser's getEditable
+        ' Test that a non portcullisUser object raises an exception when using PortcullisUser's get_editable
         '''
 
         aUser = User.objects.get(username="superuser")
-        self.assertRaises(TypeError, PortcullisUser.objects.getEditable, user=aUser)
+        self.assertRaises(TypeError, PortcullisUser.objects.get_editable, user=aUser)
 
 class KeyTest(TestCase):
     '''
     ' Unit Tests for the portcullis model Key
     '''
 
-    fixtures = ['portcullisUsers.json', 'keys.json']
+    fixtures = ['test_portcullisUsers.json', 'test_keys.json']
 
     def test_get_editable_keys_by_superuser(self):
         '''
-        ' Test that a superuser get's all keys using getEditable from Keys
+        ' Test that a superuser get's all keys using get_editable from Keys
         '''
 
         sUser = PortcullisUser.objects.get(username="superuser")
         keys = Key.objects.all()
 
-        sKeys = Key.objects.getEditable(sUser)
+        sKeys = Key.objects.get_editable(sUser)
         self.assertEqual(list(sKeys), list(keys))
     
     def test_get_editable_keys_by_normal_user(self):
         '''
-        ' Test that a non superuser get's only his/her keys using getEditable from Keys
+        ' Test that a non superuser get's only his/her keys using get_editable from Keys
         '''
 
         nUser = PortcullisUser.objects.get(username="normaluser")
         keys = Key.objects.filter(owner = nUser)
 
-        nKeys = Key.objects.getEditable(nUser)
+        nKeys = Key.objects.get_editable(nUser)
         self.assertEqual(list(keys), list(nKeys))
 
     def test_get_editable_keys_non_portcullis_user(self):
         '''
-        ' Test that a non portcullisUser object raises an exception when using Key's getEditable
+        ' Test that a non portcullisUser object raises an exception when using Key's get_editable
         '''
 
         aUser = User.objects.get(username="superuser")
-        self.assertRaises(TypeError, Key.objects.getEditable, user=aUser)
+        self.assertRaises(TypeError, Key.objects.get_editable, user=aUser)
     
     def test_isCurrent_expired_key(self):
         '''
@@ -184,74 +184,74 @@ class DeviceTest(TestCase):
     ' Unit Tests for the portcullis model Device
     '''
 
-    fixtures = ['portcullisUsers.json', 'devices.json']
+    fixtures = ['test_portcullisUsers.json', 'test_devices.json']
 
     def test_get_editable_devices_by_superuser(self):
         '''
-        ' Test that a superuser get's all devices using getEditable from Devices
+        ' Test that a superuser get's all devices using get_editable from Devices
         '''
 
         sUser = PortcullisUser.objects.get(username="superuser")
         devices = Device.objects.all()
 
-        sDevices = Device.objects.getEditable(sUser)
+        sDevices = Device.objects.get_editable(sUser)
         self.assertEqual(list(sDevices), list(devices))
     
     def test_get_editable_devices_by_normal_user(self):
         '''
-        ' Test that a non superuser get's only his/her devices using getEditable from Devices
+        ' Test that a non superuser get's only his/her devices using get_editable from Devices
         '''
 
         nUser = PortcullisUser.objects.get(username="normaluser")
         devices = Device.objects.filter(owner = nUser)
 
-        nDevices = Device.objects.getEditable(nUser)
+        nDevices = Device.objects.get_editable(nUser)
         self.assertEqual(list(devices), list(nDevices))
 
     def test_get_editable_devices_non_portcullis_user(self):
         '''
-        ' Test that a non portcullisUser object raises an exception when using Device's getEditable
+        ' Test that a non portcullisUser object raises an exception when using Device's get_editable
         '''
 
         aUser = User.objects.get(username="superuser")
-        self.assertRaises(TypeError, Device.objects.getEditable, user=aUser)
+        self.assertRaises(TypeError, Device.objects.get_editable, user=aUser)
 
 class DataStreamTest(TestCase):
     '''
     ' Unit Tests for the portcullis model DataStream
     '''
 
-    fixtures = ['portcullisUsers.json', 'keys.json', 'scalingFunctions.json', 'datastreams.json']
+    fixtures = ['test_portcullisUsers.json', 'test_keys.json', 'test_scalingFunctions.json', 'test_datastreams.json']
 
     def test_get_editable_datastreams_by_superuser(self):
         '''
-        ' Test that a superuser get's all datastreams using getEditable from DataStreams
+        ' Test that a superuser get's all datastreams using get_editable from DataStreams
         '''
 
         sUser = PortcullisUser.objects.get(username="superuser")
         datastreams = DataStream.objects.all()
 
-        sDataStreams = DataStream.objects.getEditable(sUser)
+        sDataStreams = DataStream.objects.get_editable(sUser)
         self.assertEqual(list(sDataStreams), list(datastreams))
     
     def test_get_editable_datastreams_by_normal_user(self):
         '''
-        ' Test that a non superuser get's only his/her datastreams using getEditable from DataStreams
+        ' Test that a non superuser get's only his/her datastreams using get_editable from DataStreams
         '''
 
         nUser = PortcullisUser.objects.get(username="normaluser")
         datastreams = DataStream.objects.filter(owner = nUser)
 
-        nDataStreams = DataStream.objects.getEditable(nUser)
+        nDataStreams = DataStream.objects.get_editable(nUser)
         self.assertEqual(list(datastreams), list(nDataStreams))
 
     def test_get_editable_datastreams_non_portcullis_user(self):
         '''
-        ' Test that a non portcullisUser object raises an exception when using DataStream's getEditable
+        ' Test that a non portcullisUser object raises an exception when using DataStream's get_editable
         '''
 
         aUser = User.objects.get(username="superuser")
-        self.assertRaises(TypeError, DataStream.objects.getEditable, user=aUser)
+        self.assertRaises(TypeError, DataStream.objects.get_editable, user=aUser)
 
     def test_get_readable_by_non_key(self):
         '''
