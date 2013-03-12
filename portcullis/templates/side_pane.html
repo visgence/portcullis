@@ -1,6 +1,8 @@
+{% load url from future %}
+
 <div id="tabs">
     <ul>
-        <li><a href="{% url side_pane-streams %}">Graphs</a></li>
+        <li><a href="{% url 'side_pane-streams' %}">Graphs</a></li>
         {% if logged_in %}
             <li><a href="#utilites">Utilities</a></li>
         {% endif %}
