@@ -11,9 +11,10 @@ def skeleton(request):
     '''
     Render the side_pane skeleton.  The other stuff will be loaded in later with ajax.
     '''
-    if request.user.is_authenticated() and request.user.is_active:
-        logged_in = True
-    else:
+
+    user = check_access(request)
+    logged_in = True
+    if user is None or isinstance(user, HttpResponse):
         logged_in = False
 
 
