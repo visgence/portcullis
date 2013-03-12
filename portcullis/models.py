@@ -36,7 +36,7 @@ class PortcullisUserManager(models.Manager):
 
         return self.filter(pk = user.pk)
     
-    def get_editable_by_user(self, user, pk):
+    def is_editable_by_user(self, user, pk):
         '''
         ' Checks if a PortcullisUser is allowed to edit a user or not.
         '
