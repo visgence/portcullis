@@ -15,9 +15,9 @@ class ScalingFunctionsTest(TestCase):
 
     fixtures = ['test_portcullisUsers.json', 'test_scalingFunctions.json']
 
-    def test_get_editable_scalingFunctions_by_user(self):
+    def test_get_editable_by_user(self):
         '''
-        ' Test that a user get's all scalingFunctions using get_editable from PortcullisUsers
+        ' Test that a user get's all scalingFunctions using get_editable from ScalingFunctions
         '''
 
         user = PortcullisUser.objects.get(username="normaluser")
@@ -26,13 +26,46 @@ class ScalingFunctionsTest(TestCase):
         scalingFuns = ScalingFunction.objects.get_editable(user)
         self.assertEqual(list(scalingFunctions), list(scalingFuns))
     
-    def test_get_editable_scalingFunctions_non_portcullis_user(self):
+    def test_get_editable__non_portcullis_user(self):
         '''
         ' Test that a non portcullisUser object raises an exception when using PortcullisUser's get_editable
         '''
 
         aUser = User.objects.get(username="superuser")
         self.assertRaises(TypeError, PortcullisUser.objects.get_editable, user=aUser)
+
+    def test_is_editable_by_user_normaluser(self):
+        '''
+        ' Test that ScalingFuncitons manager method is_editable_by_user returns
+        ' true when given a normal user and a valid pk
+        '''
+
+        pk = 1
+        user = PortcullisUser.objects.get(username="normaluser")
+
+        self.assertTrue(ScalingFunction.objects.is_editable_by_user(user, pk))
+
+    def test_is_editable_by_user_nonuser(self):
+        '''
+        ' Test that ScalingFuncitons manager method is_editable_by_user returns
+        ' a TypeError Exception when given a non user.
+        '''
+
+        pk = 1
+        user = "None User"
+
+        self.assertRaises(TypeError, ScalingFunction.objects.is_editable_by_user, user = user, pk = pk)
+
+    def test_is_editable_by_user_object_doesNotExist(self):
+        '''
+        ' Test that ScalingFuncitons manager method is_editable_by_user returns
+        ' a DoesNotExist Exception when given a pk that does not have an objects.
+        '''
+
+        pk = -1
+        user = PortcullisUser.objects.get(username="normaluser")
+
+        self.assertRaises(ScalingFunction.DoesNotExist, ScalingFunction.objects.is_editable_by_user, user = user, pk = pk)
 
 class PortcullisUserTest(TestCase):
     '''
@@ -41,7 +74,7 @@ class PortcullisUserTest(TestCase):
 
     fixtures = ['test_portcullisUsers.json']
 
-    def test_get_editable_users_by_superuser(self):
+    def test_get_editable_by_superuser(self):
         '''
         ' Test that a superuser get's all users using get_editable from PortcullisUsers
         '''
@@ -52,7 +85,7 @@ class PortcullisUserTest(TestCase):
         sPortcullisUsers = PortcullisUser.objects.get_editable(sUser)
         self.assertEqual(list(sPortcullisUsers), list(users))
     
-    def test_get_editable_users_by_normal_user(self):
+    def test_get_editable_by_normal_user(self):
         '''
         ' Test that a non superuser get's only his/her users using get_editable from PortcullisUsers
         '''
@@ -62,13 +95,68 @@ class PortcullisUserTest(TestCase):
         nPortcullisUsers = PortcullisUser.objects.get_editable(nUser)
         self.assertEqual([nUser], list(nPortcullisUsers))
 
-    def test_get_editable_users_non_portcullis_user(self):
+    def test_get_editable_non_portcullis_user(self):
         '''
         ' Test that a non portcullisUser object raises an exception when using PortcullisUser's get_editable
         '''
 
         aUser = User.objects.get(username="superuser")
         self.assertRaises(TypeError, PortcullisUser.objects.get_editable, user=aUser)
+
+    def test_is_editable_by_user_correctUser(self):
+        '''
+        ' Test that PortcullisUser manager method is_editable_by_user returns
+        ' true when given a user and that users pk
+        '''
+
+        user = PortcullisUser.objects.get(username="normaluser")
+        pk = user.pk
+
+        self.assertTrue(PortcullisUser.objects.is_editable_by_user(user, pk))
+
+    def test_is_editable_by_user_incorrectUser(self):
+        '''
+        ' Test that PortcullisUser manager method is_editable_by_user returns
+        ' false when given a non superuser and some other users pk
+        '''
+
+        user = PortcullisUser.objects.get(username="normaluser")
+        pk = 2
+
+        self.assertFalse(PortcullisUser.objects.is_editable_by_user(user, pk))
+
+    def test_is_editable_by_user_superuser(self):
+        '''
+        ' Test that PortcullisUser manager method is_editable_by_user returns
+        ' true when given a super user and some other users pk
+        '''
+
+        user = PortcullisUser.objects.get(username="superuser")
+        pk = 2
+
+        self.assertTrue(PortcullisUser.objects.is_editable_by_user(user, pk))
+
+    def test_is_editable_by_user_nonuser(self):
+        '''
+        ' Test that PortcullisUser manager method is_editable_by_user returns
+        ' a TypeError Exception when given a non user.
+        '''
+
+        pk = 1
+        user = "None User"
+
+        self.assertRaises(TypeError, PortcullisUser.objects.is_editable_by_user, user = user, pk = pk)
+
+    def test_is_editable_by_user_object_doesNotExist(self):
+        '''
+        ' Test that PortcullisUser manager method is_editable_by_user returns
+        ' a DoesNotExist Exception when given a pk that does not have an objects.
+        '''
+
+        pk = -1
+        user = PortcullisUser.objects.get(username="normaluser")
+
+        self.assertRaises(PortcullisUser.DoesNotExist, PortcullisUser.objects.is_editable_by_user, user = user, pk = pk)
 
 class KeyTest(TestCase):
     '''
@@ -179,6 +267,61 @@ class KeyTest(TestCase):
         key = Key.objects.get(key = "valid_uses_key")
         self.assertEquals(Key.objects.validate(key.key), key)
 
+    def test_is_editable_by_user_correctUser(self):
+        '''
+        ' Test that Key manager method is_editable_by_user returns
+        ' true when given a user and the pk of a Key owned by that user.
+        '''
+
+        user = PortcullisUser.objects.get(username="normaluser")
+        pk = "normaluser_key4"
+
+        self.assertTrue(Key.objects.is_editable_by_user(user, pk))
+
+    def test_is_editable_by_user_incorrectUser(self):
+        '''
+        ' Test that Key manager method is_editable_by_user returns
+        ' false when given a non superuser and the pk of a key owned by another user.
+        '''
+
+        user = PortcullisUser.objects.get(username="normaluser")
+        pk = "staffuser_key3"
+
+        self.assertFalse(Key.objects.is_editable_by_user(user, pk))
+
+    def test_is_editable_by_user_superuser(self):
+        '''
+        ' Test that Key manager method is_editable_by_user returns
+        ' true when given a super user and the pk of a Key owned by some other user.
+        '''
+
+        user = PortcullisUser.objects.get(username="superuser")
+        pk = "normaluser_key4"
+
+        self.assertTrue(Key.objects.is_editable_by_user(user, pk))
+
+    def test_is_editable_by_user_nonuser(self):
+        '''
+        ' Test that Key manager method is_editable_by_user returns
+        ' a TypeError Exception when given a non user.
+        '''
+
+        pk = "normaluser_key4"
+        user = "None User"
+
+        self.assertRaises(TypeError, Key.objects.is_editable_by_user, user = user, pk = pk)
+
+    def test_is_editable_by_user_object_doesNotExist(self):
+        '''
+        ' Test that Key manager method is_editable_by_user returns
+        ' a DoesNotExist Exception when given a pk that does not have an objects.
+        '''
+
+        pk = "Im an incorrect pk"
+        user = PortcullisUser.objects.get(username="normaluser")
+
+        self.assertRaises(Key.DoesNotExist, Key.objects.is_editable_by_user, user = user, pk = pk)
+
 class DeviceTest(TestCase):
     '''
     ' Unit Tests for the portcullis model Device
@@ -215,6 +358,61 @@ class DeviceTest(TestCase):
 
         aUser = User.objects.get(username="superuser")
         self.assertRaises(TypeError, Device.objects.get_editable, user=aUser)
+
+    def test_is_editable_by_user_correctUser(self):
+        '''
+        ' Test that Device manager method is_editable_by_user returns
+        ' true when given a user and a device pk where the device's owner is the user.
+        '''
+
+        user = PortcullisUser.objects.get(username="normaluser")
+        pk = 3
+
+        self.assertTrue(Device.objects.is_editable_by_user(user, pk))
+
+    def test_is_editable_by_user_incorrectUser(self):
+        '''
+        ' Test that Device manager method is_editable_by_user returns
+        ' false when given a non superuser and some other users device pk
+        '''
+
+        user = PortcullisUser.objects.get(username="normaluser")
+        pk = 2
+
+        self.assertFalse(Device.objects.is_editable_by_user(user, pk))
+
+    def test_is_editable_by_user_superuser(self):
+        '''
+        ' Test that Device manager method is_editable_by_user returns
+        ' true when given a super user and some other users device pk
+        '''
+
+        user = PortcullisUser.objects.get(username="superuser")
+        pk = 2
+
+        self.assertTrue(Device.objects.is_editable_by_user(user, pk))
+
+    def test_is_editable_by_user_nonuser(self):
+        '''
+        ' Test that Device manager method is_editable_by_user returns
+        ' a TypeError Exception when given a non user.
+        '''
+
+        pk = 1
+        user = "None User"
+
+        self.assertRaises(TypeError, Device.objects.is_editable_by_user, user = user, pk = pk)
+
+    def test_is_editable_by_user_object_doesNotExist(self):
+        '''
+        ' Test that Device manager method is_editable_by_user returns
+        ' a DoesNotExist Exception when given a pk that does not have an object.
+        '''
+
+        pk = -1
+        user = PortcullisUser.objects.get(username="normaluser")
+
+        self.assertRaises(Device.DoesNotExist, Device.objects.is_editable_by_user, user = user, pk = pk)
 
 class DataStreamTest(TestCase):
     '''
@@ -362,3 +560,59 @@ class DataStreamTest(TestCase):
 
         uStreams = DataStream.objects.get_viewable_by_user(user)
         self.assertEqual(list(uStreams), dStreams)
+
+    def test_is_editable_by_user_correctUser(self):
+        '''
+        ' Test that DataStream manager method is_editable_by_user returns
+        ' true when given a user and the pk of a data stream owned by that user.
+        '''
+
+        user = PortcullisUser.objects.get(username="normaluser")
+        pk = 4
+
+        self.assertTrue(DataStream.objects.is_editable_by_user(user, pk))
+
+    def test_is_editable_by_user_incorrectUser(self):
+        '''
+        ' Test that DataStream manager method is_editable_by_user returns
+        ' false when given a non superuser and the pk of a data stream owned by some other user.
+        '''
+
+        user = PortcullisUser.objects.get(username="normaluser")
+        pk = 2
+
+        self.assertFalse(DataStream.objects.is_editable_by_user(user, pk))
+
+    def test_is_editable_by_user_superuser(self):
+        '''
+        ' Test that DataStream manager method is_editable_by_user returns
+        ' true when given a super user and a pk for a data stream owned by some other user.
+        '''
+
+        user = PortcullisUser.objects.get(username="superuser")
+        pk = 2
+
+        self.assertTrue(DataStream.objects.is_editable_by_user(user, pk))
+
+    def test_is_editable_by_user_nonuser(self):
+        '''
+        ' Test that DataStream manager method is_editable_by_user returns
+        ' a TypeError Exception when given a non user.
+        '''
+
+        pk = 1
+        user = "None User"
+
+        self.assertRaises(TypeError, DataStream.objects.is_editable_by_user, user = user, pk = pk)
+
+    def test_is_editable_by_user_object_doesNotExist(self):
+        '''
+        ' Test that DataStream manager method is_editable_by_user returns
+        ' a DoesNotExist Exception when given a pk that does not have an objects.
+        '''
+
+        pk = -1
+        user = PortcullisUser.objects.get(username="normaluser")
+
+        self.assertRaises(DataStream.DoesNotExist, DataStream.objects.is_editable_by_user, user = user, pk = pk)
+
