@@ -307,21 +307,25 @@ def stream_subtree(request, name, group):
     if isinstance(portcullisUser, HttpResponse):
         return portcullisUser.content
 
-    streams = DataStream.objects.filter(name__startswith=name)
-
     # Check that we are logged in before trying to filter the streams
     if isinstance(portcullisUser, PortcullisUser):
         if group == 'owned':
+            streams = DataStream.objects.filter(name__startswith=name)
             streams = streams.filter(owner=portcullisUser)
         elif group == 'viewable':
-            streams = streams.filter(can_read__owner=portcullisUser).exclude(owner=portcullisUser)
+            streams = DataStream.objects.get_viewable_by_user(portcullisUser)
+            streams = streams.filter(name__startswith=name)
+            streams = streams.exclude(owner=portcullisUser)
         elif group == 'public':
+            streams = DataStream.objects.filter(name__startswith=name)
+            viewableStreams = DataStream.objects.get_viewable_by_user(portcullisUser)
             streams = streams.filter(is_public=True).exclude(owner=portcullisUser)
-            streams = streams.exclude(can_read__owner=portcullisUser)
+            streams = streams.exclude(id__in=viewableStreams)
         else:
             return json.dumps({'errors': 'Error: %s is not a valid datastream type.' % group})
 
     elif group == 'public':
+        streams = DataStream.objects.filter(name__startswith=name)
         streams = streams.filter(is_public=True)
     else:
         return json.dumps({'errors': 'Error: You must be logged in to see the %s datastream type.' % group})
