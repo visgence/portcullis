@@ -38,13 +38,13 @@ class PortcullisUserManager(models.Manager):
     
     def get_editable_by_user(self, user, pk):
         '''
-        ' Checks if a PortcullisUser is allowed to edit a user or not.
+        ' Get's an instance of PortcullisUser if the given user is allowed to edit it.
         '
         ' Keyword Arguments: 
         '   user - PortcullisUser to check if the user can be edited by them.
-        '   pk   - Primary key of PortcullisUser to check if user is allowed to edit or not.
+        '   pk   - Primary key of PortcullisUser to get.
         '
-        ' Return: True if user is allowed to edit and False otherwise.
+        ' Return: PortcullisUser that user is allowed to edit or None if not.
         '''
 
         #Validate user object
@@ -57,11 +57,11 @@ class PortcullisUserManager(models.Manager):
             raise PortcullisUser.DoesNotExist("A Portcullis User does not exist for the primary key %s." % str(pk))
 
         if user.is_superuser:
-            return True
+            return u
         if u == user:
-            return True
+            return u
 
-        return False
+        return None
 
 
 class PortcullisUser(User):
@@ -118,17 +118,17 @@ class ScalingFunctionManager(models.Manager):
         #TODO: Get better permissions on this model for PortcullisUsers
         return self.all()
 
-    def is_editable_by_user(self, user, pk):
+    def get_editable_by_user(self, user, pk):
         '''
-        ' Checks if a PortcullisUser is allowed to edit a scaling function or not.
+        ' Get's an instance of ScalingFunction if the given user is allowed to edit it.
         '
         ' Keyword Arguments: 
         '   user - PortcullisUser to check if the scaling function can be edited by them.
-        '   pk   - Primary key of ScalingFunction to check if user is allowed to edit or not.
+        '   pk   - Primary key of ScalingFunction to get.
         '
-        ' Return: True if user is allowed to edit the ScalingFunction and False otherwise.
+        ' Return: ScalingFunction that user is allowed to edit or None if not.
         '''
-
+        #TODO: This will need to be updated once we add some kind of ownership to scaling functions.
         #Validate user object
         if not isinstance(user, PortcullisUser):
             raise TypeError("%s is not a PortcullisUser" % str(user))
@@ -138,7 +138,7 @@ class ScalingFunctionManager(models.Manager):
         except ScalingFunction.DoesNotExist as e:
             raise ScalingFunction.DoesNotExist("A scaling function does not exist for the primary key %s." % str(pk))
 
-        return True
+        return sf
 
 
 class ScalingFunction(models.Model):
@@ -185,7 +185,6 @@ class KeyManager(models.Manager):
             return key
         return None
 
-
     def genKeyHash(self, username = ''):
         '''
         ' return a hashed string to use for a key
@@ -200,7 +199,6 @@ class KeyManager(models.Manager):
         md5.update(username)
         md5.update(randomStr)
         return b64encode(md5.digest())
-
 
     def generateKey(self, user, description = '', expiration = None, uses = None, readL = None, postL = None):
         '''
@@ -253,17 +251,16 @@ class KeyManager(models.Manager):
             return self.all()
         
         return self.filter(owner = user)
-
         
-    def is_editable_by_user(self, user, pk):
+    def get_editable_by_user(self, user, pk):
         '''
-        ' Checks if a PortcullisUser is allowed to edit a key or not.
+        ' Get's an instance of Key if the given user is allowed to edit it.
         '
         ' Keyword Arguments: 
         '   user - PortcullisUser to check if the key can be edited by them.
-        '   pk   - Primary key of Key to check if user is allowed to edit or not.
+        '   pk   - Primary key of Key to get.
         '
-        ' Return: True if user is allowed to edit the key and False otherwise.
+        ' Return: Key that user is allowed to edit or None if not.
         '''
 
         #Validate user object
@@ -276,11 +273,11 @@ class KeyManager(models.Manager):
             raise Key.DoesNotExist("A key does not exist for the primary key %s" % str(pk))
 
         if user.is_superuser:
-            return True
+            return key
         if key.owner == user:
-            return True
+            return key
 
-        return False
+        return None
 
 
 class Key(models.Model):
@@ -367,15 +364,15 @@ class DeviceManager(models.Manager):
         
         return self.filter(owner = user)
 
-    def is_editable_by_user(self, user, pk):
+    def get_editable_by_user(self, user, pk):
         '''
-        ' Checks if a PortcullisUser is allowed to edit a device or not.
+        ' Get's an instance of Device if the given user is allowed to edit it.
         '
         ' Keyword Arguments: 
         '   user - PortcullisUser to check if the device can be edited by them.
-        '   pk   - Primary key of Device to check if user is allowed to edit or not.
+        '   pk   - Primary key of Device to get.
         '
-        ' Return: True if user is allowed to edit the device and False otherwise.
+        ' Return: Device that user is allowed to edit or None if not.
         '''
 
         #Validate user object
@@ -388,11 +385,11 @@ class DeviceManager(models.Manager):
             raise Device.DoesNotExist("A device does not exist for the primary key %s." % str(pk))
 
         if user.is_superuser:
-            return True
+            return d
         if d.owner == user:
-            return True
+            return d
 
-        return False
+        return None
 
 
 class Device(models.Model):
@@ -552,15 +549,15 @@ class DataStreamManager(models.Manager):
         
         return self.filter(owner = user)
 
-    def is_editable_by_user(self, user, pk):
+    def get_editable_by_user(self, user, pk):
         '''
-        ' Checks if a PortcullisUser is allowed to edit a data stream or not.
+        ' Get's an instance of DataStream if the given user is allowed to edit it.
         '
         ' Keyword Arguments: 
         '   user - PortcullisUser to check if the data stream can be edited by them.
-        '   pk   - Primary key of DataStream to check if user is allowed to edit or not.
+        '   pk   - Primary key of DataStream to get.
         '
-        ' Return: True if user is allowed to edit the data stream and False otherwise.
+        ' Return: DataStream that user is allowed to edit or None if not.
         '''
 
         #Validate user object
@@ -573,11 +570,11 @@ class DataStreamManager(models.Manager):
             raise DataStream.DoesNotExist("A Data Stream does not exist for the primary key %s" % str(pk))
 
         if user.is_superuser:
-            return True
+            return ds
         if ds.owner == user:
-            return True
+            return ds
 
-        return False
+        return None
 
 
 class DataStream(models.Model):
