@@ -48,7 +48,7 @@ def read_source(request, model_name):
 
     if isinstance(portcullisUser, HttpResponse):
         return portcullisUser.content
-    elif request.user.is_anonymous():
+    elif portcullisUser is None:
         return json.dumps(
             {'errors': 'User must be logged in to use this feature.'}
             )
@@ -86,7 +86,7 @@ def update(request, model_name, data):
     if isinstance(portcullisUser, HttpResponse):
         transaction.rollback()
         return portcullisUser.content
-    elif request.user.is_anonymous():
+    elif portcullisUser is None:
         transaction.rollback()
         return json.dumps({'errors': 'User must be logged in to use this feature.'})
 
@@ -223,7 +223,7 @@ def get_columns(request, model_name):
 
     if isinstance(portcullisUser, HttpResponse):
         return portcullisUser.content
-    elif request.user.is_anonymous():
+    elif portcullisUser is None:
         return json.dumps({'errors': 'User must be logged in to use this feature.'})
 
     cls = models.loading.get_model('portcullis', model_name)
