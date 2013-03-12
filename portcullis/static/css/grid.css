@@ -1,0 +1,34 @@
+.slick-row.active
+{
+    background: yellow;
+}
+
+.slick-cell.active
+{
+    background: grey;
+}
+
+.slick-header-column
+{
+    text-align: center;
+}
+
+.slick-cell
+{
+    text-align: center;
+}
+
+.confirmation.dialogue
+{
+    z-index: 999999;
+}
+
+.ui-widget-overlay
+{
+    z-index: 999998;
+}
+
+div#widget_container div.grid
+{
+    height: 70%;
+}
