@@ -53,7 +53,7 @@ function create_plot_click_handler(datastream_id, latestPos)
             var y;
             var p1 = series.data[j - 1];
             var p2 = series.data[j];
-            if (p1 !== null && p2 !== null) {
+            if ((p1 !== null && p1 !== undefined) && (p2 !== null && p2 !== undefined) ) {
                 y = p1[1] + (p2[1] - p1[1]) * (pos.x - p1[0]) / (p2[0] - p1[0]);
 
                 var time = new Date(pos.x + timezone_offset);
@@ -699,7 +699,7 @@ function setupDownload(datastream_id)
 {
     $('#downloadify'+datastream_id).downloadify({
         filename: function(){
-            return 'datastream_'+datastream_id+'\.csv'; 
+            return 'datastream_'+datastream_id+'.csv'; 
         },
         data: function(){ 
             return document.getElementById('sensor'+datastream_id+'_csv').value;
@@ -718,7 +718,6 @@ function setupDownload(datastream_id)
         downloadImage: '/static/images/download.png',
         width: 100,
         height: 30,
-        transparent: true,
         append: false
     });
 }
