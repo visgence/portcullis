@@ -36,7 +36,7 @@ class PortcullisUserManager(models.Manager):
 
         return self.filter(pk = user.pk)
     
-    def is_editable_by_user(self, user, pk):
+    def get_editable_by_user(self, user, pk):
         '''
         ' Checks if a PortcullisUser is allowed to edit a user or not.
         '
@@ -73,7 +73,28 @@ class PortcullisUser(User):
 
     pass
 
-    
+    def is_editable_by_user(self, user):
+        '''
+        ' Checks if a PortcullusUser instance is allowed to edited by a user or not.
+        '
+        ' Keyword Arguments: 
+        '   user - PortcullisUser to check if the user can be edited by them.
+        '
+        ' Return: True if user is allowed to edit and False otherwise.
+        '''
+
+        #Validate user object
+        if not isinstance(user, PortcullisUser):
+            raise TypeError("%s is not a PortcullisUser" % str(user))
+
+        if user.is_superuser:
+            return True
+        if user == self:
+            return True
+
+        return False
+
+
 class ScalingFunctionManager(models.Manager):    
     def get_by_natural_key(self, name):
         return self.get(name = name)
@@ -127,6 +148,27 @@ class ScalingFunction(models.Model):
 
     def __unicode__(self):
         return self.name
+
+    def is_editable_by_user(self, user):
+        '''
+        ' Checks if a ScalingFunction instance is allowed to edited by a user or not.
+        '
+        ' Keyword Arguments: 
+        '   user - PortcullisUser to check if the scaling function can be edited by them.
+        '
+        ' Return: True if user is allowed to edit and False otherwise.
+        '''
+        #TODO:This does not currently fail unless given a bogus PortcullisUser object. 
+        #     We need to have some kind of ownership relationship on this model.
+
+        #Validate user object
+        if not isinstance(user, PortcullisUser):
+            raise TypeError("%s is not a PortcullisUser" % str(user))
+
+        if user.is_superuser:
+            return True
+
+        return True
 
 
 class KeyManager(models.Manager):
@@ -249,6 +291,28 @@ class Key(models.Model):
     num_uses = models.IntegerField(null = True, blank = True)
     objects = KeyManager()
 
+
+    def is_editable_by_user(self, user):
+        '''
+        ' Checks if a Key instance is allowed to edited by a user or not.
+        '
+        ' Keyword Arguments: 
+        '   user - PortcullisUser to check if the key can be edited by them.
+        '
+        ' Return: True if user is allowed to edit and False otherwise.
+        '''
+
+        #Validate user object
+        if not isinstance(user, PortcullisUser):
+            raise TypeError("%s is not a PortcullisUser" % str(user))
+
+        if user.is_superuser:
+            return True
+        if user == self.owner:
+            return True
+
+        return False
+
     def isCurrent(self):
         '''
         ' Check expiration, return True if this key is current, false if expired.
@@ -338,6 +402,27 @@ class Device(models.Model):
     key = models.ForeignKey(Key, null = True, blank = True, on_delete=models.SET_NULL)
     owner = models.ForeignKey(PortcullisUser)
     objects = DeviceManager()
+
+    def is_editable_by_user(self, user):
+        '''
+        ' Checks if a Device instance is allowed to edited by a user or not.
+        '
+        ' Keyword Arguments: 
+        '   user - PortcullisUser to check if the device can be edited by them.
+        '
+        ' Return: True if user is allowed to edit and False otherwise.
+        '''
+
+        #Validate user object
+        if not isinstance(user, PortcullisUser):
+            raise TypeError("%s is not a PortcullisUser" % str(user))
+
+        if user.is_superuser:
+            return True
+        if user == self.owner:
+            return True
+
+        return False
 
     class Meta:
         unique_together = (('name', 'owner'),)
@@ -520,6 +605,27 @@ class DataStream(models.Model):
 
     def __unicode__(self):
         return "Stream_ID: %s" % self.id  + " Node: %s," % self.node_id + " Port: %s," % self.port_id + " Name: " + self.name
+
+    def is_editable_by_user(self, user):
+        '''
+        ' Checks if a DataStream instance is allowed to edited by a user or not.
+        '
+        ' Keyword Arguments: 
+        '   user - PortcullisUser to check if the data stream can be edited by them.
+        '
+        ' Return: True if user is allowed to edit and False otherwise.
+        '''
+
+        #Validate user object
+        if not isinstance(user, PortcullisUser):
+            raise TypeError("%s is not a PortcullisUser" % str(user))
+
+        if user.is_superuser:
+            return True
+        if user == self.owner:
+            return True
+
+        return False
 
     def canRead(self, obj):
         '''
