@@ -11,7 +11,7 @@
 
 //global
 var timezone_date = new Date();
-var timezone_offset = timezone_date.getTimezoneOffset()*60*1000//milliseconds
+var timezone_offset = timezone_date.getTimezoneOffset()*60*1000;//milliseconds
 var overviewPlots = {};
 var plots = {};
 
@@ -25,7 +25,7 @@ function create_plot_select_handler(datastream_id)
             zoom_graph(ranges, datastream_id);
         var start = new Date(ranges.xaxis.from + timezone_offset);
         var end= new Date(ranges.xaxis.to + timezone_offset);
-    } 
+    };
 }//end create_plot_select_handler
 
 function create_plot_click_handler(datastream_id, latestPos) 
@@ -43,7 +43,7 @@ function create_plot_click_handler(datastream_id, latestPos)
             var series = dataset[i];
             // Find the nearest points, x-wise
             for (j = 0; j < series.data.length; ++j) {
-                if(series.data[j] == null)
+                if(series.data[j] === null)
                     continue;
                 if (series.data[j][0] > pos.x)
                     break;
@@ -53,7 +53,7 @@ function create_plot_click_handler(datastream_id, latestPos)
             var y;
             var p1 = series.data[j - 1];
             var p2 = series.data[j];
-            if (p1 != null && p2 != null) {
+            if ((p1 !== null && p1 !== undefined) && (p2 !== null && p2 !== undefined) ) {
                 y = p1[1] + (p2[1] - p1[1]) * (pos.x - p1[0]) / (p2[0] - p1[0]);
 
                 var time = new Date(pos.x + timezone_offset);
@@ -64,7 +64,7 @@ function create_plot_click_handler(datastream_id, latestPos)
             else
                 reset_graph_selection(datastream_id);
         } 
-    }
+    };
 }
 
 function set_graph_range_labels(start, end, datastream_id)
@@ -173,8 +173,8 @@ function get_granularity() {
     if(!default_granularity)
         default_granularity = 300;
 
-    if($("#granularity").val() == '')
-        $("#granularity").val(default_granularity) 
+    if($("#granularity").val() === '')
+        $("#granularity").val(default_granularity);
 
     return $("#granularity").val();
 }
@@ -222,7 +222,7 @@ function get_ranges() {
     var range_data = { 
         xaxis: { 
                   from: epoch_start, 
-                    to: epoch_end,
+                    to: epoch_end
         }
     };
     return range_data;
@@ -253,12 +253,12 @@ function get_graph_range (g_id)
     var axes = graph.getAxes();
     var ranges = {
         xaxis: {
-            from: axes['xaxis']['min'],
-            to  : axes['xaxis']['max']
+            from: axes.xaxis.min,
+            to  : axes.xaxis.max
         },
         yaxis: {
-            from: axes['yaxis']['min'],
-            to  : axes['yaxis']['max']
+            from: axes.yaxis.min,
+            to  : axes.yaxis.max
         }
     };
 
@@ -269,7 +269,7 @@ function get_graph_range (g_id)
 function scale_data(data)
 {
 
-    var tmpData = new Array();
+    var tmpData = [];
 
     var avg_t_diff = 0;
     var t_diff = null;
@@ -288,11 +288,11 @@ function scale_data(data)
                 tmpData.push(null);
         }
         last_t = data.data[i][0];
-        var tmp = new Array();
+        var tmp = [];
         tmp[0] = data.data[i][0] = data.data[i][0]*1000 - timezone_offset;//converting seconds to milliseconds
-        tmp[1] = scaling_functions[data.scaling_function](data.data[i][1])
+        tmp[1] = scaling_functions[data.scaling_function](data.data[i][1]);
 
-        tmpData.push(tmp)
+        tmpData.push(tmp);
         
     }
     data.data = tmpData;
@@ -352,16 +352,16 @@ function plot_graph(data, options, div) {
      */
 
     var default_color = $('#minicolor_'+data.datastream_id).val();
-    if(default_color != '')
-        data.color = default_color
+    if(default_color !== '')
+        data.color = default_color;
 
     var scaled_data = scale_data(data);
     var csv="time,raw reading,scaled value\n";
-    for (var i=0, j=0; i < scaled_data['data'].length; i++) {
+    for (var i=0, j=0; i < scaled_data.data.length; i++) {
         if ( data.data[i] ) {
-            csv += data['data'][i][0]+",";
-            csv += data['raw_data'][j][1]+",";
-            csv += scaled_data['data'][i][1]+"\n";
+            csv += data.data[i][0]+",";
+            csv += data.raw_data[j][1]+",";
+            csv += scaled_data.data[i][1]+"\n";
             j++;
         }
     }
@@ -369,7 +369,7 @@ function plot_graph(data, options, div) {
     var plot = $.plot($(div), [scaled_data], options);
     $(div+"_csv").html(csv);
     $('#datapoints_'+data.datastream_id).text(data.num_readings);
-    $('#actual_datapoints_'+data.datastream_id).text(scaled_data['data'].length);
+    $('#actual_datapoints_'+data.datastream_id).text(scaled_data.data.length);
 
     $('#'+data.datastream_id).removeClass('empty');
 
@@ -429,7 +429,7 @@ function zoom_graph_callback(ranges, select) {
 
     return function(data) {
 
-        if(data.data.length == 0) {
+        if(data.data.length === 0) {
             var msg = "No data for this range.";
             plot_empty_graph(data.datastream_id, msg);
         }
@@ -457,8 +457,9 @@ function graph_overview_callback() {
     var ranges = get_ranges();
 
     return function (data) {
-        if(data.data.length == 0) {
-            var msg = "No data for this range.";
+        var msg = '';
+        if(data.data.length === 0) {
+            msg = "No data for this range.";
             plot_empty_graph(data.datastream_id, msg);
             graph_options_visibility(data.datastream_id, 'none');
            
@@ -466,7 +467,7 @@ function graph_overview_callback() {
             $('#'+data.datastream_id).addClass('empty');
         }
         else if(!data.permission) {
-            var msg = "You do not have permission to view this graph.";
+            msg = "You do not have permission to view this graph.";
             plot_empty_graph(data.datastream_id, msg);
             graph_options_visibility(data.datastream_id, 'none');
             
@@ -488,6 +489,10 @@ function graph_overview_callback() {
 
         //set the graphs title
         $("#graph_title" + data.datastream_id).text(data.ds_label);
+
+        // For saved views, refresh the graph
+        if ( data.zoom_start )
+            refresh_graph(data.datastream_id);
     };
 }
 
@@ -497,12 +502,12 @@ function load_graph(datastream_id, ranges, callback) {
     var indicator_s = spin(document.getElementById('stream_span_' + datastream_id), 'tiny');
     var indicator_g = spin(document.getElementById('graph_container_' + datastream_id));
 
-    var getData = new Object();
-    getData['start'] = Math.round(ranges.xaxis.from/1000 + timezone_offset/1000);
-    getData['end'] = Math.round(ranges.xaxis.to/1000 + timezone_offset/1000);
-    getData['granularity'] =  granularity;
-    getData['datastream_id'] = datastream_id;
-    getData['reduction'] = $('#reduction_select_' + datastream_id).val();
+    var getData = {};
+    getData.start = Math.round(ranges.xaxis.from/1000 + timezone_offset/1000);
+    getData.end = Math.round(ranges.xaxis.to/1000 + timezone_offset/1000);
+    getData.granularity =  granularity;
+    getData.datastream_id = datastream_id;
+    getData.reduction = $('#reduction_select_' + datastream_id).val();
 
     json_data = JSON.stringify(getData);
     $.get("/graphs/render_graph/", {'json_data': json_data}, function(data) {
@@ -582,17 +587,17 @@ function renderOverview(data, ranges)
             mode: "time", 
             timeformat: "%m-%d %h:%M %p",
             ticks: 5 ,
-            min: !data['xmin'] ? ranges.xaxis.from : data['xmin']*1000 - timezone_offset,
-            max: !data['xmax'] ? ranges.xaxis.to : data['xmax']*1000 - timezone_offset
+            min: !data.xmin ? ranges.xaxis.from : data.xmin*1000 - timezone_offset,
+            max: !data.xmax ? ranges.xaxis.to : data.xmax*1000 - timezone_offset
         },
         selection: { mode: "x" }
     };
 
     var default_color = $('#minicolor_'+data.datastream_id).val();
-    if(default_color != '')
-        data.color = default_color
+    if(default_color !== '')
+        data.color = default_color;
 
-    if(data.min_value == null && data.max_value == null )
+    if(data.min_value === null && data.max_value === null )
         options.yaxis = {min:data.min_value, max:data.max_value};
     else
         options.yaxis = {min:data.min_value, max:data.max_value,ticks:[data.min_value, data.max_value]};
@@ -628,6 +633,8 @@ function refresh_graphs ()
  */
 function resetZoom(streamId)
 {
+    var overviewData = null;
+    var ranges = null;
     if($("#zoom_sync_"+streamId).is(':checked'))         
     {
         divs = $(".portcullis-graph:not(.empty)");
@@ -637,30 +644,30 @@ function resetZoom(streamId)
             if($("#zoom_sync_"+datastream_id).is(':checked'))         
             {
                 overviewPlots[datastream_id].clearSelection(true);
-                var overviewData = overviewPlots[datastream_id].getData();
-                var ranges = {
+                overviewData = overviewPlots[datastream_id].getData();
+                ranges = {
                     xaxis: {
                         from: overviewData[0].xaxis.min,
                         to: overviewData[0].xaxis.max
                     }
                 };
-                delete overviewData[0]['lines'];
-                delete overviewData[0]['shadowSize'];
+                delete overviewData[0].lines;
+                delete overviewData[0].shadowSize;
                 renderGraph(overviewData[0], ranges, false);
             }
         }
     }
     else {
         overviewPlots[streamId].clearSelection(true);
-        var overviewData = overviewPlots[streamId].getData();
-        var ranges = {
+        overviewData = overviewPlots[streamId].getData();
+        ranges = {
             xaxis: {
                 from: overviewData[0].xaxis.min,
                 to: overviewData[0].xaxis.max
             }
         };
-        delete overviewData[0]['lines'];
-        delete overviewData[0]['shadowSize'];
+        delete overviewData[0].lines;
+        delete overviewData[0].shadowSize;
         renderGraph(overviewData[0], ranges, false);
     }
     
@@ -696,7 +703,7 @@ function setupDownload(datastream_id)
 {
     $('#downloadify'+datastream_id).downloadify({
         filename: function(){
-            return 'datastream_'+datastream_id+'\.csv'; 
+            return 'datastream_'+datastream_id+'.csv'; 
         },
         data: function(){ 
             return document.getElementById('sensor'+datastream_id+'_csv').value;
@@ -715,7 +722,6 @@ function setupDownload(datastream_id)
         downloadImage: '/static/images/download.png',
         width: 100,
         height: 30,
-        transparent: true,
         append: false
     });
 }
@@ -752,31 +758,31 @@ function toggle_date_range(select, date_id, mutable_select)
 */
 function saveView()
 {
-    var view = new Object();
-    view['graphs'] = $.makeArray($('.portcullis-graph').map(function(index, domElement) {
-        var graph = new Object();
-        graph['ds_id'] = this.id;
+    var view = {};
+    view.graphs = $.makeArray($('.portcullis-graph').map(function(index, domElement) {
+        var graph = {};
+        graph.ds_id = this.id;
         try {
             var zrange = get_graph_range(this.id);
-            graph['zoom_start'] = Math.round(zrange.xaxis.from/1000.0 + timezone_offset/1000.0);
-            graph['zoom_end'] = Math.round(zrange.xaxis.to/1000.0 + timezone_offset/1000.0);
+            graph.zoom_start = Math.round(zrange.xaxis.from/1000.0 + timezone_offset/1000.0);
+            graph.zoom_end = Math.round(zrange.xaxis.to/1000.0 + timezone_offset/1000.0);
         } catch (e) {
             console.log('Error getting zoom ranges: ' + e);
             // graph has no data here, so it is not zoomed
-            graph['zoom_start'] = null;
-            graph['zoom_end'] = null;
+            graph.zoom_start = null;
+            graph.zoom_end = null;
         }
         
-        graph['reduction'] = $('#reduction_select_'+this.id).val();
+        graph.reduction = $('#reduction_select_'+this.id).val();
         return graph;
     }));
 
     ranges = get_ranges();
-    view['start'] = Math.round(ranges.xaxis.from/1000 + timezone_offset/1000);
-    view['end'] = Math.round(ranges.xaxis.to/1000 + timezone_offset/1000);
-    view['granularity'] = get_granularity();
+    view.start = Math.round(ranges.xaxis.from/1000 + timezone_offset/1000);
+    view.end = Math.round(ranges.xaxis.to/1000 + timezone_offset/1000);
+    view.granularity = get_granularity();
 
-    csrf = $('input[name="csrfmiddlewaretoken"]').val()
+    csrf = $('input[name="csrfmiddlewaretoken"]').val();
 
     $.post('/portcullis/createSavedView/', {'jsonData': JSON.stringify(view), 'csrfmiddlewaretoken': csrf},
            function (data) {
@@ -786,7 +792,7 @@ function saveView()
                    $('#savedViewLink').html(data.errors);
                }
                else
-                   $('#savedViewLink').html(data['html']);
+                   $('#savedViewLink').html(data.html);
            });
 }
 
@@ -804,7 +810,7 @@ function ready_checkboxes()
 function ready_minicolors(datastream_id)
 { 
     var graph_data = plots[datastream_id].getData();
-    var default_color = graph_data[0]['color'];
+    var default_color = graph_data[0].color;
 
     $('#minicolor_'+datastream_id).minicolors({
         animationSpeed: 100,
@@ -822,8 +828,8 @@ function ready_minicolors(datastream_id)
             var overview_data = overview.getData();
              
             //Change color within data
-            graph_data[0]['color'] = hex;
-            overview_data[0]['color'] = hex;
+            graph_data[0].color = hex;
+            overview_data[0].color = hex;
 
             //Set the data back and tell graphs to draw
             plots[datastream_id].setData(graph_data);
@@ -887,8 +893,8 @@ function load_unload_stream(checkbox)
 {
     var datastream_id = $(checkbox).val();     
     if($(checkbox).attr('checked')) {
-        var stream = new Object();
-        stream['stream'] = datastream_id;
+        var stream = {};
+        stream.stream = datastream_id;
         var json = JSON.stringify(stream);
 
         //If we're already loading this graph
