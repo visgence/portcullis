@@ -40,14 +40,6 @@
         "pk": "valid_date_key2",
         "model": "portcullis.Key",
         "fields": {
-            "owner": 4, 
-            "expiration": "2030-01-01 09:30+00:00"
-        }
-    },
-    {
-        "pk": "valid_date_key3",
-        "model": "portcullis.Key",
-        "fields": {
             "owner": 5, 
             "expiration": "2030-01-01 09:30+00:00"
         }
