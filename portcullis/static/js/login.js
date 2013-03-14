@@ -56,9 +56,15 @@ function changePassDialog()
                 // Send the change password request
                 var postData = {};
                 var self = this;
+
+                postData.username = $('#passwordUsername').val();
                 postData.oldPassword = $('#oldPassword').val();
                 postData.newPassword = $('#passwordInput').val();
-                
+
+                if ( postData.username === '' ) {
+                    makeDialog('Please enter your username.', 'Error', [ok]);
+                    return;
+                }
                 if ( postData.oldPassword === '' ) {
                     makeDialog('Please enter your old password', 'Error', [ok]);
                     return;
@@ -72,7 +78,7 @@ function changePassDialog()
                     return;
                 }
                 var csrf = $('input[name="csrfmiddlewaretoken"]').val();
-                $.post('/portcullis/changePassword', {csrfmiddlewaretoken: csrf,
+                $.post('/portcullis/changePassword/', {csrfmiddlewaretoken: csrf,
                                                       jsonData: JSON.stringify(postData)},
                        function(resp) {
                            if ( resp.errors ) {
