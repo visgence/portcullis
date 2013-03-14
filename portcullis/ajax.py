@@ -48,24 +48,26 @@ def read_source(request, model_name, get_editable):
     if isinstance(portcullisUser, HttpResponse):
         return portcullisUser.content
     elif portcullisUser is None:
-        return json.dumps(
-            {'errors': 'User must be logged in to use this feature.'}
-            )
+        return json.dumps({'errors': 'User must be logged in to use this feature.'})
 
     cls = models.loading.get_model('portcullis', model_name)
 
+    read_only = False
     try:
         #Only get the objects that can be edited by the user logged in
-        if get_editable:
+        if get_editable and cls.objects.can_edit(portcullisUser):
             objs = cls.objects.get_editable(portcullisUser)
         else:
             objs = cls.objects.get_viewable(portcullisUser)
+            read_only = True
     except Exception as e:
         stderr.write('Unknown error occurred in read_source: %s: %s\n' % (type(e), e.message))
         stderr.flush()
         return json.dumps({'errors': 'Unknown error occurred in read_source: %s: %s' % (type(e), e.message)})
 
-    return serialize_model_objs(objs)
+    json = serialize_model_objs(objs, read_only)
+    print json
+    return json
 
 
 @dajaxice_register
@@ -91,7 +93,7 @@ def update(request, model_name, data):
     elif portcullisUser is None:
         transaction.rollback()
         return json.dumps({'errors': 'User must be logged in to use this feature.'})
-
+    
     cls = models.loading.get_model('portcullis', model_name)
     if 'pk' not in data:
         obj = cls()
@@ -155,11 +157,11 @@ def update(request, model_name, data):
                 m2m_objs = []
                 for m2m_obj in data[m['field']]:
                     rel_obj = cls.objects.get(pk=m2m_obj['pk'])
-                    if rel_obj.is_editable_by_user(portcullisUser):
+                    if rel_obj.can_view(portcullisUser):
                         m2m_objs.append(rel_obj)
                     else:
                         transaction.rollback()
-                        errors = 'Error: You do not have permission to assign this object: %s' % rel_obj
+                        error = 'Error: You do not have permission to assign this object: %s' % rel_obj
                         return json.dumps({'errors': error})
 
                 setattr(obj, m['field'], m2m_objs)
@@ -174,7 +176,7 @@ def update(request, model_name, data):
 
     except Exception as e:
         transaction.rollback()
-        error = 'In create_datastream exception: %s: %s\n' % (type(e), e.message)
+        error = 'In ajax update exception: %s: %s\n' % (type(e), e.message)
         stderr.write(error)
         stderr.flush()
         return json.dumps({'errors': error})
@@ -187,7 +189,15 @@ def update(request, model_name, data):
         error = 'ValidationError: %s: %s' % (e.message, e.message_dict[NON_FIELD_ERRORS])
         return json.dumps({'errors': error})
 
-    serialized_model = serialize_model_objs([obj.__class__.objects.get(pk=obj.pk)])
+    try:
+        serialized_model = serialize_model_objs([obj.__class__.objects.get(pk=obj.pk)], True)
+    except Exception as e:
+        transaction.rollback()
+        error = 'In ajax update exception: %s: %s\n' % (type(e), e.message)
+        stderr.write(error)
+        stderr.flush()
+        return json.dumps({'errors': error})
+
     transaction.commit()
     return serialized_model
 
@@ -240,7 +250,7 @@ def get_columns(request, model_name):
     return json.dumps(genColumns(cls))
 
 
-def serialize_model_objs(objs):
+def serialize_model_objs(objs, read_only):
     '''
     ' Takes a list of model objects and returns the serialization of them.
     '
@@ -291,7 +301,9 @@ def serialize_model_objs(objs):
             obj_dict['pk'] = obj.pk
 
         new_objs.append(obj_dict)
-    return json.dumps(new_objs, indent=4)
+
+    json_data = {'read_only': read_only, 'data': new_objs}
+    return json.dumps(json_data, indent=4)
 
 
 @dajaxice_register

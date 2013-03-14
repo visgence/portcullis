@@ -75,6 +75,24 @@
 
         this.grid = null;
 
+        /** Determines whether or not we want to allow the user to only view data or edit it. */
+        this.read_only = true;
+
+        this.set_read_only = function(read_only) {
+            this.read_only = read_only;
+            var panel = this.grid.getTopPanel();
+
+            var add = $(panel).children('input[value="Add"]');
+            if(self.read_only) {
+                if($(add).length > 0)
+                    $(add).remove();
+            }
+            else {
+                if($(add).length <= 0)
+                    $(add_button).prependTo(panel);
+            }
+        }
+
         /** Method to get data from server and refresh the grid.*/
         this.refresh = function() {
             self = this;
@@ -88,7 +106,8 @@
                     else
                         $('#server_messages').html('');
                     
-                    self.model.set_data(resp);
+                    self.model.set_data(resp.data);
+                    self.set_read_only(resp.read_only);
                     self.grid.invalidate();
                 },{'model_name': self.model_name, 'get_editable': true});
         };
@@ -166,11 +185,11 @@
                     $('#'+self.model_name + '_add').dialog('close');
                     //Either add new row to beginning or update one.
                     if (update) {
-                        self.model.setItem(i, resp[0]);
+                        self.model.setItem(i, resp.data[0]);
                         self.grid.invalidateRow(i);
                     }
                     else {
-                        self.model.add_data(resp[0]);
+                        self.model.add_data(resp.data[0]);
                         self.grid.invalidateAllRows();
                     }
                     
@@ -313,6 +332,11 @@
                         
                     self.grid = new Slick.Grid("#" + self.model_name + "_grid", self.model, self.columns, self.options);
 
+                    self.grid.onDblClick.subscribe(function(e, args) {
+                        if(!self.read_only)
+                            self.edit_record();
+                    });
+
                     // Add controls
                     $(add_button).appendTo(self.grid.getTopPanel()); 
                     $(refresh_button).appendTo(self.grid.getTopPanel());
@@ -323,21 +347,21 @@
                     self.grid.getSelectionModel().onSelectedRangesChanged.subscribe(function(e, args) {
                         var panel = self.grid.getTopPanel();
                         var serv_msg = $('#server_messages'); 
-
-                        //Add delete button if it's not in panel            
-                        if($(panel).has('input[value="Delete"]').length <= 0)
-                            $(serv_msg).before(delete_button);
                         
-                        //Add edit button if it's not in panel            
-                        if($(panel).has('input[value="Edit"]').length <= 0)
-                            $(serv_msg).before(edit_button);
+                        //Only add these if user is allowed to edit the content
+                        if(!self.read_only) {
+                            //Add delete button if it's not in panel            
+                            if($(panel).has('input[value="Delete"]').length <= 0)
+                                $(serv_msg).before(delete_button);
+                        
+                            //Add edit button if it's not in panel            
+                            if($(panel).has('input[value="Edit"]').length <= 0)
+                                $(serv_msg).before(edit_button);
+                        }
 
                         $(serv_msg).html('');
                     });
 
-                    self.grid.onDblClick.subscribe(function(e, args) {
-                        self.edit_record();
-                    });
                     self.refresh();
                 },
                 {'model_name': self.model_name}
@@ -637,7 +661,7 @@
         //Get all objects that the user can select from
         Dajaxice.portcullis.read_source( function(resp) {
 
-            $(resp).each(function(i, obj) {
+            $(resp.data).each(function(i, obj) {
                 var option = $("<option></option>")
                     .attr('class', obj.pk)
                     .text(obj.__unicode__);
@@ -674,7 +698,7 @@
         //Get all objects that the user can select from
         Dajaxice.portcullis.read_source( function(resp) {
 
-            $(resp).each(function(i, obj) { 
+            $(resp.data).each(function(i, obj) { 
                 
                 var li = $('<li></li>');
                 var checkbox = get_input('', 'checkbox', obj.pk);
@@ -709,7 +733,6 @@
             var field = $(input).prev('span.field').text();
             row[field] = field_value(input);      
         });
-        console.log(row);
         myGrid.add_row(row, index, updating);
     }
 
