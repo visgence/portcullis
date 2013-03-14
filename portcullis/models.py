@@ -795,7 +795,7 @@ class DataStream(models.Model):
     min_value = models.DecimalField(null=True, max_digits=20, decimal_places=6, blank=True)
     max_value = models.DecimalField(null=True, max_digits=20,decimal_places=6, blank=True)
     scaling_function = models.ForeignKey(ScalingFunction)
-    reduction_type = models.CharField(max_length=32, default='mean', choices=reduction_type_choices())
+    reduction_type = models.CharField(max_length=32, default='mean', choices=reduction_type_choices(), blank=True)
     is_public = models.BooleanField()
     owner = models.ForeignKey(PortcullisUser)
     # keys that have permission to read to this data stream
