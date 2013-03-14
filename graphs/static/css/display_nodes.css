@@ -126,7 +126,6 @@
 .graph_selection
 {
     margin-left: 2.5em;
-    margin-bottom: 1em;
 }
 
 .graph_container
@@ -141,23 +140,30 @@
 
 .stream_data_container
 {
-    float: left;
-    display: block;
-    margin-left: 1em;
+    margin-left: 2.5em;
 }
 
 .stream_data_container ul
 {
     list-style: none; 
     padding: 0;
+    margin-top: 0;
 }
 
 .stream_controls_container
 {
-    width: 13em;
-    margin-right: 1em;
-    float: right;
-    display: block;
+    margin-left: 1em;
+}
+
+.stream_controls_container ul
+{
+    list-style: none;
+    padding: 0;
+}
+
+.stream_controls_container ul li
+{
+    margin-bottom: 0.5em;
 }
 
 .portcullis_graph { height:400px }

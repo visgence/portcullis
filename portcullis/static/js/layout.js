@@ -5,7 +5,7 @@ function toggle_form_section(event) {
      */
    
     var toggle_options = {
-        'duration': 0,
+        'duration': 'medium',
         'easing': 'linear'
     };
 

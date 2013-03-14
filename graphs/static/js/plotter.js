@@ -78,9 +78,30 @@ function set_graph_range_labels(start, end, datastream_id)
 
 function reset_graph_selection(datastream_id)
 {
-    $('#graph_selection_'+datastream_id).attr('style', 'display: none;');
+    $('#graph_selection_'+datastream_id).attr('style', 'visibility: hidden;');
     $('#selected_value_'+datastream_id).text("");
     $('#selected_time_'+datastream_id).text("");
+}
+
+
+/** Hides a select graphs data container.
+ *
+ * Keyword Args
+ *     datastream_id - The graph whose data container is to be hidden
+ */
+function hide_data_container(datastream_id)
+{
+    $("#stream_data_container_"+datastream_id).attr('style', 'display: none;');
+}
+
+/** Reveals a select graphs data container.
+ *
+ * Keyword Args
+ *     datastream_id - The graph whose data container is to be revealed
+ */
+function show_data_container(datastream_id) 
+{
+    $("#stream_data_container_"+datastream_id).removeAttr('style'); 
 }
 
 function on_graphs_load() {
@@ -337,6 +358,7 @@ function plot_empty_graph(datastream_id, msg) {
 
     //Put in message for why graph is empty
     $(div).append('<span class="empty_graph_msg">'+msg+'</span>'); 
+    hide_data_container(datastream_id);
     return empty_plot;
 }
 
@@ -432,9 +454,11 @@ function zoom_graph_callback(ranges, select) {
         if(data.data.length === 0) {
             var msg = "No data for this range.";
             plot_empty_graph(data.datastream_id, msg);
+            hide_data_container(data.datastream_id);
         }
         else {
             renderGraph(data, ranges, true);
+            show_data_container(data.datastream_id);
         }
        
         if (select){
@@ -502,7 +526,7 @@ function graph_overview_callback(is_shared) {
         $("#graph_title" + data.datastream_id).text(data.ds_label);
 
         // For saved views, refresh the graph
-        if ( data.zoom_start )
+        if ( data.eoom_start )
             refresh_graph(data.datastream_id);
     };
 }
@@ -580,6 +604,7 @@ function renderGraph(data, ranges, shouldScale)
     }
     result.resolve(plot);//sent back for binding
     plots[dataStreamId] = plot;
+    show_data_container(dataStreamId);
     set_graph_range_labels(ranges.xaxis.from, ranges.xaxis.to, dataStreamId);
 }
 
