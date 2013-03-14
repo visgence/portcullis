@@ -160,6 +160,7 @@ def getStreamData(g_params, auth, user = None):
         max_value = float(max_value)
 
     stream_data = {
+        "granularity":      granularity,
         "ds_label":         ds.name,
         "port_id":          ds.port_id,
         "data":             data_points,

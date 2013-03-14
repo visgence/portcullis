@@ -131,7 +131,7 @@ function on_graph_load(datastream_id) {
     // setup the download link.
     setupDownload(datastream_id);
    
-    load_graph(datastream_id, get_ranges(), graph_overview_callback());
+    load_graph(datastream_id, get_ranges(), graph_overview_callback(false));
 }
 
 function modify_date(date, date_range, subtract) {
@@ -398,7 +398,7 @@ function load_all_shared_graphs() {
     var token = $('#auth_token').val();
     $('.portcullis-graph').each(function(i) {
         var url = '/graphs/sharedGraph/' + token + '/' + $('#saved_graph_'+this.id).val() + '/';
-        $.get(url, graph_overview_callback());
+        $.get(url, graph_overview_callback(true));
     });
 }
 
@@ -412,7 +412,7 @@ function load_all_graphs() {
     //Cycle though all graphs and fetch data from server
     for (var i = 0; i < divs.length; i++) 
     {
-        load_graph(divs[i].id, get_ranges(), graph_overview_callback());
+        load_graph(divs[i].id, get_ranges(), graph_overview_callback(false));
     }
 }
 
@@ -446,7 +446,7 @@ function zoom_graph_callback(ranges, select) {
     };
 }
 
-function graph_overview_callback() {
+function graph_overview_callback(is_shared) {
     /*
      * Returns a callback that renders a graph and overview using data recieved from server.  If there is no data
      * or insufficient privilages then an empty graph is rendered with an appropriate message.
@@ -457,6 +457,17 @@ function graph_overview_callback() {
     var ranges = get_ranges();
 
     return function (data) {
+        
+        if (is_shared) {
+            var start = data.xmin*1000;
+            var end = data.xmax*1000;
+
+            $('#start').val(dateToString(new Date(start)));
+            $('#end').val(dateToString(new Date(end)));
+            $('#granularity').val(data.granularity);
+        }
+
+
         var msg = '';
         if(data.data.length === 0) {
             msg = "No data for this range.";
