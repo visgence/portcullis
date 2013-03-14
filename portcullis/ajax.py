@@ -187,8 +187,11 @@ def update(request, model_name, data):
         obj.full_clean()
     except ValidationError as e:
         transaction.rollback()
-        error = 'ValidationError: %s: %s' % (e.message, e.message_dict[NON_FIELD_ERRORS])
-        return json.dumps({'errors': error})
+        errors = 'ValiationError '
+        for field_name, error_messages in e.message_dict.items():
+            errors += ' ::Field: %s: Errors: %s ' % (field_name, ','.join(error_messages))
+        
+        return json.dumps({'errors': errors})
 
     try:
         serialized_model = serialize_model_objs([obj.__class__.objects.get(pk=obj.pk)], True)
