@@ -19,16 +19,17 @@ def display_graph(request):
     '''
     ' Use JSON data to retrieve the appropriate datastream for rendering.
     '''
-
-    # TODO: Figure out how we want to do check_access
-    #response = check_access(request)
-    #if(response):
-    #    return response
-
+    
+    user = check_access(request)
+    if isinstance(user, HttpResponse):
+        return user.content
+    
     json_data = json.loads(request.GET['json_data'])
 
     try:
         stream = DataStream.objects.get(id = int(json_data['stream']))
+        if not stream.can_view(user):
+            raise Http404("Sorry, but you do not have permission to view this graph.")
     except ObjectDoesNotExist as e:
         raise Http404()
 
