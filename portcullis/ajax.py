@@ -96,6 +96,9 @@ def update(request, model_name, data):
     
     cls = models.loading.get_model('portcullis', model_name)
     if 'pk' not in data:
+        if not cls.objects.can_edit(portcullisUser):
+            transaction.rollback()
+            return json.dumps({'errors': 'User %s does not have permission to add to this table.' % str(portcullisUser)})
         obj = cls()
     else:
         try:
@@ -130,8 +133,6 @@ def update(request, model_name, data):
                         setattr(obj, field['field'], None)
 
                 elif field['_type'] == 'foreignkey':
-                    # Make sure that user has permission to add this object
-                    # TODO: is_editable_by_user should be replaced by yet-to-be written is_assignable_etc
                     rel_cls = models.loading.get_model(field['app'], field['model_name'])
                     rel_obj = rel_cls.objects.get(pk=data[field['field']]['pk'])
                     if rel_obj.can_view(portcullisUser):
