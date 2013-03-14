@@ -1,3 +1,13 @@
+'''
+' portcullis/views/login.py
+'
+' Contributing Authors:
+'    Jeremiah Davis (Visgence, Inc.)
+'    Bretton Murphy (Visgence, Inc.)
+'
+' (c) 2013 Visgence, Inc.
+'''
+
 
 #System Imports
 from django.http import HttpResponseRedirect, HttpResponse
@@ -7,6 +17,10 @@ from django.core.urlresolvers import reverse
 from django.contrib.auth import authenticate, login, logout as auth_logout
 try: import simplejson as json
 except ImportError: import json
+
+# Local Imports
+from check_access import check_access
+from portcullis.models import PortcullisUser
 
 
 def greeting(request):
@@ -63,3 +77,20 @@ def logout(request):
     auth_logout(request)
     return HttpResponseRedirect(reverse('portcullis-index'))
 
+def passwordForm(request):
+    '''
+    ' This view will render the change password request form.
+    '''
+
+    portcullisUser = check_access(request)
+
+    if isinstance(portcullisUser, HttpResponse):
+        return HttpResponse(json.dumps({'errors': portcullisUser.content}), mimetype='application/json')
+    if not isinstance(portcullisUser, PortcullisUser):
+        error = 'User must be logged in to change password.'
+        return HttpResponse(json.dumps({'errors': error}), mimetype='application/json')        
+
+    t = loader.get_template('passwordForm.html')
+    c = RequestContext(request, {})
+
+    return HttpResponse(json.dumps({'html': t.render(c)}), mimetype='application/json')
