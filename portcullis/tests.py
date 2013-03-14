@@ -983,18 +983,18 @@ class DataStreamManagerTest(TestCase):
 
 
 
-    ''''''''''''''''''' get_viewable_by_user '''''''''''''''''''''''''
+    ''''''''''''''''''' get_viewable '''''''''''''''''''''''''
 
-    def test_get_viewable_by_user_non_user(self):
+    def test_get_viewable__non_user(self):
         '''
         ' Test that a non PortcullisUser passed to DataStreams manager get_viewable_by_user
         ' throws a TypeError
         '''
 
         nonUser = "I are a PortcullisUser huehuehue"
-        self.assertRaises(TypeError, DataStream.objects.get_viewable_by_user, user = nonUser)
+        self.assertRaises(TypeError, DataStream.objects.get_viewable, user = nonUser)
 
-    def test_get_viewable_by_user_super_user(self):
+    def test_get_viewable_super_user(self):
         '''
         ' Test that a super PortcullisUser passed to DataStreams manager get_viewable_by_user
         ' gets all DataStreams that he doesn't own.
@@ -1003,20 +1003,20 @@ class DataStreamManagerTest(TestCase):
         sUser = PortcullisUser.objects.get(username="superuser")
         sStreams = DataStream.objects.all()
 
-        vStreams = DataStream.objects.get_viewable_by_user(sUser)
+        vStreams = DataStream.objects.get_viewable(sUser)
         self.assertEqual(list(sStreams), list(vStreams))
 
-    def test_get_viewable_by_user_non_valid_keys(self):
+    def test_get_viewable_non_valid_keys(self):
         '''
         ' Test that a normal PortcullisUser passed to DataStreams manager get_viewable_by_user
         ' gets no DataStreams that he has keys for but those keys are all invalid (expired or no more uses)
         '''
 
         user = PortcullisUser.objects.get(username="invalidkeysuser")
-        uStreams = DataStream.objects.get_viewable_by_user(user)
+        uStreams = DataStream.objects.get_viewable(user)
         self.assertEqual(list(uStreams), [])
 
-    def test_get_viewable_by_user_valid_keys(self):
+    def test_get_viewable_valid_keys(self):
         '''
         ' Test that a normal PortcullisUser passed to DataStreams manager get_viewable_by_user
         ' gets DataStreams that he has valid keys for
@@ -1029,7 +1029,7 @@ class DataStreamManagerTest(TestCase):
         d4 = DataStream.objects.get(pk = 6)
         dStreams = [d1, d2, d3, d4]
 
-        uStreams = DataStream.objects.get_viewable_by_user(user)
+        uStreams = DataStream.objects.get_viewable(user)
         self.assertEqual(list(uStreams), dStreams)
 
 
@@ -1234,6 +1234,5 @@ class DataStreamModelTest(TestCase):
         user = "None User"
 
         self.assertRaises(TypeError, ds.can_view, user = user)
-
 
 
