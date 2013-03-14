@@ -1,10 +1,10 @@
 function login() 
 {
-    var post_data = new Object();
-    post_data['username'] = $('#username').val();    
-    post_data['password'] = $('#password').val();    
+    var post_data = {};
+    post_data.username = $('#username').val();    
+    post_data.password = $('#password').val();    
    
-    if(post_data['username'] == '') {
+    if(post_data.username === '') {
         $('#login_error').text('Please provide a user name.');
         return;
     }
