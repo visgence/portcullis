@@ -59,55 +59,54 @@ function spin(target, type) {
 /** This method will create a dialogue and insert content from an ajax call
  *  into it.
  *
- * \param[in] view  The view to load into the dialog.
- * \param[in] title The title on the dialog.
+ * \param[in] msg   The message (html) to use in the dialog.
+ * \param[in] title  The title on the dialog.
+ * \param[in] buttons An array of js objects.  Must follow the jquery-ui dialog button specification:
+ *                    E.g.  buttons = [{text: 'Ok', click: function(){ $(this).dialog('close'); } }, ...]
  */
-function makeDialog(view, title)
+function makeDialog(msg, title, buttons)
 {
-    $('body').append('<div id="serverDialog"></div>');
-    var div = $('#serverDialog');
+    var div = $('<div></div>');
+    
     $(div).addClass('serverDialog');
 
     // Find all the serverDialogs, and find the one with the largest id
     var IDs = $.map($('.serverDialog'), function(e, i) {
+        console.log(e);
+        console.log($(e).data('id'));
         return $(e).data('id');
     });
 
     console.log(IDs);
 
-    var data_id = Math.max.apply(null,IDs) + 1;
+    var data_id = 0;
+
+    if ( IDs.length !== 0 )
+        data_id = Math.max.apply(null,IDs) + 1; 
+
     var id = 'serverDialog' + data_id;
 
     $(div).data('id', data_id);
     $(div).attr('id', id);
     $(div).css('display', 'none');
     $(div).attr('title', title);
-
-
+    $(div).html(msg);
+    $('body').append(div);
     $('#' + id).dialog({
         autoOpen: true,
         resizable: true,
         hide: 'fade',
         show: 'fade',
-        modal: false,
-        minWidth: 300,
+        modal: true,
+        minWidth: 350,
         maxWidth: 1000,
         minHeight: 300,
         maxHeight: 1000,
-        dialogClass: "non-modal dialogue",
+        dialogClass: "dialogue",
         close: function() {
             $(this).dialog('destroy');
             $('#' + id).remove();
-        }
+        },
+        buttons: buttons
     });
-
-    $.get(view, {}, function(resp) {
-        console.log('Setting errors');
-        if ( resp.errors ) {
-            console.log(resp.errors);
-        }
-        console.log('Setting dialog html');
-        $('#'+id).html(resp.html);
-    });
-
 }
