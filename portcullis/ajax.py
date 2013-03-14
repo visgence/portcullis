@@ -36,7 +36,7 @@ from settings import DT_FORMAT
 
 
 @dajaxice_register
-def read_source(request, model_name):
+def read_source(request, model_name, get_editable):
     '''
     ' Returns all data from a given model as serialized json.
     '
@@ -45,7 +45,6 @@ def read_source(request, model_name):
     '''
 
     portcullisUser = check_access(request)
-
     if isinstance(portcullisUser, HttpResponse):
         return portcullisUser.content
     elif portcullisUser is None:
@@ -57,7 +56,10 @@ def read_source(request, model_name):
 
     try:
         #Only get the objects that can be edited by the user logged in
-        objs = cls.objects.get_editable(portcullisUser)
+        if get_editable:
+            objs = cls.objects.get_editable(portcullisUser)
+        else:
+            objs = cls.objects.get_viewable(portcullisUser)
     except Exception as e:
         stderr.write('Unknown error occurred in read_source: %s: %s\n' % (type(e), e.message))
         stderr.flush()
@@ -317,12 +319,12 @@ def stream_subtree(request, name, group):
             streams = DataStream.objects.filter(name__startswith=name)
             streams = streams.filter(owner=portcullisUser)
         elif group == 'viewable':
-            streams = DataStream.objects.get_viewable_by_user(portcullisUser)
+            streams = DataStream.objects.get_viewable(portcullisUser)
             streams = streams.filter(name__startswith=name)
             streams = streams.exclude(owner=portcullisUser)
         elif group == 'public':
             streams = DataStream.objects.filter(name__startswith=name)
-            viewableStreams = DataStream.objects.get_viewable_by_user(portcullisUser)
+            viewableStreams = DataStream.objects.get_viewable(portcullisUser)
             streams = streams.filter(is_public=True).exclude(owner=portcullisUser)
             streams = streams.exclude(id__in=viewableStreams)
         else:

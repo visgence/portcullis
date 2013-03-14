@@ -90,9 +90,7 @@
                     
                     self.model.set_data(resp);
                     self.grid.invalidate();
-                },{
-                    model_name: self.model_name
-                });
+                },{'model_name': self.model_name, 'get_editable': true});
         };
 
         /** Method to add a record */
@@ -650,7 +648,7 @@
 
             });
         }, 
-        {'model_name': model_name});
+        {'model_name': model_name, 'get_editable': false});
 
         return input;
     }
@@ -692,7 +690,7 @@
                 li.append(checkbox);
                 checkbox.after(label);
             });
-        }, {'model_name': model_name});
+        }, {'model_name': model_name, 'get_editable': false});
 
         return div;
     }
