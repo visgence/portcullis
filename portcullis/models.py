@@ -595,7 +595,7 @@ class Device(models.Model):
         if not isinstance(user, PortcullisUser):
             raise TypeError("%s is not a PortcullisUser" % str(user))
 
-        return self.all()
+        return True
 
     def is_editable_by_user(self, user):
         '''
