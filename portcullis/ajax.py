@@ -102,7 +102,7 @@ def update(request, model_name, data):
         obj = cls()
     else:
         try:
-            obj = cls.objects.get_editable_by_user(portcullisUser, pk=data['pk'])
+            obj = cls.objects.get_editable_by_pk(portcullisUser, pk=data['pk'])
             if obj is None:
                 transaction.rollback()
                 return json.dumps({'errors': 'User %s does not have permission to edit this object' % str(portcullisUser)})
@@ -222,7 +222,7 @@ def destroy(request, model_name, data):
 
     cls = models.loading.get_model('portcullis', model_name)
     try:
-        obj = cls.objects.get_editable_by_user(portcullisUser, data['pk'])
+        obj = cls.objects.get_editable_by_pk(portcullisUser, data['pk'])
         if obj is None:
             error = "User %s does not have permission to delete this object." % portcullisUser
             return json.dumps({'errors': error})

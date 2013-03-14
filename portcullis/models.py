@@ -16,7 +16,7 @@ from graphs.data_reduction import reduction_type_choices
 class PortcullisUserManager(models.Manager): 
     def can_edit(self, user):
         '''
-        ' Checks if a PortcullisUser is allowed to edit instances of this model.
+        ' Checks if a PortcullisUser is allowed to edit or add instances of this model.
         '
         ' Keyword Arguments:
         '   user - PortcullisUser to check permission for.
@@ -68,9 +68,9 @@ class PortcullisUserManager(models.Manager):
 
         return self.filter(pk = user.pk)
     
-    def get_editable_by_user(self, user, pk):
+    def get_editable_by_pk(self, user, pk):
         '''
-        ' Get's an instance of PortcullisUser if the given user is allowed to edit it.
+        ' Get's an instance of PortcullisUser specified by a pk if the given user is allowed to edit it.
         '
         ' Keyword Arguments: 
         '   user - PortcullisUser to check if the user can be edited by them.
@@ -139,7 +139,7 @@ class PortcullisUser(User):
 class ScalingFunctionManager(models.Manager):       
     def can_edit(self, user):
         '''
-        ' Checks if a PortcullisUser is allowed to edit instances of this model.
+        ' Checks if a PortcullisUser is allowed to edit or add instances of this model.
         '
         ' Keyword Arguments:
         '   user - PortcullisUser to check permission for.
@@ -194,9 +194,9 @@ class ScalingFunctionManager(models.Manager):
 
         return self.none()
 
-    def get_editable_by_user(self, user, pk):
+    def get_editable_by_pk(self, user, pk):
         '''
-        ' Get's an instance of ScalingFunction if the given user is allowed to edit it.
+        ' Get's an instance of ScalingFunction specified by a pk if the given user is allowed to edit it.
         '
         ' Keyword Arguments: 
         '   user - PortcullisUser to check if the scaling function can be edited by them.
@@ -270,7 +270,7 @@ class ScalingFunction(models.Model):
 class KeyManager(models.Manager):
     def can_edit(self, user):
         '''
-        ' Checks if a PortcullisUser is allowed to edit instances of this model.
+        ' Checks if a PortcullisUser is allowed to edit or add instances of this model.
         '
         ' Keyword Arguments:
         '   user - PortcullisUser to check permission for.
@@ -389,9 +389,9 @@ class KeyManager(models.Manager):
         
         return self.filter(owner = user)
         
-    def get_editable_by_user(self, user, pk):
+    def get_editable_by_pk(self, user, pk):
         '''
-        ' Get's an instance of Key if the given user is allowed to edit it.
+        ' Get's an instance of Key specified by a pk if the given user is allowed to edit it.
         '
         ' Keyword Arguments: 
         '   user - PortcullisUser to check if the key can be edited by them.
@@ -492,7 +492,7 @@ class Key(models.Model):
 class DeviceManager(models.Manager):
     def can_edit(self, user):
         '''
-        ' Checks if a PortcullisUser is allowed to edit instances of this model.
+        ' Checks if a PortcullisUser is allowed to edit or add instances of this model.
         '
         ' Keyword Arguments:
         '   user - PortcullisUser to check permission for.
@@ -546,9 +546,9 @@ class DeviceManager(models.Manager):
         
         return self.filter(owner = user)
 
-    def get_editable_by_user(self, user, pk):
+    def get_editable_by_pk(self, user, pk):
         '''
-        ' Get's an instance of Device if the given user is allowed to edit it.
+        ' Get's an instance of Device specified by a pk if the given user is allowed to edit it.
         '
         ' Keyword Arguments: 
         '   user - PortcullisUser to check if the device can be edited by them.
@@ -626,7 +626,7 @@ class Device(models.Model):
 class DataStreamManager(models.Manager):  
     def can_edit(self, user):
         '''
-        ' Checks if a PortcullisUser is allowed to edit instances of this model.
+        ' Checks if a PortcullisUser is allowed to edit or add instances of this model.
         '
         ' Keyword Arguments:
         '   user - PortcullisUser to check permission for.
@@ -759,9 +759,9 @@ class DataStreamManager(models.Manager):
         
         return self.filter(owner = user)
 
-    def get_editable_by_user(self, user, pk):
+    def get_editable_by_pk(self, user, pk):
         '''
-        ' Get's an instance of DataStream if the given user is allowed to edit it.
+        ' Get's an instance of DataStream specified by a pk if the given user is allowed to edit it.
         '
         ' Keyword Arguments: 
         '   user - PortcullisUser to check if the data stream can be edited by them.
