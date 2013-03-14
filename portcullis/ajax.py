@@ -16,7 +16,7 @@ except ImportError:
 
 from dajaxice.decorators import dajaxice_register
 from django.core import serializers
-from django.core.exceptions import FieldError, ObjectDoesNotExist, ValidationError
+from django.core.exceptions import FieldError, ObjectDoesNotExist, ValidationError, NON_FIELD_ERRORS
 from django.db import models, transaction
 from django.contrib.auth.models import User
 from django.http import HttpResponse
