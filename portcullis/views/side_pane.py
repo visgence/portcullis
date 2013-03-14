@@ -51,7 +51,7 @@ def streams(request):
         owned_subtree = t_subtree.render(Context(c_dict))
 
         #Pull streams that are viewable by this user.
-        viewable_streams = DataStream.objects.get_viewable_by_user(user).exclude(id__in=owned_streams).distinct()
+        viewable_streams = DataStream.objects.get_viewable(user).exclude(id__in=owned_streams).distinct()
         c_dict = stream_tree_top(viewable_streams)
         c_dict.update({'group':'viewable'})
         viewable_subtree = t_subtree.render(Context(c_dict))

@@ -108,5 +108,49 @@
         "model": "portcullis.PortcullisUser",
         "fields": {
         }
+    },
+    {	    
+        "pk": 6,
+    	"model": "auth.user",
+        "fields": {
+            "username": "normaluser_nokeys",
+            "first_name": "noraml",
+            "last_name": "user_nokeys",
+            "email": "normalusernokeys@test.com",
+            "groups": [],
+            "user_permissions": [],
+            "password": "pbkdf2_sha256$10000$S22El37yr4bm$mMrhsyne5bF3ElJPY5O9QbaYH9diQqPXjmWqOkJipeU=",
+            "is_staff": false,
+            "is_active": true,
+            "is_superuser": false
+        }
+    },
+    {
+        "pk":6,
+        "model": "portcullis.PortcullisUser",
+        "fields": {
+        }
+    },
+    {	    
+        "pk": 7,
+    	"model": "auth.user",
+        "fields": {
+            "username": "superuser_nokeys",
+            "first_name": "super",
+            "last_name": "user_nokeys",
+            "email": "superusernokeys@test.com",
+            "groups": [],
+            "user_permissions": [],
+            "password": "pbkdf2_sha256$10000$S22El37yr4bm$mMrhsyne5bF3ElJPY5O9QbaYH9diQqPXjmWqOkJipeU=",
+            "is_staff": false,
+            "is_active": true,
+            "is_superuser": true
+        }
+    },
+    {
+        "pk":7,
+        "model": "portcullis.PortcullisUser",
+        "fields": {
+        }
     }
 ]
