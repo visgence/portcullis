@@ -49,12 +49,8 @@
 
     </head>
     <body>
-        <div id="greeting"> 
-            {% if user.username %}
-                Hello {{user.first_name}} {{user.last_name}} (<a href="/portcullis/logout/">logout</a>)
-            {% else %}
-                {{greeting}}
-            {% endif %}
+        <div id="greeting">
+            {{greeting|safe}}
         </div>
 
         <div id="header">
