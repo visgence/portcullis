@@ -17,6 +17,57 @@ class ScalingFunctionManagerTest(TestCase):
 
 
 
+ 
+    ''''''''''''''''''' can_edit '''''''''''''''''''''''''
+
+    def test_can_edit_superuser(self):
+        '''
+        ' Superusers should allways get True from can_edit
+        '''
+
+        user = PortcullisUser.objects.get(username="superuser")
+        self.assertTrue(ScalingFunction.objects.can_edit(user))
+
+    def test_can_edit_normaluser(self):
+        '''
+        ' Non superusers should allways get False from can_edit
+        '''
+        
+        user = PortcullisUser.objects.get(username="normaluser")
+        self.assertFalse(ScalingFunction.objects.can_edit(user))
+
+    def test_can_edit_nonuser(self):
+        '''
+        ' Should get a TypeError if can_edit get's a non PortcullisUser object
+        '''
+
+        nonUser = "blah blah blah"
+        self.assertRaises(TypeError, ScalingFunction.objects.can_edit, user=nonUser)
+
+
+
+    ''''''''''''''''''' get_viewable '''''''''''''''''''''''''
+
+    def test_get_viewable_normaluser(self):
+        '''
+        ' A normal user should get all object instances from get_viewable
+        '''
+        
+        user = PortcullisUser.objects.get(username="normaluser")
+        sf = ScalingFunction.objects.all()
+
+        self.assertEquals(list(ScalingFunction.objects.get_viewable(user)), list(sf))
+
+    def test_get_viewable_nonuser(self):
+        '''
+        ' Should get a TypeError if get_viewable get's a non PortcullisUser object
+        '''
+
+        nonUser = "blah blah blah"
+        self.assertRaises(TypeError, ScalingFunction.objects.get_viewable, user=nonUser)
+
+
+
     ''''''''''''''''''' get_editable '''''''''''''''''''''''''
 
     def test_get_editable_normaluser(self):
@@ -186,6 +237,59 @@ class PortcullisUserManagerTest(TestCase):
     '''
     
     fixtures = ['test_portcullisUsers.json']
+
+
+
+    ''''''''''''''''''' can_edit '''''''''''''''''''''''''
+
+    def test_can_edit_nonUser(self):
+        '''
+        ' Giving a non PortcullisUser object should always return a TypeError
+        '''
+
+        nonUser = "i'm a fake user"
+        self.assertRaises(TypeError, PortcullisUser.objects.can_edit, user=nonUser)
+
+    def test_can_edit_normalUser(self):
+        '''
+        ' A regular PortcullisUser object should get True 
+        '''
+
+        user = PortcullisUser.objects.get(username="normaluser")
+        self.assertTrue(PortcullisUser.objects.can_edit(user))
+
+
+
+    ''''''''''''''''''' get_viewable '''''''''''''''''''''''''
+
+    def test_get_viewable_by_superuser(self):
+        '''
+        ' Test that a superuser get's all users using get_viewable from PortcullisUsers
+        '''
+
+        sUser = PortcullisUser.objects.get(username="superuser")
+        users = PortcullisUser.objects.all()
+
+        sPortcullisUsers = PortcullisUser.objects.get_viewable(sUser)
+        self.assertEqual(list(sPortcullisUsers), list(users))
+    
+    def test_get_viewable_by_normal_user(self):
+        '''
+        ' Test that a non superuser get's only his/her users using get_viewable from PortcullisUsers
+        '''
+
+        nUser = PortcullisUser.objects.get(username="normaluser")
+
+        nPortcullisUsers = PortcullisUser.objects.get_viewable(nUser)
+        self.assertEqual([nUser], list(nPortcullisUsers))
+
+    def test_get_viewable_non_portcullis_user(self):
+        '''
+        ' Test that a non portcullisUser object raises an exception when using PortcullisUser's get_viewable
+        '''
+
+        aUser = User.objects.get(username="superuser")
+        self.assertRaises(TypeError, PortcullisUser.objects.get_viewable, user=aUser)
 
 
 
@@ -380,13 +484,56 @@ class PortcullisUserModelTest(TestCase):
 
         self.assertRaises(TypeError, user.can_view, user = bogusUser)
 
-    
+
 class KeyManagerTest(TestCase):
     '''
     ' Unit Tests for the portcullis Key manager
     '''
     
     fixtures = ['test_portcullisUsers.json', 'test_keys.json']
+
+
+
+    ''''''''''''''''''' can_edit '''''''''''''''''''''''''
+
+    def test_can_edit_normaluser(self):
+        '''
+        ' Non superusers should allways get True from can_edit
+        '''
+        
+        user = PortcullisUser.objects.get(username="normaluser")
+        self.assertTrue(Key.objects.can_edit(user))
+
+    def test_can_edit_nonuser(self):
+        '''
+        ' Should get a TypeError if can_edit get's a non PortcullisUser object
+        '''
+
+        nonUser = "blah blah blah"
+        self.assertRaises(TypeError, Key.objects.can_edit, user=nonUser)
+
+
+
+
+    ''''''''''''''''''' get_viewable '''''''''''''''''''''''''
+
+    def test_get_viewable_by_normal_user(self):
+        '''
+        ' Test that a non superuser get's all object instances.
+        '''
+
+        nUser = PortcullisUser.objects.get(username="normaluser")
+        keys = Key.objects.all()
+
+        self.assertEqual(list(Key.objects.get_viewable(nUser)), list(keys))
+
+    def test_get_viewable_non_portcullis_user(self):
+        '''
+        ' Test that a non portcullisUser object raises an exception when using Key's get_viewable
+        '''
+
+        aUser = User.objects.get(username="superuser")
+        self.assertRaises(TypeError, Key.objects.get_viewable, user=aUser)
 
 
 
@@ -450,12 +597,43 @@ class KeyManagerTest(TestCase):
         expToken = Key.objects.get(key = "no_uses_key")
         self.assertEquals(Key.objects.validate(expToken.key), None)
     
+    def test_validate_no_uses_exp_date(self):
+        '''
+        ' Test that KeyManager validate returns None if a token with no uses and an expired
+        ' date is supplied.
+        '''
+
+        key = Key.objects.get(key = "exp_key")
+        key.num_uses = 0
+        key.save()
+        self.assertEquals(Key.objects.validate('exp_key'), None)
+    
     def test_validate_valid_uses(self):
         '''
         ' Test that KeyManager validate returns the key supplied if the supplied key has uses left. 
         '''
 
         key = Key.objects.get(key = "valid_uses_key")
+        self.assertEquals(Key.objects.validate(key.key), key)
+
+    def test_validate_valid_date(self):
+        '''
+        ' Validate should return a key instance specified by a token if that key has 
+        ' a valid expiration date.
+        '''
+
+        key = Key.objects.get(key="valid_date_key")
+        self.assertEquals(Key.objects.validate(key.key), key)
+
+    def test_validate_valid_date_valid_uses(self):
+        '''
+        ' Validate should return a key instance specified by a token if that key has 
+        ' a valid expiration date and uses left.
+        '''
+
+        key = Key.objects.get(key="valid_date_key")
+        key.num_uses = 1
+        key.save()
         self.assertEquals(Key.objects.validate(key.key), key)
 
 
@@ -527,6 +705,35 @@ class KeyModelTest(TestCase):
 
     fixtures = ['test_portcullisUsers.json', 'test_keys.json']
 
+
+
+    ''''''''''''''''''' use '''''''''''''''''''''''''
+
+    def test_use_nonNull_uses(self):
+        '''
+        ' A key that has a value other than None in it's num_uses should get that 
+        ' value decremented by one.
+        '''
+
+        key = Key.objects.get(key="normaluser_key4")
+        key.num_uses = 0
+        key.save()
+        key.use()
+        key = Key.objects.get(key="normaluser_key4")
+
+        self.assertEqual(key.num_uses, -1)
+
+    def test_use_null_uses(self):
+        '''
+        ' A key with None for it num_uses should still have None after getting used
+        '''
+
+        key = Key.objects.get(key="normaluser_key4")
+        key.num_uses = None
+        key.use()
+        key = Key.objects.get(key="normaluser_key4")
+
+        self.assertEqual(key.num_uses, None)
 
 
     ''''''''''''''''''' isCurrent '''''''''''''''''''''''''
@@ -663,6 +870,60 @@ class DeviceManagerTest(TestCase):
     '''
 
     fixtures = ['test_portcullisUsers.json', 'test_devices.json']
+
+
+
+    ''''''''''''''''''' can_edit '''''''''''''''''''''''''
+
+    def test_can_edit_normaluser(self):
+        '''
+        ' Non superusers should allways get True from can_edit
+        '''
+        
+        user = PortcullisUser.objects.get(username="normaluser")
+        self.assertTrue(Device.objects.can_edit(user))
+
+    def test_can_edit_nonuser(self):
+        '''
+        ' Should get a TypeError if can_edit get's a non PortcullisUser object
+        '''
+
+        nonUser = "blah blah blah"
+        self.assertRaises(TypeError, Device.objects.can_edit, user=nonUser)
+
+
+
+    ''''''''''''''''''' get_editable '''''''''''''''''''''''''
+
+    def test_get_editable_devices_by_superuser(self):
+        '''
+        ' Test that a superuser get's all devices using get_editable from Devices
+        '''
+
+        sUser = PortcullisUser.objects.get(username="superuser")
+        devices = Device.objects.all()
+
+        sDevices = Device.objects.get_viewable(sUser)
+        self.assertEqual(list(sDevices), list(devices))
+    
+    def test_get_editable_devices_by_normal_user(self):
+        '''
+        ' Test that a non superuser get's only his/her devices using get_editable from Devices
+        '''
+
+        nUser = PortcullisUser.objects.get(username="normaluser")
+        devices = Device.objects.filter(owner = nUser)
+
+        nDevices = Device.objects.get_viewable(nUser)
+        self.assertEqual(list(devices), list(nDevices))
+
+    def test_get_editable_devices_non_portcullis_user(self):
+        '''
+        ' Test that a non portcullisUser object raises an exception when using Device's get_editable
+        '''
+
+        aUser = User.objects.get(username="superuser")
+        self.assertRaises(TypeError, Device.objects.get_viewable, user=aUser)
 
 
 
@@ -857,6 +1118,26 @@ class DataStreamManagerTest(TestCase):
     '''
 
     fixtures = ['test_portcullisUsers.json', 'test_keys.json', 'test_scalingFunctions.json', 'test_datastreams.json']
+
+
+
+    ''''''''''''''''''' can_edit '''''''''''''''''''''''''
+
+    def test_can_edit_normaluser(self):
+        '''
+        ' Non superusers should allways get True from can_edit
+        '''
+        
+        user = PortcullisUser.objects.get(username="normaluser")
+        self.assertTrue(DataStream.objects.can_edit(user))
+
+    def test_can_edit_nonuser(self):
+        '''
+        ' Should get a TypeError if can_edit get's a non PortcullisUser object
+        '''
+
+        nonUser = "blah blah blah"
+        self.assertRaises(TypeError, DataStream.objects.can_edit, user=nonUser)
 
 
 
@@ -1068,6 +1349,27 @@ class DataStreamManagerTest(TestCase):
         pk = -1
 
         self.assertRaises(DataStream.DoesNotExist, DataStream.objects.get_editable_by_pk, user = user, pk = pk)
+
+
+
+    ''''''''''''''''''' get_ds_and_validate '''''''''''''''''''''''''
+    
+    def test_get_ds_and_validate_invalidDs(self):
+        '''
+        ' A bogus stream id should allways get a DoesNotExist exception raised
+        '''
+
+        pk = -1
+        self.assertRaises(DataStream.DoesNotExist, DataStream.objects.get_ds_and_validate, ds_id=pk, obj="an obj")
+
+    def test_get_ds_and_validate_invalidPerm(self):
+        '''
+        ' A bogus permission string with a valid stream id should get a ValueError exception raised.
+        '''
+
+        pk = 1
+        perm = "not valid"
+        self.assertRaises(TypeError, DataStream.objects.get_ds_and_validate, ds=pk, obj="and obj", perm=perm)
 
 
 class DataStreamModelTest(TestCase):
