@@ -160,6 +160,9 @@
             "max_value": null,
             "min_value": null,
             "owner": 1,
+            "scaling_function": 3,
+            "units": "Kbps",
+            "is_public": true,
             "description": ""
         }
     }
