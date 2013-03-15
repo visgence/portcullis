@@ -37,6 +37,7 @@ def display_graph(request):
     t_graph = loader.get_template('graph.html')
     c_graph = Context({
         'id': stream.id,
+        'reduction': stream.reduction_type,
         'reductions': reductions
     })
 

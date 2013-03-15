@@ -41,7 +41,7 @@
                     <label>Reduction Type</label>
                     <select id="reduction_select_{{id}}" class="reduction_select" onchange="refresh_graph('{{id}}');">
                         {% for red in reductions %}
-                        {% if red == "mean" %}
+                        {% if red == reduction %}
                         <option value="{{red}}" selected="selected">{{red|title}}</option>
                         {% else %}
                         <option value="{{red}}">{{red|title}}</option>
