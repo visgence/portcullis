@@ -65,9 +65,7 @@ def read_source(request, model_name, get_editable):
         stderr.flush()
         return json.dumps({'errors': 'Unknown error occurred in read_source: %s: %s' % (type(e), e.message)})
 
-    json = serialize_model_objs(objs, read_only)
-    print json
-    return json
+    return serialize_model_objs(objs, read_only)
 
 
 @dajaxice_register
@@ -266,11 +264,26 @@ def serialize_model_objs(objs, read_only):
         fields = obj._meta.fields
         m2m_fields = obj._meta.many_to_many
         obj_dict = {}
-
         for f in fields:
 
             #Set value of field for the object.
             obj_dict[f.name] = f.value_from_object(obj)
+
+            if len(f.choices) > 0:
+                default = f.default
+                for c in f.choices:
+                    choice = {
+                        'value'      : c[0],
+                        '__unicode__': c[1]
+                    }
+                    
+                    #See if we can find a choice that is set to this object or 
+                    #use a default value if not.
+                    if c[0] == f.value_from_object(obj) or default == choice['value']:
+                        obj_dict[f.name] = choice
+                        break
+
+
             if type(obj_dict[f.name]) not in [dict, list, unicode, int, long, float, bool, type(None)]:
                 obj_dict[f.name] = f.value_to_string(obj)
 

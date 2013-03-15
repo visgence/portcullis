@@ -312,11 +312,17 @@
                                 case 'boolean':
                                     self.columns[i].formatter = Slick.Formatters.Checkmark;
                                     break;
+
                                 case 'foreignkey':
                                     self.columns[i].formatter = foreign_key_formatter;
                                     break;
+                                    
                                 case 'm2m':
                                     self.columns[i].formatter = m2m_formatter;
+                                    break;
+
+                                case 'choice':
+                                    self.columns[i].formatter = choices_formatter;
                                     break;
 
                                 case 'number':
@@ -432,6 +438,15 @@
             },  
             buttons: buttons
         });
+    }
+
+    /** Custom formatter for columns that have a list of choices to choose from. */
+    function choices_formatter (row, cell, columnDef, dataContext) {
+        var grid = myGrid.grid;
+        var model = myGrid.model;
+        var col = grid.getColumns()[cell].field;
+        var data = model.get_cell_data(row, col);
+        return data['__unicode__'];
     }
 
     /** Custom formatter for Foreign Key columns in the data grid */
@@ -603,6 +618,12 @@
                     });
                     break;
 
+                case 'choice':
+                    input = get_choices_input('add_form_input', value, col.choices)
+                    td2.append(input);
+                    td1.append(label);
+                    break;
+
                 default:
                     if(col._editable) {
                         input = get_input('add_form_input', 'text', value);
@@ -638,6 +659,34 @@
                                      'class': cls,
                                      'type' : type 
                                  });
+
+        return input;
+    }
+
+    /** Creates and returns a basic select input field.
+     *
+     * This will preload the select field with results from the data stored in a choices column. 
+     *
+     * Keyword Args
+     *    cls     - The class to give the input field.
+     *    choices - The list of objects that will be put into the select field.
+     *    value   - The value to give to the input field to start with if any.
+     *
+     * Return: The newly created select field
+     */
+    function get_choices_input (cls, value, choices) 
+    {
+        var input = $("<select></select>").attr({'class': cls});
+       
+        $(choices).each(function(i, c) {
+            var option = $("<option></option>")
+                .attr('value', (c.value))
+                .text(c.__unicode__);
+           
+            if(value !== '' && value.value == c.value) 
+                option.attr('selected', 'selected');
+            input.append(option);
+        });
 
         return input;
     }

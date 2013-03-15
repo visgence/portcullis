@@ -31,7 +31,6 @@ def model_grid(request, model_name):
     t = loader.get_template('crud.html')
     c = RequestContext(request, {'model_name': model_name})
     return HttpResponse(t.render(c), mimetype="text/html")
-
 def genColumns(modelObj):
     
     columns = []
@@ -49,12 +48,24 @@ def genColumns(modelObj):
             field['_editable'] = False
         else:
             field['_editable'] = True
+        
 
         #Figure out what each field is and store that type
         if isinstance(f, models.ForeignKey):
             field['model_name'] = f.rel.to.__name__
             field['app'] = f.rel.to._meta.app_label
             field['_type'] = 'foreignkey'
+        elif len(f.choices) > 0:
+            field['_type'] = 'choice'
+            field['choices'] = []
+
+            for c in f.choices:
+                choice = {
+                    'value'      : c[0],
+                    '__unicode__': c[1]
+                }
+                field['choices'].append(choice)
+
         elif isinstance(f, models.BooleanField):
             field['_type'] = 'boolean'
         elif isinstance(f, models.IntegerField) or isinstance(f, models.AutoField):
