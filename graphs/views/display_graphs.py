@@ -37,8 +37,6 @@ def display_graph(request):
     t_graph = loader.get_template('graph.html')
     c_graph = Context({
         'id': stream.id,
-        'node_id': stream.node_id,
-        'port_id': stream.port_id,
         'reductions': reductions
     })
 
@@ -162,7 +160,6 @@ def getStreamData(g_params, auth, user = None):
     stream_data = {
         "granularity":      granularity,
         "ds_label":         ds.name,
-        "port_id":          ds.port_id,
         "data":             data_points,
         "num_readings":     numReadings,
         "max_value":        max_value,
@@ -173,7 +170,6 @@ def getStreamData(g_params, auth, user = None):
         "color":            ds.color,
         "shadowSize":       0,
         "points":           { "show": False },
-        "node_id":          ds.node_id,
         "units":            ds.units,
         "permission":       True,
         "xmax":             end,

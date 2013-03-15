@@ -12,11 +12,9 @@
             "max_value": null,
             "min_value": null,
             "owner": 1,
-            "node_id": 0,
             "scaling_function": 3,
             "units": "Kbps",
             "is_public": false,
-            "port_id": 1,
             "description": ""
         }
     },
@@ -33,11 +31,9 @@
             "max_value": null,
             "min_value": null,
             "owner": 2,
-            "node_id": 0,
             "scaling_function": 1,
             "units": "Kbps",
             "is_public": false,
-            "port_id": 2,
             "description": ""
         }
     },
@@ -59,11 +55,9 @@
             "max_value": null,
             "min_value": null,
             "owner": 2,
-            "node_id": 0,
             "scaling_function": 2,
             "units": "Kbps",
             "is_public": false,
-            "port_id": 3,
             "description": ""
         }
     },
@@ -86,11 +80,9 @@
             "max_value": null,
             "min_value": null,
             "owner": 3,
-            "node_id": 0,
             "scaling_function": 3,
             "units": "Kbps",
             "is_public": false,
-            "port_id": 4,
             "description": ""
         }
     },
@@ -111,11 +103,9 @@
             "max_value": null,
             "min_value": null,
             "owner": 4,
-            "node_id": 0,
             "scaling_function": 3,
             "units": "Kbps",
             "is_public": false,
-            "port_id": 4,
             "description": ""
         }
     },
@@ -134,11 +124,9 @@
             "max_value": null,
             "min_value": null,
             "owner": 5,
-            "node_id": 0,
             "scaling_function": 3,
             "units": "Kbps",
             "is_public": false,
-            "port_id": 4,
             "description": ""
         }
     },
@@ -154,11 +142,9 @@
             "max_value": null,
             "min_value": null,
             "owner": 6,
-            "node_id": 0,
             "scaling_function": 3,
             "units": "Kbps",
             "is_public": false,
-            "port_id": 4,
             "description": ""
         }
     },
@@ -174,11 +160,6 @@
             "max_value": null,
             "min_value": null,
             "owner": 1,
-            "node_id": 0,
-            "scaling_function": 3,
-            "units": "Kbps",
-            "is_public": true,
-            "port_id": 4,
             "description": ""
         }
     }

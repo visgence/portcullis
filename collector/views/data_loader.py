@@ -18,8 +18,6 @@ def add_reading(request):
     '''
 
     datastream_id = request.REQUEST.get('datastream_id')
-    node_id = request.REQUEST.get('node_id')
-    port_id = request.REQUEST.get('port_id')
     auth_token = request.REQUEST.get('auth_token')
     raw_sensor_value = request.REQUEST.get('value')
 
@@ -32,10 +30,7 @@ def add_reading(request):
         return HttpResponse("No data was passed for insertion! Please be sure to pass some data. Example: value=233")
 
     if datastream_id is None or datastream_id == '':
-        if node_id is None or node_id == '' or port_id is None or port_id == '':
-            return HttpResponse('Cannot identify datastream, please give datastream_id or node_id/port_id.')
-        else:
-            datastream_id = (node_id, port_id)
+        return HttpResponse('Cannot identify datastream, please give datastream_id.')
 
     # get and validate datastream permission
     datastream = DataStream.objects.get_ds_and_validate(datastream_id, key, 'post')

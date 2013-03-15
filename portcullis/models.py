@@ -705,27 +705,16 @@ class DataStreamManager(models.Manager):
         ' the specified permision.
         '
         ' Keyword args:
-        '   ds_id - DataStream Id of the datastream wanted.  For purposes of backwards compatibility
-        '           this can also be a tuple of (node_id, port_id).
+        '   ds_id - DataStream Id of the datastream wanted.
         '   obj - The object asking for permission.  Should either be a Key or PorcullisUser.
         '   perm - The permission wanted.  Current valid options are 'read' and 'post'.
         '''
-        if isinstance(ds_id, tuple):
-            try:
-                # If that fails, try the node/port combination.  This is for backwards compatability,
-                # but since these fields are not unique together, it is dangerous.
-                ds = DataStream.objects.get(node_id = ds_id[0], port_id = ds_id[1])
-            except ObjectDoesNotExist:
-                return 'Invalid node/port combination.'
-            except MultipleObjectsReturned:
-                return 'Multiple Objects Returned.  Node/Port are no longer unique together.  Please use a DataStream id.'
-
-        else:
-            try:
-                # First try to use the datastream_id
-                ds = DataStream.objects.get(id = ds_id)
-            except ObjectDoesNotExist:
-                return 'Invalid DataStream!'
+        
+        try:
+            # First try to use the datastream_id
+            ds = DataStream.objects.get(id = ds_id)
+        except ObjectDoesNotExist:
+            return 'Invalid DataStream!'
 
         if perm == 'read':
             if not ds.can_view(obj):
@@ -786,8 +775,6 @@ class DataStreamManager(models.Manager):
 
 
 class DataStream(models.Model):
-    node_id = models.IntegerField(null=True, blank=True)
-    port_id = models.IntegerField(null=True, blank=True)
     units = models.CharField(max_length=32, blank=True)
     name = models.CharField(max_length=128)
     description = models.CharField(max_length=64, blank=True)
@@ -805,11 +792,11 @@ class DataStream(models.Model):
     objects = DataStreamManager()
 
     class Meta:
-        ordering = ['node_id', 'port_id', 'id']
+        ordering = ['id']
         unique_together = (('owner', 'name'),)
 
     def __unicode__(self):
-        return "Stream_ID: %s" % self.id  + " Node: %s," % self.node_id + " Port: %s," % self.port_id + " Name: " + self.name
+        return "Stream_ID: %s" % self.id  + " Name: " + self.name
 
     def is_editable_by_user(self, user):
         '''
