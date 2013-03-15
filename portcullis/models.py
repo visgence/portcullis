@@ -506,9 +506,6 @@ class DeviceManager(models.Manager):
 
         return True
 
-    def get_by_key(self, key):
-        return Device.objects.get(key = key)
-
     def get_viewable(self, user):
         '''
         ' Gets all device that can be viewed or assigned by a specified portcullis user.
@@ -640,12 +637,6 @@ class DataStreamManager(models.Manager):
 
         return True
     
-    def get_writable_by_device(self, device):
-        return DataStream.objects.filter(can_post = device.key)
-
-    def get_writable_by_key(self, key):
-        return DataStream.objects.filter(can_post = key)
-
     def get_readable_by_key(self, key):
         '''
         ' Gets all DataStreams that can be read by a specified Key.
@@ -713,8 +704,8 @@ class DataStreamManager(models.Manager):
         try:
             # First try to use the datastream_id
             ds = DataStream.objects.get(id = ds_id)
-        except ObjectDoesNotExist:
-            return 'Invalid DataStream!'
+        except DataStream.DoesNotExist:
+            raise DataStream.DoesNotExist("There is no DataStream for the id %s"%str(ds_id))
 
         if perm == 'read':
             if not ds.can_view(obj):
@@ -723,7 +714,7 @@ class DataStreamManager(models.Manager):
             if not ds.canPost(obj):
                 return '%s cannot post to DataStream %s!' % (str(obj), str(ds.id))
         else:
-            return '%s is an invalid permission type.' % str(perm)
+            raise ValueError('%s is an invalid permission type.' % str(perm))
             
         return ds
 
