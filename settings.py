@@ -18,10 +18,8 @@ DT_FORMAT = "%m/%d/%Y %H:%M:%S"
 
 #Import the database settings stored locally.  This allows for different databases
 #under different dev environments without impacting production.
-try: 
-    from database_settings import *
-except:
-    raise Exception("Could not import database_settings!")
+
+from database_settings import *
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name

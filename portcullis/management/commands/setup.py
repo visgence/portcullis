@@ -47,11 +47,3 @@ class Command(BaseCommand):
         for apps in fixtures:
             for fixture in apps:
                 call_command('loaddata', fixture, verbosity=1)
-
-        try:
-            open(APP_PATH + "database_settings.py")
-        except IOError as e:
-            try:
-                copyfile(APP_PATH + "database_settings_example.py", APP_PATH + "database_settings.py")
-            except IOError as e:
-                raise IOError("Problem copying database_settings_example file: %s" % str(e))
