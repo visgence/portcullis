@@ -31,8 +31,8 @@ def model_grid(request, model_name):
     t = loader.get_template('crud.html')
     c = RequestContext(request, {'model_name': model_name})
     return HttpResponse(t.render(c), mimetype="text/html")
-def genColumns(modelObj):
-    
+
+def genColumns(modelObj): 
     columns = []
     for f in get_meta_fields(modelObj):
        

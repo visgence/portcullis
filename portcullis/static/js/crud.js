@@ -114,12 +114,13 @@
 
         /** Method to add a record */
         this.add_record = function() {
+            self = this;
             //Clear row selection
             this.clear_row_selection();
 
             var form_id = get_grid_form(this.model_name+'_grid', this.columns, null, 'Add Record');
             if (form_id) {
-                var add_callback = function() {record_callback(0, false);};
+                var add_callback = function() {record_callback(self.model.getLength(), false);};
                 confirm_dialog(form_id, 'Add', add_callback, 'Cancel', null, true);
             }
             else
@@ -189,10 +190,11 @@
                         self.grid.invalidateRow(i);
                     }
                     else {
-                        self.model.add_data(resp.data[0]);
+                        self.model.add_data(resp.data[0], i);
                         self.grid.invalidateAllRows();
                     }
                     
+                    self.refresh(); 
                     self.grid.render();
                     self.success('Updated row ' + i);
                 }
