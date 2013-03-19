@@ -1,3 +1,11 @@
+"""
+" portcullis/tests.py
+"
+" Contributing Authors:
+"    Bretton Murphy (Visgence, Inc)
+"
+" (c) 2013 Visgence, Inc.
+"""
 
 #System Imports
 from django.test import TestCase

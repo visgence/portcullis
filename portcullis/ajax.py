@@ -32,8 +32,6 @@ from portcullis.models import DataStream, PortcullisUser
 from portcullis.views.crud import genColumns
 from settings import DT_FORMAT
 
-# TODO:  All this needs access checkers!!
-
 
 @dajaxice_register
 def read_source(request, model_name, get_editable):
