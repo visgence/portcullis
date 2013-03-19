@@ -1369,7 +1369,20 @@ class DataStreamManagerTest(TestCase):
 
         pk = 1
         perm = "not valid"
-        self.assertRaises(TypeError, DataStream.objects.get_ds_and_validate, ds=pk, obj="and obj", perm=perm)
+        self.assertRaises(ValueError, DataStream.objects.get_ds_and_validate, ds_id=pk, obj="and obj", perm=perm)
+    
+    def test_get_ds_and_validate_readPerm_None(self):
+        '''
+        ' Given proper parameters and the permssion of "read" we should get back the DataStream
+        ' specified by the ds's id parameter.
+        '''
+ 
+        dsId = 8
+        ds = DataStream.objects.get(pk=dsId)
+        user = PortcullisUser.objects.get(username="normaluser")
+        perm = "read"
+
+        self.assertEqual(ds, DataStream.objects.get_ds_and_validate(dsId, user, perm))
 
 
 class DataStreamModelTest(TestCase):
