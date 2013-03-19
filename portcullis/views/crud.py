@@ -18,6 +18,7 @@ except ImportError: import json
 
 # Local Imports
 from portcullis.models import DataStream, PortcullisUser
+from check_access import check_access
 
 
 def model_grid(request, model_name):
@@ -25,7 +26,10 @@ def model_grid(request, model_name):
     ' View to return the html that will hold a models crud. 
     '''
 
-    if request.user.is_anonymous():
+    portcullisUser = check_access(request)
+    if isinstance(portcullisUser, HttpResponse):
+        return portcullisUser
+    elif not isinstance(portcullisUser, PortcullisUser):
         return HttpResponse('Must be logged in to use the model interface', mimetype="text/html")
 
     t = loader.get_template('crud.html')
