@@ -29,11 +29,8 @@ for t in range(startTime, startTime + 60*60*24*31*nMonths, 10*60):
     data = []
 
     for i in range(t, t + 10*60, 60):
-        #node_id = 3
-        #port_id = 3
         ds_id = 3
         value =  50 * math.sin(i*math.pi/(86400))
-        #data.append([node_id, port_id, value])
         data.append([ds_id, value, i])
 
     params['json'] = json.dumps(data)
