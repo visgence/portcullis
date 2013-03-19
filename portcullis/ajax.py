@@ -91,7 +91,7 @@ def update(request, model_name, data):
     elif portcullisUser is None:
         transaction.rollback()
         return json.dumps({'errors': 'User must be logged in to use this feature.'})
-    
+
     cls = models.loading.get_model('portcullis', model_name)
     if 'pk' not in data:
         if not cls.objects.can_edit(portcullisUser):
@@ -124,7 +124,7 @@ def update(request, model_name, data):
                     continue
 
                 # Handle empy data
-                elif data[field['field']] in [None, '']:
+                elif data[field['field']] in [None, ''] and field['_type'] != 'auth_password':
                     if field['_type'] in ['text', 'char', 'color']:
                         setattr(obj, field['field'], '')
                     else:
@@ -145,7 +145,15 @@ def update(request, model_name, data):
                     dt_obj = dt_obj.replace(tzinfo=utc)
                     setattr(obj, field['field'], dt_obj)
 
+                elif field['_type'] == 'auth_password':
+                    print 'Changing password'
+                    if data[field['field']] not in [None, '']:
+                        obj.set_password(data[field['field']])
+
                 else:
+                    if field['field'] == 'password':
+                        print field['_type']
+                        print 'Did not change password correctly...'
                     setattr(obj, field['field'], data[field['field']])
         obj.save()
 
@@ -188,7 +196,7 @@ def update(request, model_name, data):
         errors = 'ValiationError '
         for field_name, error_messages in e.message_dict.items():
             errors += ' ::Field: %s: Errors: %s ' % (field_name, ','.join(error_messages))
-        
+
         return json.dumps({'errors': errors})
 
     try:
@@ -273,16 +281,15 @@ def serialize_model_objs(objs, read_only):
                 default = f.default
                 for c in f.choices:
                     choice = {
-                        'value'      : c[0],
+                        'value': c[0],
                         '__unicode__': c[1]
                     }
-                    
-                    #See if we can find a choice that is set to this object or 
+
+                    #See if we can find a choice that is set to this object or
                     #use a default value if not.
                     if c[0] == f.value_from_object(obj) or default == choice['value']:
                         obj_dict[f.name] = choice
                         break
-
 
             if type(obj_dict[f.name]) not in [dict, list, unicode, int, long, float, bool, type(None)]:
                 obj_dict[f.name] = f.value_to_string(obj)

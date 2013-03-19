@@ -12,6 +12,7 @@ from django.db import models, connections
 from django.http import HttpResponse
 from django.template import RequestContext, loader
 from django.core.urlresolvers import reverse
+from django.contrib.auth.models import User as AuthUser
 import re
 try: import simplejson as json
 except ImportError: import json
@@ -69,7 +70,6 @@ def genColumns(modelObj):
                     '__unicode__': c[1]
                 }
                 field['choices'].append(choice)
-
         elif isinstance(f, models.BooleanField):
             field['_type'] = 'boolean'
         elif isinstance(f, models.IntegerField) or isinstance(f, models.AutoField):
@@ -81,11 +81,18 @@ def genColumns(modelObj):
         elif isinstance(f, models.TextField):
             field['_type'] = 'text'
         elif isinstance(f, models.CharField):
-            field['_type'] = 'char'
-
+            # See if this is a password field.
+            if f.name == 'password':
+                print f.model
+                print isinstance(f.model, AuthUser)
+            if f.model == AuthUser and f.name == 'password':
+                field['_type'] = 'auth_password'
             #Try and see if this field was meant to hold colors
-            if re.match('color$', f.name.lower()):
+            elif re.match('color$', f.name.lower()):
                 field['_type'] = 'color'
+            else:
+                field['_type'] = 'char'
+
         else:
             raise Exception("In genColumns: The field type %s is not handled." % str(type(f))); 
 
