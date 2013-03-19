@@ -57,14 +57,9 @@ function changePassDialog()
                 var postData = {};
                 var self = this;
 
-                postData.username = $('#passwordUsername').val();
                 postData.oldPassword = $('#oldPassword').val();
                 postData.newPassword = $('#passwordInput').val();
 
-                if ( postData.username === '' ) {
-                    makeDialog('Please enter your username.', 'Error', [ok]);
-                    return;
-                }
                 if ( postData.oldPassword === '' ) {
                     makeDialog('Please enter your old password', 'Error', [ok]);
                     return;

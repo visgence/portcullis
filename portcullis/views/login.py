@@ -97,7 +97,7 @@ def passwordForm(request):
         return HttpResponse(json.dumps({'errors': error}), mimetype='application/json')
 
     t = loader.get_template('passwordForm.html')
-    c = RequestContext(request, {})
+    c = RequestContext(request, {'user': portcullisUser})
 
     return HttpResponse(json.dumps({'html': t.render(c)}), mimetype='application/json')
 
@@ -130,7 +130,6 @@ def changePassword(request):
         return HttpResponse(json.dumps({'errors': errors}), mimetype='application/json')
 
     try:
-        username = jsonData['username']
         oldPassword = jsonData['oldPassword']
         newPassword = jsonData['newPassword']
     except KeyError as e:
@@ -138,7 +137,7 @@ def changePassword(request):
         return HttpResponse(json.dumps({'errors': errors}), mimetype='application/json')
 
     # Make sure old password is valid
-    user = authenticate(username=username, password=oldPassword)
+    user = authenticate(username=portcullisUser.username, password=oldPassword)
     if user is None or user != portcullisUser.user_ptr:
         errors = 'Authentication Error: Username and password are not correct'
         return HttpResponse(json.dumps({'errors': errors}), mimetype='application/json')
