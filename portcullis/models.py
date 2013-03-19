@@ -699,6 +699,9 @@ class DataStreamManager(models.Manager):
         '   ds_id - DataStream Id of the datastream wanted.
         '   obj - The object asking for permission.  Should either be a Key or PorcullisUser.
         '   perm - The permission wanted.  Current valid options are 'read' and 'post'.
+        '
+        ' Return: The corresponding datastream for the given permission if the permission permits
+        '         or None.
         '''
         
         try:
@@ -707,12 +710,14 @@ class DataStreamManager(models.Manager):
         except DataStream.DoesNotExist:
             raise DataStream.DoesNotExist("There is no DataStream for the id %s"%str(ds_id))
 
-        if perm == 'read':
+        if perm.lower() == 'read':
             if not ds.can_view(obj):
-                return '%s cannot read DataStream %s!' % (str(obj), str(ds.id))
-        elif perm == 'post':
+                print '%s cannot read DataStream %s!' % (str(obj), str(ds.id))
+                return None
+        elif perm.lower() == 'post':
             if not ds.canPost(obj):
-                return '%s cannot post to DataStream %s!' % (str(obj), str(ds.id))
+                print '%s cannot post to DataStream %s!' % (str(obj), str(ds.id))
+                return None
         else:
             raise ValueError('%s is an invalid permission type.' % str(perm))
             
