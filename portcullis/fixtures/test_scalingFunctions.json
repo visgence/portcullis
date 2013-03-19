@@ -3,7 +3,7 @@
         "pk": 1,
         "model": "portcullis.scalingfunction",
         "fields": {
-            "name": "identity",
+            "name": "Identity",
             "definition": "return x;"
         }
     },
