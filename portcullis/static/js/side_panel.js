@@ -79,7 +79,7 @@ function sidepane_relocate()
     //Make sure we don't try this if there's note enough content height to scroll in
     else if(base_content.height() >= tab_strip.height()){
         if (window_top > div_top) {
-            $('#side_pane').addClass('stick')
+            $('#side_pane').addClass('stick');
             $('#side_pane').removeClass('absolute');
             $('#side_pane').css('top', '');
         }
@@ -121,7 +121,7 @@ function toggle_subtree(event)
                     console.log('Error getting subtree: ' + resp.errors);
                     return false;
                 }
-                $(div).html(resp.html)
+                $(div).html(resp.html);
                 div.toggle(toggle_options);
                 toggle_symbol.html('-');
             }, {'name': $(element).attr('id'), group: $(element).attr('group')});
