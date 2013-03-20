@@ -82,9 +82,6 @@ def genColumns(modelObj):
             field['_type'] = 'text'
         elif isinstance(f, models.CharField):
             # See if this is a password field.
-            if f.name == 'password':
-                print f.model
-                print isinstance(f.model, AuthUser)
             if f.model == AuthUser and f.name == 'password':
                 field['_type'] = 'auth_password'
             #Try and see if this field was meant to hold colors
