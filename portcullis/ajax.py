@@ -18,7 +18,7 @@ from dajaxice.decorators import dajaxice_register
 from django.core import serializers
 from django.core.exceptions import FieldError, ObjectDoesNotExist, ValidationError, NON_FIELD_ERRORS
 from django.db import models, transaction
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User as AuthUser
 from django.http import HttpResponse
 from django.template import Context, loader
 from django.utils.timezone import utc
@@ -144,14 +144,10 @@ def update(request, model_name, data):
                     setattr(obj, field['field'], dt_obj)
 
                 elif field['_type'] == 'auth_password':
-                    print 'Changing password'
                     if data[field['field']] not in [None, '']:
                         obj.set_password(data[field['field']])
 
                 else:
-                    if field['field'] == 'password':
-                        print field['_type']
-                        print 'Did not change password correctly...'
                     setattr(obj, field['field'], data[field['field']])
         obj.save()
 
@@ -275,6 +271,7 @@ def serialize_model_objs(objs, read_only):
             #Set value of field for the object.
             obj_dict[f.name] = f.value_from_object(obj)
 
+            # What to do when we have a choice field.
             if len(f.choices) > 0:
                 default = f.default
                 for c in f.choices:
@@ -289,25 +286,36 @@ def serialize_model_objs(objs, read_only):
                         obj_dict[f.name] = choice
                         break
 
-            if type(obj_dict[f.name]) not in [dict, list, unicode, int, long, float, bool, type(None)]:
+            # Make sure not to send back the actual hashed password.
+            if f.model == AuthUser and f.name == 'password':
+                password = f.value_to_string(obj)
+                if password.startswith('pbkdf2_sha256'):
+                    obj_dict[f.name] = 'Hashed'
+                else:
+                    obj_dict[f.name] = 'Invalid'
+
+            # Types that need to be returned as strings
+            elif type(obj_dict[f.name]) not in [dict, list, unicode, int, long, float, bool, type(None)]:
                 obj_dict[f.name] = f.value_to_string(obj)
 
-            if isinstance(f, models.fields.related.ForeignKey) or \
+            # Relations
+            elif isinstance(f, models.fields.related.ForeignKey) or \
                isinstance(f, models.fields.related.OneToOneField):
                 obj_dict[f.name] = {
                     '__unicode__': getattr(obj, f.name).__unicode__(),
                     'pk': f.value_from_object(obj),
                     'model_name': f.rel.to.__name__
                 }
-                continue
 
+            # Datetime Field
+            # TODO: expand for other time related fields)
             elif isinstance(f, models.fields.DateTimeField):
                 dt_obj = f.value_from_object(obj)
                 if dt_obj is not None:
                     obj_dict[f.name] = f.value_from_object(obj).strftime(DT_FORMAT)
 
-            if '__unicode__' not in obj_dict:
-                obj_dict['__unicode__'] = obj.__unicode__()
+        if '__unicode__' not in obj_dict:
+            obj_dict['__unicode__'] = obj.__unicode__()
 
         for m in m2m_fields:
             m_objs = getattr(obj, m.name).all()
