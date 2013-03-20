@@ -15,8 +15,7 @@ except ImportError:
     import json
 
 from dajaxice.decorators import dajaxice_register
-from django.core import serializers
-from django.core.exceptions import FieldError, ObjectDoesNotExist, ValidationError, NON_FIELD_ERRORS
+from django.core.exceptions import ValidationError
 from django.db import models, transaction
 from django.contrib.auth.models import User as AuthUser
 from django.http import HttpResponse
@@ -25,12 +24,12 @@ from django.utils.timezone import utc
 from datetime import datetime
 from collections import OrderedDict
 from sys import stderr
-from check_access import check_access
 
 # Local imports
 from portcullis.models import DataStream, PortcullisUser
 from portcullis.views.crud import genColumns
 from settings import DT_FORMAT
+from check_access import check_access
 
 
 @dajaxice_register

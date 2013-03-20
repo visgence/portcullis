@@ -8,17 +8,14 @@
 """
 
 # System Imports
-from django.db import models, connections
+from django.db import models
 from django.http import HttpResponse
 from django.template import RequestContext, loader
-from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User as AuthUser
 import re
-try: import simplejson as json
-except ImportError: import json
 
 # Local Imports
-from portcullis.models import DataStream, PortcullisUser
+from portcullis.models import PortcullisUser
 from check_access import check_access
 
 
