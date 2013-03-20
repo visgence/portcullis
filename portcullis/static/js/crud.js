@@ -310,29 +310,29 @@
                         if (self.columns[i]._editable === true) {
                             switch (self.columns[i]._type) {
 
-                                case 'boolean':
-                                    self.columns[i].formatter = Slick.Formatters.Checkmark;
-                                    break;
+                            case 'boolean':
+                                self.columns[i].formatter = Slick.Formatters.Checkmark;
+                                break;
+                                
+                            case 'foreignkey':
+                                self.columns[i].formatter = foreign_key_formatter;
+                                break;
+                                
+                            case 'm2m':
+                                self.columns[i].formatter = m2m_formatter;
+                                break;
 
-                                case 'foreignkey':
-                                    self.columns[i].formatter = foreign_key_formatter;
-                                    break;
-                                    
-                                case 'm2m':
-                                    self.columns[i].formatter = m2m_formatter;
-                                    break;
+                            case 'choice':
+                                self.columns[i].formatter = choices_formatter;
+                                break;
 
-                                case 'choice':
-                                    self.columns[i].formatter = choices_formatter;
-                                    break;
+                            case 'number':
+                            case 'char':
+                            case 'integer':
+                            case 'text':
+                            case 'date':
 
-                                case 'number':
-                                case 'char':
-                                case 'integer':
-                                case 'text':
-                                case 'date':
-
-                                default:
+                            default:
                             }
                         }
                     }
@@ -553,7 +553,12 @@
                 value = record[col.field];
              
             switch(col._type) {
-                
+            case 'auth_password':
+                input = get_input('add_form_input', 'text', '');
+                td1.append(label);
+                td2.append(input);
+                break;
+
             case 'integer':
                 if(col._editable) {
                     input = get_input('add_form_input', 'text', value); 
