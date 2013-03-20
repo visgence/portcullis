@@ -8,9 +8,8 @@
  *
  * Copyright 2013, Visgence, Inc.
  *
- * This file is a template for a dynamic javascript file to setup the 
- * KendoUI grid to manage models.  As long as this file takes to load, I think after development
- * is finished, it should be statically generated.
+ * This is the javascript that drives our crud interface.  It defines the DataGrid object, which will
+ * be instantiated for each different type of grid that is created.
  */
 
 
@@ -311,29 +310,29 @@
                         if (self.columns[i]._editable === true) {
                             switch (self.columns[i]._type) {
 
-                                case 'boolean':
-                                    self.columns[i].formatter = Slick.Formatters.Checkmark;
-                                    break;
+                            case 'boolean':
+                                self.columns[i].formatter = Slick.Formatters.Checkmark;
+                                break;
+                                
+                            case 'foreignkey':
+                                self.columns[i].formatter = foreign_key_formatter;
+                                break;
+                                
+                            case 'm2m':
+                                self.columns[i].formatter = m2m_formatter;
+                                break;
 
-                                case 'foreignkey':
-                                    self.columns[i].formatter = foreign_key_formatter;
-                                    break;
-                                    
-                                case 'm2m':
-                                    self.columns[i].formatter = m2m_formatter;
-                                    break;
+                            case 'choice':
+                                self.columns[i].formatter = choices_formatter;
+                                break;
 
-                                case 'choice':
-                                    self.columns[i].formatter = choices_formatter;
-                                    break;
+                            case 'number':
+                            case 'char':
+                            case 'integer':
+                            case 'text':
+                            case 'date':
 
-                                case 'number':
-                                case 'char':
-                                case 'integer':
-                                case 'text':
-                                case 'date':
-
-                                default:
+                            default:
                             }
                         }
                     }
@@ -448,7 +447,7 @@
         var model = myGrid.model;
         var col = grid.getColumns()[cell].field;
         var data = model.get_cell_data(row, col);
-        return data['__unicode__'];
+        return data.__unicode__;
     }
 
     /** Custom formatter for Foreign Key columns in the data grid */
@@ -554,87 +553,92 @@
                 value = record[col.field];
              
             switch(col._type) {
-                
-                case 'integer':
-                    if(col._editable) {
-                        input = get_input('add_form_input', 'text', value); 
-                        td2.append(input);
-                        $(input).spinner();
-                    }
-                    else {
-                        input = $("<span></span>").append(value);
-                        td2.append(input);
-                    }
-                    td1.append(label);
-                    break;
+            case 'auth_password':
+                input = get_input('add_form_input', 'text', '');
+                td1.append(label);
+                td2.append(input);
+                break;
 
-                case 'decimal':
+            case 'integer':
+                if(col._editable) {
                     input = get_input('add_form_input', 'text', value); 
                     td2.append(input);
-                    td1.append(label);
                     $(input).spinner();
-                    break;
-
-                case 'foreignkey': 
-                    input = get_pk_input('add_form_input foreignkey', value, col.model_name); 
+                }
+                else {
+                    input = $("<span></span>").append(value);
                     td2.append(input);
-                    td1.append(label);
-                    break;
+                }
+                td1.append(label);
+                break;
+
+            case 'decimal':
+                input = get_input('add_form_input', 'text', value); 
+                td2.append(input);
+                td1.append(label);
+                $(input).spinner();
+                break;
+
+            case 'foreignkey': 
+                input = get_pk_input('add_form_input foreignkey', value, col.model_name); 
+                td2.append(input);
+                td1.append(label);
+                break;
                 
-                case 'm2m':
-                    input = get_m2m_input('add_form_input m2m', value, col.model_name); 
-                    td2.append(input);
-                    td1.append(label);
-                    break;
+            case 'm2m':
+                input = get_m2m_input('add_form_input m2m', value, col.model_name); 
+                td2.append(input);
+                td1.append(label);
+                break;
 
-                case 'boolean':
-                    input = get_input('add_form_input', 'checkbox', '');
-                    if(value)
-                        input.attr('checked', 'checked');
-                    td2.append(input);
-                    td1.append(label);
-                    break;
+            case 'boolean':
+                input = get_input('add_form_input', 'checkbox', '');
+                if(value)
+                    input.attr('checked', 'checked');
+                td2.append(input);
+                td1.append(label);
+                break;
 
-                case 'datetime':
+            case 'datetime':
+                input = get_input('add_form_input', 'text', value);
+                td2.append(input);
+                td1.append(label);
+
+                $(input).datetimepicker({
+                    showSecond: true,
+                    dateFormat: 'mm/dd/yy',
+                    timeFormat: 'hh:mm:ss'
+                });
+                $(input).datetimepicker('setDate', value); 
+                break;
+                
+            case 'color':
+                input = get_input('add_form_input', 'text', value);
+                td2.append(input);
+                td1.append(label);
+                $(input).minicolors({
+                    control: 'wheel',
+                    defaultValue: value,
+                    position: 'top',
+                    theme: 'none'     
+                });
+                break;
+
+            case 'choice':
+                input = get_choices_input('add_form_input', value, col.choices);
+                td2.append(input);
+                td1.append(label);
+                break;
+
+            default:
+                if(col._editable) {
                     input = get_input('add_form_input', 'text', value);
-                    td2.append(input);
-                    td1.append(label);
-
-                    $(input).datetimepicker({
-                        showSecond: true,
-                        dateFormat: 'mm/dd/yy',
-                        timeFormat: 'hh:mm:ss'
-                    });
-                    $(input).datetimepicker('setDate', value); 
-                    break;
-           
-                case 'color':
-                    input = get_input('add_form_input', 'text', value);
-                    td2.append(input);
-                    td1.append(label);
-                    $(input).minicolors({
-                        control: 'wheel',
-                        defaultValue: value,
-                        position: 'top',
-                        theme: 'none'     
-                    });
-                    break;
-
-                case 'choice':
-                    input = get_choices_input('add_form_input', value, col.choices)
-                    td2.append(input);
-                    td1.append(label);
-                    break;
-
-                default:
-                    if(col._editable) {
-                        input = get_input('add_form_input', 'text', value);
-                    }
-                    else {
-                        input = $("<span></span>").append(value);
-                    }
-                    td2.append(input);
-                    td1.append(label);
+                }
+                else {
+                    input = $("<span></span>").append(value);
+                }
+                td2.append(input);
+                td1.append(label);
             }
 
             input.before(span);
@@ -800,7 +804,7 @@
             return {'pk': $(':selected', input).attr('class')};
         }
         else if($(input).hasClass('m2m')) {
-            var array = new Array();
+            var array = [];
             $(':checked', input).each(function(i, sel) {
                 array.push({'pk': $(sel).val()});
             });

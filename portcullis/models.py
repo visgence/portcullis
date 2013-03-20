@@ -8,7 +8,7 @@ from base64 import urlsafe_b64encode as b64encode
 import hashlib
 import random
 import string
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 # Local Imports
 from graphs.data_reduction import reduction_type_choices
@@ -99,9 +99,17 @@ class PortcullisUser(User):
     ' The class that defines users of the system.
     '''
     objects = PortcullisUserManager()
-    # TODO: Add custom user fields/methods
 
-    pass
+    def save(self, *args, **kwargs):
+        '''
+        ' Overwritten save method to get around not null constraint on 2 fields, that cannot
+        ' be overwritten from AuthUser
+        '''
+        if self.last_login is None:
+            self.last_login = datetime(1900, 1, 1).replace(tzinfo=timezone.utc)
+        if self.date_joined is None:
+            self.date_joined = timezone.now()
+        super(PortcullisUser, self).save(*args, **kwargs)
 
     def can_view(self, user):
         '''
