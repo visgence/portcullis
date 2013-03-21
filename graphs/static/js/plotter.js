@@ -210,8 +210,13 @@ function get_ranges() {
     
     var start_range = $('#start_range').val();
     var end_range = $('#end_range').val();  
-    
-    if((start_range != "None" && end_range == "None" && !$("#end").val()) ||
+   
+    var end_now = $('#end_range_now').attr('checked');
+
+    if(end_now) {
+        end = new Date(d.getTime());
+    }
+    else if((start_range != "None" && end_range == "None" && !$("#end").val()) ||
        ($("#start").val() && !$("#end").val()))
     {
         end = new Date(start.getTime() + range*1000);
@@ -239,7 +244,9 @@ function get_ranges() {
 
     epoch_start = start.getTime() - timezone_offset;
     epoch_end = end.getTime() - timezone_offset;
-    
+   
+    console.log("Start: "+dateToString(start));
+    console.log("End: "+dateToString(end));
     var range_data = { 
         xaxis: { 
                   from: epoch_start, 
@@ -453,7 +460,7 @@ function zoom_graph_callback(ranges, select) {
 
         if(data.data.length === 0) {
             var msg = "No data for this range.";
-            plot_empty_graph(data.datastream_id, msg);
+            plots[data.datastream_id] = plot_empty_graph(data.datastream_id, msg);
             hide_data_container(data.datastream_id);
         }
         else {
@@ -495,7 +502,7 @@ function graph_overview_callback(is_shared) {
         var msg = '';
         if(data.data.length === 0) {
             msg = "No data for this range.";
-            plot_empty_graph(data.datastream_id, msg);
+            plots[data.datastream_id] = plot_empty_graph(data.datastream_id, msg);
             graph_options_visibility(data.datastream_id, 'none');
            
             //Add empty class so everything that needs graphs with data can ignore.
@@ -503,7 +510,7 @@ function graph_overview_callback(is_shared) {
         }
         else if(!data.permission) {
             msg = "You do not have permission to view this graph.";
-            plot_empty_graph(data.datastream_id, msg);
+            plots[data.datastream_id] = plot_empty_graph(data.datastream_id, msg);
             graph_options_visibility(data.datastream_id, 'none');
             
             //Add empty class so everything that needs graphs with data can ignore.
@@ -526,7 +533,7 @@ function graph_overview_callback(is_shared) {
         $("#graph_title" + data.datastream_id).text(data.ds_label);
 
         // For saved views, refresh the graph
-        if ( data.eoom_start )
+        if ( data.zoom_start )
             refresh_graph(data.datastream_id);
     };
 }
@@ -546,6 +553,8 @@ function load_graph(datastream_id, ranges, callback) {
 
     json_data = JSON.stringify(getData);
     $.get("/graphs/render_graph/", {'json_data': json_data}, function(data) {
+
+        console.log("datastream: "+datastream_id);
         indicator_s.stop();
         indicator_g.stop();
         callback(data);
@@ -687,24 +696,22 @@ function resetZoom(streamId)
                         to: overviewData[0].xaxis.max
                     }
                 };
-                delete overviewData[0].lines;
-                delete overviewData[0].shadowSize;
-                renderGraph(overviewData[0], ranges, false);
+
+                load_graph(datastream_id, ranges, zoom_graph_callback(ranges, false)); 
             }
         }
     }
     else {
         overviewPlots[streamId].clearSelection(true);
         overviewData = overviewPlots[streamId].getData();
+
         ranges = {
             xaxis: {
                 from: overviewData[0].xaxis.min,
                 to: overviewData[0].xaxis.max
             }
         };
-        delete overviewData[0].lines;
-        delete overviewData[0].shadowSize;
-        renderGraph(overviewData[0], ranges, false);
+        load_graph(streamId, ranges, zoom_graph_callback(ranges, false)); 
     }
     
     reset_graph_selection(streamId);
@@ -783,7 +790,24 @@ function toggle_date_range(select, date_id, mutable_select)
     else
     {
         date_field.removeAttr('disabled');
-        $('#'+mutable_select).removeAttr('disabled');
+        if(!$('#end_range_now').attr('checked'))
+            $('#'+mutable_select).removeAttr('disabled');
+    }
+}
+
+
+
+function toggle_end_range(checkbox)
+{
+    if ($(checkbox).attr('checked')) {
+        $('#end').attr('disabled', 'disabled'); 
+        $('#end_range').attr('disabled', 'disabled'); 
+    }
+    else {
+        if($('#end_range').val() == "None")
+            $('#end').removeAttr('disabled'); 
+        if($('#start_range').val() == "None")
+            $('#end_range').removeAttr('disabled'); 
     }
 }
 
