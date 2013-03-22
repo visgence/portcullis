@@ -45,8 +45,6 @@ def savedView(request, token):
     for w in view.widget.all():
         c_graph = Context({
                 'id': w.saveddsgraph.datastream.id,
-                'node_id': w.saveddsgraph.datastream.node_id,
-                'port_id': w.saveddsgraph.datastream.port_id,
                 'reductions': reductions,
                 'widget_id': w.id
                 })

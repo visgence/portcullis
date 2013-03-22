@@ -12,11 +12,9 @@
             "max_value": null,
             "min_value": null,
             "owner": 1,
-            "node_id": 0,
             "scaling_function": 3,
             "units": "Kbps",
-            "is_public": true,
-            "port_id": 1,
+            "is_public": false,
             "description": ""
         }
     },
@@ -33,11 +31,9 @@
             "max_value": null,
             "min_value": null,
             "owner": 2,
-            "node_id": 0,
             "scaling_function": 1,
             "units": "Kbps",
-            "is_public": true,
-            "port_id": 2,
+            "is_public": false,
             "description": ""
         }
     },
@@ -51,7 +47,7 @@
             ],
             "can_read": [
                 "exp_key2",
-                "valid_date_key3",
+                "valid_date_key2",
                 "valid_uses_key2"
             ],
             "name": "staffuser_ds2",
@@ -59,11 +55,9 @@
             "max_value": null,
             "min_value": null,
             "owner": 2,
-            "node_id": 0,
             "scaling_function": 2,
             "units": "Kbps",
-            "is_public": true,
-            "port_id": 3,
+            "is_public": false,
             "description": ""
         }
     },
@@ -78,7 +72,7 @@
             "can_read": [
                 "no_uses_key2",
                 "exp_key2",
-                "valid_date_key3",
+                "valid_date_key2",
                 "valid_uses_key2"
             ],
             "name": "normaluser_ds1",
@@ -86,11 +80,9 @@
             "max_value": null,
             "min_value": null,
             "owner": 3,
-            "node_id": 0,
             "scaling_function": 3,
             "units": "Kbps",
-            "is_public": true,
-            "port_id": 4,
+            "is_public": false,
             "description": ""
         }
     },
@@ -103,7 +95,7 @@
             "can_read": [
                 "no_uses_key2",
                 "exp_key2",
-                "valid_date_key3",
+                "valid_date_key2",
                 "valid_uses_key2"
             ],
             "name": "invalidkeyuser_ds",
@@ -111,11 +103,9 @@
             "max_value": null,
             "min_value": null,
             "owner": 4,
-            "node_id": 0,
             "scaling_function": 3,
             "units": "Kbps",
-            "is_public": true,
-            "port_id": 4,
+            "is_public": false,
             "description": ""
         }
     },
@@ -126,7 +116,7 @@
             "reduction_type": "mean",
             "can_post": [],
             "can_read": [
-                "valid_date_key3",
+                "valid_date_key2",
                 "valid_uses_key2"
             ],
             "name": "validkeyuser_ds",
@@ -134,11 +124,45 @@
             "max_value": null,
             "min_value": null,
             "owner": 5,
-            "node_id": 0,
+            "scaling_function": 3,
+            "units": "Kbps",
+            "is_public": false,
+            "description": ""
+        }
+    },
+    {
+        "pk": 7,
+        "model": "portcullis.datastream",
+        "fields": {
+            "reduction_type": "mean",
+            "can_post": [],
+            "can_read": [],
+            "name": "normaluser_nokeys_ds",
+            "color": "black",
+            "max_value": null,
+            "min_value": null,
+            "owner": 6,
+            "scaling_function": 3,
+            "units": "Kbps",
+            "is_public": false,
+            "description": ""
+        }
+    },
+    {
+        "pk": 8,
+        "model": "portcullis.datastream",
+        "fields": {
+            "reduction_type": "mean",
+            "can_post": [],
+            "can_read": [],
+            "name": "public_ds",
+            "color": "black",
+            "max_value": null,
+            "min_value": null,
+            "owner": 1,
             "scaling_function": 3,
             "units": "Kbps",
             "is_public": true,
-            "port_id": 4,
             "description": ""
         }
     }

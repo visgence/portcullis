@@ -1,3 +1,6 @@
+{% load url from future %}
+
 <div id="user_greeting">
-    Hello {{user.first_name}} {{user.last_name}} (<a href="/portcullis/logout/">logout</a>)
+    Hello {{user.first_name}} {{user.last_name}} (<a href="{% url 'portcullis-logout' %}">logout</a>)<br>
+    <span style="font-size: 8pt;">[<a href="#" onclick="changePassDialog();">Change password</a>]</span>
 </div>

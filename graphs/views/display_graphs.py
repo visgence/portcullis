@@ -19,16 +19,17 @@ def display_graph(request):
     '''
     ' Use JSON data to retrieve the appropriate datastream for rendering.
     '''
-
-    # TODO: Figure out how we want to do check_access
-    #response = check_access(request)
-    #if(response):
-    #    return response
-
+    
+    user = check_access(request)
+    if isinstance(user, HttpResponse):
+        return user.content
+    
     json_data = json.loads(request.GET['json_data'])
 
     try:
         stream = DataStream.objects.get(id = int(json_data['stream']))
+        if not stream.can_view(user):
+            raise Http404("Sorry, but you do not have permission to view this graph.")
     except ObjectDoesNotExist as e:
         raise Http404()
 
@@ -36,8 +37,7 @@ def display_graph(request):
     t_graph = loader.get_template('graph.html')
     c_graph = Context({
         'id': stream.id,
-        'node_id': stream.node_id,
-        'port_id': stream.port_id,
+        'reduction': stream.reduction_type,
         'reductions': reductions
     })
 
@@ -159,8 +159,8 @@ def getStreamData(g_params, auth, user = None):
         max_value = float(max_value)
 
     stream_data = {
+        "granularity":      granularity,
         "ds_label":         ds.name,
-        "port_id":          ds.port_id,
         "data":             data_points,
         "num_readings":     numReadings,
         "max_value":        max_value,
@@ -171,7 +171,6 @@ def getStreamData(g_params, auth, user = None):
         "color":            ds.color,
         "shadowSize":       0,
         "points":           { "show": False },
-        "node_id":          ds.node_id,
         "units":            ds.units,
         "permission":       True,
         "xmax":             end,

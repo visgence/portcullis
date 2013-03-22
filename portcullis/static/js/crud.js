@@ -8,9 +8,8 @@
  *
  * Copyright 2013, Visgence, Inc.
  *
- * This file is a template for a dynamic javascript file to setup the 
- * KendoUI grid to manage models.  As long as this file takes to load, I think after development
- * is finished, it should be statically generated.
+ * This is the javascript that drives our crud interface.  It defines the DataGrid object, which will
+ * be instantiated for each different type of grid that is created.
  */
 
 
@@ -75,6 +74,24 @@
 
         this.grid = null;
 
+        /** Determines whether or not we want to allow the user to only view data or edit it. */
+        this.read_only = true;
+
+        this.set_read_only = function(read_only) {
+            this.read_only = read_only;
+            var panel = this.grid.getTopPanel();
+
+            var add = $(panel).children('input[value="Add"]');
+            if(self.read_only) {
+                if($(add).length > 0)
+                    $(add).remove();
+            }
+            else {
+                if($(add).length <= 0)
+                    $(add_button).prependTo(panel);
+            }
+        }
+
         /** Method to get data from server and refresh the grid.*/
         this.refresh = function() {
             self = this;
@@ -88,21 +105,21 @@
                     else
                         $('#server_messages').html('');
                     
-                    self.model.set_data(resp);
+                    self.model.set_data(resp.data);
+                    self.set_read_only(resp.read_only);
                     self.grid.invalidate();
-                },{
-                    model_name: self.model_name
-                });
+                },{'model_name': self.model_name, 'get_editable': true});
         };
 
         /** Method to add a record */
         this.add_record = function() {
+            self = this;
             //Clear row selection
             this.clear_row_selection();
 
             var form_id = get_grid_form(this.model_name+'_grid', this.columns, null, 'Add Record');
             if (form_id) {
-                var add_callback = function() {record_callback(0, false);};
+                var add_callback = function() {record_callback(self.model.getLength(), false);};
                 confirm_dialog(form_id, 'Add', add_callback, 'Cancel', null, true);
             }
             else
@@ -168,14 +185,15 @@
                     $('#'+self.model_name + '_add').dialog('close');
                     //Either add new row to beginning or update one.
                     if (update) {
-                        self.model.setItem(i, resp[0]);
+                        self.model.setItem(i, resp.data[0]);
                         self.grid.invalidateRow(i);
                     }
                     else {
-                        self.model.add_data(resp[0]);
+                        self.model.add_data(resp.data[0], i);
                         self.grid.invalidateAllRows();
                     }
                     
+                    self.refresh(); 
                     self.grid.render();
                     self.success('Updated row ' + i);
                 }
@@ -292,28 +310,39 @@
                         if (self.columns[i]._editable === true) {
                             switch (self.columns[i]._type) {
 
-                                case 'boolean':
-                                    self.columns[i].formatter = Slick.Formatters.Checkmark;
-                                    break;
-                                case 'foreignkey':
-                                    self.columns[i].formatter = foreign_key_formatter;
-                                    break;
-                                case 'm2m':
-                                    self.columns[i].formatter = m2m_formatter;
-                                    break;
+                            case 'boolean':
+                                self.columns[i].formatter = Slick.Formatters.Checkmark;
+                                break;
+                                
+                            case 'foreignkey':
+                                self.columns[i].formatter = foreign_key_formatter;
+                                break;
+                                
+                            case 'm2m':
+                                self.columns[i].formatter = m2m_formatter;
+                                break;
 
-                                case 'number':
-                                case 'char':
-                                case 'integer':
-                                case 'text':
-                                case 'date':
+                            case 'choice':
+                                self.columns[i].formatter = choices_formatter;
+                                break;
 
-                                default:
+                            case 'number':
+                            case 'char':
+                            case 'integer':
+                            case 'text':
+                            case 'date':
+
+                            default:
                             }
                         }
                     }
                         
                     self.grid = new Slick.Grid("#" + self.model_name + "_grid", self.model, self.columns, self.options);
+
+                    self.grid.onDblClick.subscribe(function(e, args) {
+                        if(!self.read_only)
+                            self.edit_record();
+                    });
 
                     // Add controls
                     $(add_button).appendTo(self.grid.getTopPanel()); 
@@ -325,21 +354,21 @@
                     self.grid.getSelectionModel().onSelectedRangesChanged.subscribe(function(e, args) {
                         var panel = self.grid.getTopPanel();
                         var serv_msg = $('#server_messages'); 
-
-                        //Add delete button if it's not in panel            
-                        if($(panel).has('input[value="Delete"]').length <= 0)
-                            $(serv_msg).before(delete_button);
                         
-                        //Add edit button if it's not in panel            
-                        if($(panel).has('input[value="Edit"]').length <= 0)
-                            $(serv_msg).before(edit_button);
+                        //Only add these if user is allowed to edit the content
+                        if(!self.read_only) {
+                            //Add delete button if it's not in panel            
+                            if($(panel).has('input[value="Delete"]').length <= 0)
+                                $(serv_msg).before(delete_button);
+                        
+                            //Add edit button if it's not in panel            
+                            if($(panel).has('input[value="Edit"]').length <= 0)
+                                $(serv_msg).before(edit_button);
+                        }
 
                         $(serv_msg).html('');
                     });
 
-                    self.grid.onDblClick.subscribe(function(e, args) {
-                        self.edit_record();
-                    });
                     self.refresh();
                 },
                 {'model_name': self.model_name}
@@ -410,6 +439,15 @@
             },  
             buttons: buttons
         });
+    }
+
+    /** Custom formatter for columns that have a list of choices to choose from. */
+    function choices_formatter (row, cell, columnDef, dataContext) {
+        var grid = myGrid.grid;
+        var model = myGrid.model;
+        var col = grid.getColumns()[cell].field;
+        var data = model.get_cell_data(row, col);
+        return data.__unicode__;
     }
 
     /** Custom formatter for Foreign Key columns in the data grid */
@@ -515,81 +553,92 @@
                 value = record[col.field];
              
             switch(col._type) {
-                
-                case 'integer':
-                    if(col._editable) {
-                        input = get_input('add_form_input', 'text', value); 
-                        td2.append(input);
-                        $(input).spinner();
-                    }
-                    else {
-                        input = $("<span></span>").append(value);
-                        td2.append(input);
-                    }
-                    td1.append(label);
-                    break;
+            case 'auth_password':
+                input = get_input('add_form_input', 'text', '');
+                td1.append(label);
+                td2.append(input);
+                break;
 
-                case 'decimal':
+            case 'integer':
+                if(col._editable) {
                     input = get_input('add_form_input', 'text', value); 
                     td2.append(input);
-                    td1.append(label);
                     $(input).spinner();
-                    break;
-
-                case 'foreignkey': 
-                    input = get_pk_input('add_form_input foreignkey', value, col.model_name); 
+                }
+                else {
+                    input = $("<span></span>").append(value);
                     td2.append(input);
-                    td1.append(label);
-                    break;
+                }
+                td1.append(label);
+                break;
+
+            case 'decimal':
+                input = get_input('add_form_input', 'text', value); 
+                td2.append(input);
+                td1.append(label);
+                $(input).spinner();
+                break;
+
+            case 'foreignkey': 
+                input = get_pk_input('add_form_input foreignkey', value, col.model_name); 
+                td2.append(input);
+                td1.append(label);
+                break;
                 
-                case 'm2m':
-                    input = get_m2m_input('add_form_input m2m', value, col.model_name); 
-                    td2.append(input);
-                    td1.append(label);
-                    break;
+            case 'm2m':
+                input = get_m2m_input('add_form_input m2m', value, col.model_name); 
+                td2.append(input);
+                td1.append(label);
+                break;
 
-                case 'boolean':
-                    input = get_input('add_form_input', 'checkbox', '');
-                    if(value)
-                        input.attr('checked', 'checked');
-                    td2.append(input);
-                    td1.append(label);
-                    break;
+            case 'boolean':
+                input = get_input('add_form_input', 'checkbox', '');
+                if(value)
+                    input.attr('checked', 'checked');
+                td2.append(input);
+                td1.append(label);
+                break;
 
-                case 'datetime':
+            case 'datetime':
+                input = get_input('add_form_input', 'text', value);
+                td2.append(input);
+                td1.append(label);
+
+                $(input).datetimepicker({
+                    showSecond: true,
+                    dateFormat: 'mm/dd/yy',
+                    timeFormat: 'hh:mm:ss'
+                });
+                $(input).datetimepicker('setDate', value); 
+                break;
+                
+            case 'color':
+                input = get_input('add_form_input', 'text', value);
+                td2.append(input);
+                td1.append(label);
+                $(input).minicolors({
+                    control: 'wheel',
+                    defaultValue: value,
+                    position: 'top',
+                    theme: 'none'     
+                });
+                break;
+
+            case 'choice':
+                input = get_choices_input('add_form_input', value, col.choices);
+                td2.append(input);
+                td1.append(label);
+                break;
+
+            default:
+                if(col._editable) {
                     input = get_input('add_form_input', 'text', value);
-                    td2.append(input);
-                    td1.append(label);
-
-                    $(input).datetimepicker({
-                        showSecond: true,
-                        dateFormat: 'mm/dd/yy',
-                        timeFormat: 'hh:mm:ss'
-                    });
-                    $(input).datetimepicker('setDate', value); 
-                    break;
-           
-                case 'color':
-                    input = get_input('add_form_input', 'text', value);
-                    td2.append(input);
-                    td1.append(label);
-                    $(input).minicolors({
-                        control: 'wheel',
-                        defaultValue: value,
-                        position: 'top',
-                        theme: 'none'     
-                    });
-                    break;
-
-                default:
-                    if(col._editable) {
-                        input = get_input('add_form_input', 'text', value);
-                    }
-                    else {
-                        input = $("<span></span>").append(value);
-                    }
-                    td2.append(input);
-                    td1.append(label);
+                }
+                else {
+                    input = $("<span></span>").append(value);
+                }
+                td2.append(input);
+                td1.append(label);
             }
 
             input.before(span);
@@ -622,6 +671,34 @@
 
     /** Creates and returns a basic select input field.
      *
+     * This will preload the select field with results from the data stored in a choices column. 
+     *
+     * Keyword Args
+     *    cls     - The class to give the input field.
+     *    choices - The list of objects that will be put into the select field.
+     *    value   - The value to give to the input field to start with if any.
+     *
+     * Return: The newly created select field
+     */
+    function get_choices_input (cls, value, choices) 
+    {
+        var input = $("<select></select>").attr({'class': cls});
+       
+        $(choices).each(function(i, c) {
+            var option = $("<option></option>")
+                .attr('value', (c.value))
+                .text(c.__unicode__);
+           
+            if(value !== '' && value.value == c.value) 
+                option.attr('selected', 'selected');
+            input.append(option);
+        });
+
+        return input;
+    }
+
+    /** Creates and returns a basic select input field.
+     *
      * This will preload the select field with results from the server. The preloaded objs
      * will be fetched from the given model name.
      *
@@ -639,7 +716,7 @@
         //Get all objects that the user can select from
         Dajaxice.portcullis.read_source( function(resp) {
 
-            $(resp).each(function(i, obj) {
+            $(resp.data).each(function(i, obj) {
                 var option = $("<option></option>")
                     .attr('class', obj.pk)
                     .text(obj.__unicode__);
@@ -650,7 +727,7 @@
 
             });
         }, 
-        {'model_name': model_name});
+        {'model_name': model_name, 'get_editable': false});
 
         return input;
     }
@@ -676,7 +753,7 @@
         //Get all objects that the user can select from
         Dajaxice.portcullis.read_source( function(resp) {
 
-            $(resp).each(function(i, obj) { 
+            $(resp.data).each(function(i, obj) { 
                 
                 var li = $('<li></li>');
                 var checkbox = get_input('', 'checkbox', obj.pk);
@@ -692,7 +769,7 @@
                 li.append(checkbox);
                 checkbox.after(label);
             });
-        }, {'model_name': model_name});
+        }, {'model_name': model_name, 'get_editable': false});
 
         return div;
     }
@@ -711,7 +788,6 @@
             var field = $(input).prev('span.field').text();
             row[field] = field_value(input);      
         });
-        console.log(row);
         myGrid.add_row(row, index, updating);
     }
 
@@ -728,7 +804,7 @@
             return {'pk': $(':selected', input).attr('class')};
         }
         else if($(input).hasClass('m2m')) {
-            var array = new Array();
+            var array = [];
             $(':checked', input).each(function(i, sel) {
                 array.push({'pk': $(sel).val()});
             });

@@ -45,6 +45,14 @@
                     <option value="One Month">One Month</option>
                 </select>
             </li> 
+            <li class="date_range_seperator">
+                or
+            </li>
+            <li>
+            <input id="end_range_now" type="checkbox" onchange="toggle_end_range(this, 'end', 'end_range'); 
+                                                                load_all_graphs();"/>
+                <label for="end_range_now"><b>Now</b></label>
+            </li>
         </ul>
     </div>
 

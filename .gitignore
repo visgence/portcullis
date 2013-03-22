@@ -8,7 +8,7 @@
 
 # User define database settings #
 #################################
-database_settings.py
+local_database_settings.py
 
 # Logs and Databases #
 ######################

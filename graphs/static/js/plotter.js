@@ -78,9 +78,30 @@ function set_graph_range_labels(start, end, datastream_id)
 
 function reset_graph_selection(datastream_id)
 {
-    $('#graph_selection_'+datastream_id).attr('style', 'display: none;');
+    $('#graph_selection_'+datastream_id).attr('style', 'visibility: hidden;');
     $('#selected_value_'+datastream_id).text("");
     $('#selected_time_'+datastream_id).text("");
+}
+
+
+/** Hides a select graphs data container.
+ *
+ * Keyword Args
+ *     datastream_id - The graph whose data container is to be hidden
+ */
+function hide_data_container(datastream_id)
+{
+    $("#stream_data_container_"+datastream_id).attr('style', 'display: none;');
+}
+
+/** Reveals a select graphs data container.
+ *
+ * Keyword Args
+ *     datastream_id - The graph whose data container is to be revealed
+ */
+function show_data_container(datastream_id) 
+{
+    $("#stream_data_container_"+datastream_id).removeAttr('style'); 
 }
 
 function on_graphs_load() {
@@ -131,7 +152,7 @@ function on_graph_load(datastream_id) {
     // setup the download link.
     setupDownload(datastream_id);
    
-    load_graph(datastream_id, get_ranges(), graph_overview_callback());
+    load_graph(datastream_id, get_ranges(), graph_overview_callback(false));
 }
 
 function modify_date(date, date_range, subtract) {
@@ -189,8 +210,13 @@ function get_ranges() {
     
     var start_range = $('#start_range').val();
     var end_range = $('#end_range').val();  
-    
-    if((start_range != "None" && end_range == "None" && !$("#end").val()) ||
+   
+    var end_now = $('#end_range_now').attr('checked');
+
+    if(end_now) {
+        end = new Date(d.getTime());
+    }
+    else if((start_range != "None" && end_range == "None" && !$("#end").val()) ||
        ($("#start").val() && !$("#end").val()))
     {
         end = new Date(start.getTime() + range*1000);
@@ -218,7 +244,9 @@ function get_ranges() {
 
     epoch_start = start.getTime() - timezone_offset;
     epoch_end = end.getTime() - timezone_offset;
-    
+   
+    console.log("Start: "+dateToString(start));
+    console.log("End: "+dateToString(end));
     var range_data = { 
         xaxis: { 
                   from: epoch_start, 
@@ -337,6 +365,7 @@ function plot_empty_graph(datastream_id, msg) {
 
     //Put in message for why graph is empty
     $(div).append('<span class="empty_graph_msg">'+msg+'</span>'); 
+    hide_data_container(datastream_id);
     return empty_plot;
 }
 
@@ -398,7 +427,7 @@ function load_all_shared_graphs() {
     var token = $('#auth_token').val();
     $('.portcullis-graph').each(function(i) {
         var url = '/graphs/sharedGraph/' + token + '/' + $('#saved_graph_'+this.id).val() + '/';
-        $.get(url, graph_overview_callback());
+        $.get(url, graph_overview_callback(true));
     });
 }
 
@@ -412,7 +441,7 @@ function load_all_graphs() {
     //Cycle though all graphs and fetch data from server
     for (var i = 0; i < divs.length; i++) 
     {
-        load_graph(divs[i].id, get_ranges(), graph_overview_callback());
+        load_graph(divs[i].id, get_ranges(), graph_overview_callback(false));
     }
 }
 
@@ -431,10 +460,12 @@ function zoom_graph_callback(ranges, select) {
 
         if(data.data.length === 0) {
             var msg = "No data for this range.";
-            plot_empty_graph(data.datastream_id, msg);
+            plots[data.datastream_id] = plot_empty_graph(data.datastream_id, msg);
+            hide_data_container(data.datastream_id);
         }
         else {
             renderGraph(data, ranges, true);
+            show_data_container(data.datastream_id);
         }
        
         if (select){
@@ -446,7 +477,7 @@ function zoom_graph_callback(ranges, select) {
     };
 }
 
-function graph_overview_callback() {
+function graph_overview_callback(is_shared) {
     /*
      * Returns a callback that renders a graph and overview using data recieved from server.  If there is no data
      * or insufficient privilages then an empty graph is rendered with an appropriate message.
@@ -457,10 +488,21 @@ function graph_overview_callback() {
     var ranges = get_ranges();
 
     return function (data) {
+        
+        if (is_shared) {
+            var start = data.xmin*1000;
+            var end = data.xmax*1000;
+
+            $('#start').val(dateToString(new Date(start)));
+            $('#end').val(dateToString(new Date(end)));
+            $('#granularity').val(data.granularity);
+        }
+
+
         var msg = '';
         if(data.data.length === 0) {
             msg = "No data for this range.";
-            plot_empty_graph(data.datastream_id, msg);
+            plots[data.datastream_id] = plot_empty_graph(data.datastream_id, msg);
             graph_options_visibility(data.datastream_id, 'none');
            
             //Add empty class so everything that needs graphs with data can ignore.
@@ -468,7 +510,7 @@ function graph_overview_callback() {
         }
         else if(!data.permission) {
             msg = "You do not have permission to view this graph.";
-            plot_empty_graph(data.datastream_id, msg);
+            plots[data.datastream_id] = plot_empty_graph(data.datastream_id, msg);
             graph_options_visibility(data.datastream_id, 'none');
             
             //Add empty class so everything that needs graphs with data can ignore.
@@ -511,6 +553,8 @@ function load_graph(datastream_id, ranges, callback) {
 
     json_data = JSON.stringify(getData);
     $.get("/graphs/render_graph/", {'json_data': json_data}, function(data) {
+
+        console.log("datastream: "+datastream_id);
         indicator_s.stop();
         indicator_g.stop();
         callback(data);
@@ -569,6 +613,7 @@ function renderGraph(data, ranges, shouldScale)
     }
     result.resolve(plot);//sent back for binding
     plots[dataStreamId] = plot;
+    show_data_container(dataStreamId);
     set_graph_range_labels(ranges.xaxis.from, ranges.xaxis.to, dataStreamId);
 }
 
@@ -651,24 +696,22 @@ function resetZoom(streamId)
                         to: overviewData[0].xaxis.max
                     }
                 };
-                delete overviewData[0].lines;
-                delete overviewData[0].shadowSize;
-                renderGraph(overviewData[0], ranges, false);
+
+                load_graph(datastream_id, ranges, zoom_graph_callback(ranges, false)); 
             }
         }
     }
     else {
         overviewPlots[streamId].clearSelection(true);
         overviewData = overviewPlots[streamId].getData();
+
         ranges = {
             xaxis: {
                 from: overviewData[0].xaxis.min,
                 to: overviewData[0].xaxis.max
             }
         };
-        delete overviewData[0].lines;
-        delete overviewData[0].shadowSize;
-        renderGraph(overviewData[0], ranges, false);
+        load_graph(streamId, ranges, zoom_graph_callback(ranges, false)); 
     }
     
     reset_graph_selection(streamId);
@@ -747,7 +790,24 @@ function toggle_date_range(select, date_id, mutable_select)
     else
     {
         date_field.removeAttr('disabled');
-        $('#'+mutable_select).removeAttr('disabled');
+        if(!$('#end_range_now').attr('checked'))
+            $('#'+mutable_select).removeAttr('disabled');
+    }
+}
+
+
+
+function toggle_end_range(checkbox)
+{
+    if ($(checkbox).attr('checked')) {
+        $('#end').attr('disabled', 'disabled'); 
+        $('#end_range').attr('disabled', 'disabled'); 
+    }
+    else {
+        if($('#end_range').val() == "None")
+            $('#end').removeAttr('disabled'); 
+        if($('#start_range').val() == "None")
+            $('#end_range').removeAttr('disabled'); 
     }
 }
 

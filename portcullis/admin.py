@@ -9,17 +9,11 @@ class OrganizationAdmin(admin.ModelAdmin):
 '''
 
 class DataStreamAdmin(admin.ModelAdmin):
-    list_display = ('name',  'owner', 'id', 'node', 'port', 'units', 'description', 'color',
+    list_display = ('name',  'owner', 'id', 'units', 'description', 'color',
                     'min_value', 'max_value', 'scale_function')
     search_fields = ['name', 'id', 'owner__username', 'owner__email', 'can_post__key', 'can_read__key',
                      'description']
     filter_horizontal = ('can_read', 'can_post')
-
-    def node(self, obj):
-        return obj.node_id
-
-    def port(self, obj):
-        return obj.port_id
 
     def owner(self, obj):
         return obj.owner.username

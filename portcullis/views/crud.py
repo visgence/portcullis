@@ -8,16 +8,15 @@
 """
 
 # System Imports
-from django.db import models, connections
+from django.db import models
 from django.http import HttpResponse
 from django.template import RequestContext, loader
-from django.core.urlresolvers import reverse
+from django.contrib.auth.models import User as AuthUser
 import re
-try: import simplejson as json
-except ImportError: import json
 
 # Local Imports
-from portcullis.models import DataStream, PortcullisUser
+from portcullis.models import PortcullisUser
+from check_access import check_access
 
 
 def model_grid(request, model_name):
@@ -25,15 +24,17 @@ def model_grid(request, model_name):
     ' View to return the html that will hold a models crud. 
     '''
 
-    if request.user.is_anonymous():
+    portcullisUser = check_access(request)
+    if isinstance(portcullisUser, HttpResponse):
+        return portcullisUser
+    elif not isinstance(portcullisUser, PortcullisUser):
         return HttpResponse('Must be logged in to use the model interface', mimetype="text/html")
 
     t = loader.get_template('crud.html')
     c = RequestContext(request, {'model_name': model_name})
     return HttpResponse(t.render(c), mimetype="text/html")
 
-def genColumns(modelObj):
-    
+def genColumns(modelObj): 
     columns = []
     for f in get_meta_fields(modelObj):
        
@@ -49,12 +50,23 @@ def genColumns(modelObj):
             field['_editable'] = False
         else:
             field['_editable'] = True
+        
 
         #Figure out what each field is and store that type
         if isinstance(f, models.ForeignKey):
             field['model_name'] = f.rel.to.__name__
             field['app'] = f.rel.to._meta.app_label
             field['_type'] = 'foreignkey'
+        elif len(f.choices) > 0:
+            field['_type'] = 'choice'
+            field['choices'] = []
+
+            for c in f.choices:
+                choice = {
+                    'value'      : c[0],
+                    '__unicode__': c[1]
+                }
+                field['choices'].append(choice)
         elif isinstance(f, models.BooleanField):
             field['_type'] = 'boolean'
         elif isinstance(f, models.IntegerField) or isinstance(f, models.AutoField):
@@ -66,11 +78,15 @@ def genColumns(modelObj):
         elif isinstance(f, models.TextField):
             field['_type'] = 'text'
         elif isinstance(f, models.CharField):
-            field['_type'] = 'char'
-
+            # See if this is a password field.
+            if f.model == AuthUser and f.name == 'password':
+                field['_type'] = 'auth_password'
             #Try and see if this field was meant to hold colors
-            if re.match('color$', f.name.lower()):
+            elif re.match('color$', f.name.lower()):
                 field['_type'] = 'color'
+            else:
+                field['_type'] = 'char'
+
         else:
             raise Exception("In genColumns: The field type %s is not handled." % str(type(f))); 
 
