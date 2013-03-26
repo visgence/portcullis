@@ -153,6 +153,7 @@ INSTALLED_APPS = (
     'graphs',
     'collector',
     'snmpPoller',
+    'crud',
     'south'
 )
 
