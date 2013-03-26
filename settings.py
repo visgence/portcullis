@@ -15,6 +15,7 @@ MANAGERS = ADMINS
 
 #Global time format for datetime objects
 DT_FORMAT = "%m/%d/%Y %H:%M:%S"
+D_FORMAT = "%m/%d/%Y"
 
 #Import the database settings stored locally.  This allows for different databases
 #under different dev environments without impacting production.
