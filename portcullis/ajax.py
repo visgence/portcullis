@@ -28,7 +28,7 @@ from sys import stderr
 # Local imports
 from portcullis.models import DataStream, PortcullisUser
 from portcullis.views.crud import genColumns
-from settings import DT_FORMAT
+from settings import DT_FORMAT, D_FORMAT
 from check_access import check_access
 
 
@@ -293,10 +293,6 @@ def serialize_model_objs(objs, read_only):
                 else:
                     obj_dict[f.name] = 'Invalid'
 
-            # Types that need to be returned as strings
-            elif type(obj_dict[f.name]) not in [dict, list, unicode, int, long, float, bool, type(None)]:
-                obj_dict[f.name] = f.value_to_string(obj)
-
             # Relations
             elif isinstance(f, models.fields.related.ForeignKey) or \
                isinstance(f, models.fields.related.OneToOneField):
@@ -311,7 +307,15 @@ def serialize_model_objs(objs, read_only):
             elif isinstance(f, models.fields.DateTimeField):
                 dt_obj = f.value_from_object(obj)
                 if dt_obj is not None:
-                    obj_dict[f.name] = f.value_from_object(obj).strftime(DT_FORMAT)
+                    obj_dict[f.name] = dt_obj.strftime(DT_FORMAT)
+            elif isinstance(f, models.fields.DateField):
+                d_obj = f.value_from_object(obj)
+                if d_obj is not None:
+                    obj_dict[f.name] = d_obj.strftime(D_FORMAT)
+
+            # Types that need to be returned as strings
+            elif type(obj_dict[f.name]) not in [dict, list, unicode, int, long, float, bool, type(None)]:
+                obj_dict[f.name] = f.value_to_string(obj)
 
         if '__unicode__' not in obj_dict:
             obj_dict['__unicode__'] = obj.__unicode__()
