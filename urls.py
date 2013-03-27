@@ -21,7 +21,7 @@ urlpatterns = patterns(
     url(r'^datastreams/', include('datastreams.urls')),
     url(r'^collector/', include('collector.urls')),
     url(r'^api/', include('collector.shortUrls')),
-    url(r'(?i)^utilities/', include('crud.urls')),
+    url(r'(?i)^utilities/', include('chucho.urls')),
     url(dajaxice_config.dajaxice_url, include('dajaxice.urls')),
 )
 

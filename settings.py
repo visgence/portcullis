@@ -11,6 +11,14 @@ ADMINS = (
     # ('Your Name', 'your_email@example.com'),
 )
 
+def get_permission_obj():
+    '''
+    ' This function should be modified to return the object that is used to verify permissions in the
+    ' object managers.  This is required for the chucho interface.
+    '''
+    from portcullis.models import PortcullisUser
+    return PortcullisUser
+
 MANAGERS = ADMINS
 
 #Global time format for datetime objects
@@ -153,7 +161,7 @@ INSTALLED_APPS = (
     'graphs',
     'collector',
     'snmpPoller',
-    'crud',
+    'chucho',
     'south'
 )
 
