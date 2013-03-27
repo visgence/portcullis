@@ -3,4 +3,4 @@
 	url = https://github.com/claviska/jquery-miniColors.git
 [submodule "crud"]
 	path = crud
-	url = ssh://git@dev.visgence.com/crud
+	url = git://github.com/visgence/django-chucho.git
