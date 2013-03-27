@@ -89,9 +89,9 @@ function sidepane_relocate()
 }
 
 /** Gets the html for managing a users streams and puts it in the content of the page */
-function load_model_grid(model) 
+function load_model_grid(app, model) 
 {
-    var url = "/portcullis/model_editor/"+model+"/";
+    var url = "/utilities/model_editor/"+app+"/"+model+"/";
     $.get(url, {}, function(data) {
         $('#widget_container').html(data);  
     });
