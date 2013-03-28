@@ -95,7 +95,6 @@ class CreateTest(TestCase):
         json_data = self.get_json("superuser_key1")
         response = self.c.post('/datastreams/create/', {'jsonData': json_data})
         response_json = json.loads(response.content)
-        print response_json
         new_ds = DataStream.objects.get(pk=response_json['id'])        
         self.assertEqual(new_ds, DataStream.objects.get(owner=owner, name=self.json_data['name']))
 
