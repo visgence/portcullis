@@ -720,12 +720,10 @@ class DataStreamManager(models.Manager):
 
         if perm.lower() == 'read':
             if not ds.can_view(obj):
-                print '%s cannot read DataStream %s!' % (str(obj), str(ds.id))
-                return None
+                return '%s cannot read DataStream %s!' % (str(obj), str(ds.id))
         elif perm.lower() == 'post':
             if not ds.canPost(obj):
-                print '%s cannot post to DataStream %s!' % (str(obj), str(ds.id))
-                return None
+                return '%s cannot post to DataStream %s!' % (str(obj), str(ds.id))
         else:
             raise ValueError('%s is an invalid permission type.' % str(perm))
             
