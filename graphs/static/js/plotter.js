@@ -19,12 +19,11 @@ function create_plot_select_handler(datastream_id)
 { 
     return function(event,ranges) 
     { 
-        if($("#zoom_sync_"+datastream_id).is(':checked'))         
-            zoom_all_graphs(ranges);
-        else
-            zoom_graph(ranges, datastream_id);
+        zoom_all_graphs(ranges);
         var start = new Date(ranges.xaxis.from + timezone_offset);
         var end= new Date(ranges.xaxis.to + timezone_offset);
+        //$('#start').val(dateToString(start));
+        //$('#end').val(dateToString(end));
     };
 }//end create_plot_select_handler
 
@@ -169,10 +168,11 @@ function get_granularity()
     var default_granularity = first_graph.width();
     if(!default_granularity)
         default_granularity = 300;
-
-    if($("#granularity").val() === '')
+  
+    if($('#granularity').val() == null || $('#granularity').val() == undefined || $("#granularity").val() === '') {
+        console.log('setting gran');
         $("#granularity").val(default_granularity);
-
+    }
     return $("#granularity").val();
 }
 
@@ -241,8 +241,6 @@ function get_period()
         var end = new Date().getTime() - timezone_offset; 
         var start = end - periods[$('.period:checked').attr('id')];
     }
-
-    console.log(start);
 
     //Package up the dates properly
     var period = { 'xaxis': { 
@@ -460,15 +458,14 @@ function plot_graph(data, options, div) {
     return plot;
 }
 
-
-function zoom_graph(ranges, datastream_id) {
-    /*
-     * Gets a new data set for the specified time range and renders just the graph while leaving the overview alone.
-     *
-     * ranges        - Dict like object that contains the start and end range for the data set.
-     * datastream_id - Id of the datastream to get new data for.
-     */
-    
+/*
+ * Gets a new data set for the specified time range and renders just the graph while leaving the overview alone.
+ *
+ * ranges        - Dict like object that contains the start and end range for the data set.
+ * datastream_id - Id of the datastream to get new data for.
+ */
+function zoom_graph(ranges, datastream_id) 
+{
     //request data for the new timeframe
     load_graph(datastream_id, ranges, zoom_graph_callback(ranges, true));
 }
@@ -498,9 +495,7 @@ function load_all_graphs() {
 
     //Cycle though all graphs and fetch data from server
     for (var i = 0; i < divs.length; i++) 
-    {
         load_graph(divs[i].id, period, graph_overview_callback(false));
-    }
 }
 
 
@@ -547,7 +542,6 @@ function graph_overview_callback(is_shared) {
 
     return function (data) {
        
-        //TODO: fix for period!!
         if (is_shared) {
             var start = data.xmin*1000;
             var end = data.xmax*1000;
@@ -610,11 +604,9 @@ function load_graph(datastream_id, ranges, callback) {
     getData.granularity =  granularity;
     getData.datastream_id = datastream_id;
     getData.reduction = $('#reduction_select_' + datastream_id).val();
-    console.log('getdata');
+    
     json_data = JSON.stringify(getData);
     $.get("/graphs/render_graph/", {'json_data': json_data}, function(data) {
-
-        console.log("datastream: "+datastream_id);
         indicator_s.stop();
         indicator_g.stop();
         callback(data);
@@ -742,38 +734,18 @@ function resetZoom(streamId)
 {
     var overviewData = null;
     var ranges = null;
-    if($("#zoom_sync_"+streamId).is(':checked'))         
+        
+    divs = $(".portcullis-graph:not(.empty)");
+    for (var i = 0; i < divs.length; i++) 
     {
-        divs = $(".portcullis-graph:not(.empty)");
-        for (var i = 0; i < divs.length; i++) 
-        {
-            var datastream_id = divs[i].id;
-            if($("#zoom_sync_"+datastream_id).is(':checked'))         
-            {
-                overviewPlots[datastream_id].clearSelection(true);
-                overviewData = overviewPlots[datastream_id].getData();
-                ranges = {
-                    xaxis: {
-                        from: overviewData[0].xaxis.min,
-                        to: overviewData[0].xaxis.max
-                    }
-                };
-
-                load_graph(datastream_id, ranges, zoom_graph_callback(ranges, false)); 
-            }
-        }
-    }
-    else {
-        overviewPlots[streamId].clearSelection(true);
-        overviewData = overviewPlots[streamId].getData();
-
-        ranges = {
-            xaxis: {
-                from: overviewData[0].xaxis.min,
-                to: overviewData[0].xaxis.max
-            }
-        };
-        load_graph(streamId, ranges, zoom_graph_callback(ranges, false)); 
+        var datastream_id = divs[i].id;
+        overviewPlots[datastream_id].clearSelection(true);
+        overviewData = overviewPlots[datastream_id].getData();
+        ranges = { xaxis: {
+            from: overviewData[0].xaxis.min,
+            to:   overviewData[0].xaxis.max
+        }};
+        load_graph(datastream_id, ranges, zoom_graph_callback(ranges, false)); 
     }
     
     reset_graph_selection(streamId);
@@ -793,11 +765,7 @@ function zoom_all_graphs(ranges)
 {
     divs = $(".portcullis-graph:not(.empty)");
     for (var i = 0; i < divs.length; i++) 
-    {
-        var datastream_id = divs[i].id;
-        if($("#zoom_sync_"+datastream_id).is(':checked'))         
-            zoom_graph(ranges, datastream_id);
-    }
+        zoom_graph(ranges, divs[i].id);
 }
 
 /** Initializes the download button under a given graphs Advanced Options.
@@ -886,7 +854,6 @@ function saveView()
     view.granularity = get_granularity();
 
     csrf = $('input[name="csrfmiddlewaretoken"]').val();
-
     $.post('/portcullis/createSavedView/', {'jsonData': JSON.stringify(view), 'csrfmiddlewaretoken': csrf},
            function (data) {
                if ( 'errors' in data ) {
@@ -996,6 +963,10 @@ function load_unload_stream(checkbox)
 {
     var datastream_id = $(checkbox).val();     
     if($(checkbox).attr('checked')) {
+        if(!get_period()) {
+            $(checkbox).removeAttr('checked');
+            return;
+        }
         var stream = {};
         stream.stream = datastream_id;
         var json = JSON.stringify(stream);

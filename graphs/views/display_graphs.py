@@ -80,7 +80,7 @@ def shared_graph(request, token, id):
         graph = SavedDSGraph.objects.get(id = id)
     except ObjectDoesNotExist:
         raise Http404('Graph %s/%s/ does not exist' % (token, str(id)))
-
+    
     params = {
         'start':         graph.start,
         'end':           graph.end,
@@ -90,7 +90,6 @@ def shared_graph(request, token, id):
         'zoom_start':    graph.zoom_start,
         'zoom_end':      graph.zoom_end
         }
-
     return HttpResponse(getStreamData(params, key, request.user), mimetype="application/json")
     
 
@@ -105,7 +104,8 @@ def getStreamData(g_params, auth, user = None):
     ' auth     - Used for authentication.  This can either be a portcullis user or a key
     ' user     - Secondary authentication.  should only be a request.user.  May change in future...
     '''
-
+    print "INSIDE STREAMDATA"
+    print g_params
     start = g_params['start']
     end = g_params['end']
     ds_id = g_params['datastream_id']

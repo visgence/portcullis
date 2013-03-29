@@ -4,35 +4,35 @@
 
     <div id="graph_time_controls">
         <ul> 
-            <li>
-                <label for="hour" class="clickable"><b>Last Hour</b></label>
+            <li class="period_controls">
                 <input id="hour" type="radio" class="period" name="period" checked="checked" onChange="toggle_time_periods(this);"/>
+                <label for="hour" class="clickable"><b>Last Hour</b></label>
             </li>
-            <li>
-                <label for="24_hours" class="clickable"><b>Last 24 Hours</b></label>
+            <li class="period_controls">
                 <input id="24_hours" type="radio" class="period" name="period" onChange="toggle_time_periods(this);"/>
+                <label for="24_hours" class="clickable"><b>Last 24 Hours</b></label>
             </li>
-            <li>
-                <label for="week" class="clickable"><b>Last Week</b></label>
+            <li class="period_controls">
                 <input id="week" type="radio" class="period" name="period" onChange="toggle_time_periods(this);"/>
+                <label for="week" class="clickable"><b>Last Week</b></label>
             </li>
-            <li>
-                <label for="year" class="clickable"><b>Last Year</b></label>
+            <li class="period_controls">
                 <input id="year" type="radio" class="period" name="period" onChange="toggle_time_periods(this);"/>
+                <label for="year" class="clickable"><b>Last Year</b></label>
             </li>
-            <li>
-                <label for="custom" class="clickable"><b>Custom Time Period</b></label>
+            <li class="period_controls">
                 <input id="custom" type="radio" value="custom" name="period" onChange="toggle_time_periods(this);"/>
+                <label for="custom" class="clickable"><b>Custom Time Period</b></label>
             </li>
-            <li>
+            <li class="period_controls">
                 <span id="custom_period_error" style="visibility:hidden; color: red;">&nbsp;</span>
             </li>
-            <li>
-                <b>Start Date</b>
+            <li class="period_controls">
+                <span class="custom_period_label"><b>Start Date</b></span>
                 <input type="text" id="start" class="custom_period" value="{{start}}"/>
             
-            <li>
-                <b>End Date</b> 
+            <li class="period_controls">
+                <span class="custom_period_label"><b>End Date</b></label>
                 <input type="text" id="end" class="custom_period" value="{{end}}"/>
             </li>
         </ul>
