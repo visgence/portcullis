@@ -18,7 +18,7 @@ class DataStreamAdmin(admin.ModelAdmin):
     filter_horizontal = ('can_read', 'can_post')
 
     def owner(self, obj):
-        return obj.owner.username
+        return obj.owner.get_username()
 
     def scale_function(self, obj):
         return obj.scaling_function.name

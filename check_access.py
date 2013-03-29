@@ -27,6 +27,9 @@ def check_access(request):
         if request.user.is_active:
             return request.user
         else:
-            return HttpResponse(json.dumps({'errors': 'Error: User %s is not active.' % request.user.username}),
+            return HttpResponse(json.dumps(
+                    {
+                        'errors': 'Error: User %s is not active.' % request.user.get_username()
+                        }),
                                 mimetype='application/json')
     return None

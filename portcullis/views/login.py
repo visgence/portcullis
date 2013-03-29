@@ -138,7 +138,7 @@ def changePassword(request):
         return HttpResponse(json.dumps({'errors': errors}), mimetype='application/json')
 
     # Make sure old password is valid
-    user = authenticate(username=portcullisUser.username, password=oldPassword)
+    user = authenticate(username=portcullisUser.get_username(), password=oldPassword)
     if user is None or user != portcullisUser.user_ptr:
         errors = 'Authentication Error: Username and password are not correct'
         return HttpResponse(json.dumps({'errors': errors}), mimetype='application/json')
