@@ -3,61 +3,43 @@
     <h2>Graph Controls</h2>
 
     <div id="graph_time_controls">
-        <ul>
+        <ul> 
             <li>
-                <b><span id="end_label">Start Date</span></b>
+                <label for="hour" class="clickable"><b>Last Hour</b></label>
+                <input id="hour" type="radio" class="period" name="period" checked="checked" onChange="toggle_time_periods(this);"/>
             </li>
             <li>
-                <input type="text" name ="start" id="start" value="{{start}}" onChange="load_all_graphs();"/>
-            </li>
-            <li class="date_range_seperator">
-                or
+                <label for="24_hours" class="clickable"><b>Last 24 Hours</b></label>
+                <input id="24_hours" type="radio" class="period" name="period" onChange="toggle_time_periods(this);"/>
             </li>
             <li>
-                <b>Range Before End Date</b>
+                <label for="week" class="clickable"><b>Last Week</b></label>
+                <input id="week" type="radio" class="period" name="period" onChange="toggle_time_periods(this);"/>
             </li>
             <li>
-            <select id="start_range" type="select" onchange="toggle_date_range(this, 'start', 'end_range');
-                                                             load_all_graphs();">
-                    <option value="None" selected="selected">None</option>
-                    <option value="One Day">One Day</option>
-                    <option value="One Week">One Week</option>
-                    <option value="One Month">One Month</option>
-                </select>
-            <li id="end_label">
+                <label for="year" class="clickable"><b>Last Year</b></label>
+                <input id="year" type="radio" class="period" name="period" onChange="toggle_time_periods(this);"/>
+            </li>
+            <li>
+                <label for="custom" class="clickable"><b>Custom Time Period</b></label>
+                <input id="custom" type="radio" value="custom" name="period" onChange="toggle_time_periods(this);"/>
+            </li>
+            <li>
+                <span id="custom_period_error" style="visibility:hidden; color: red;">&nbsp;</span>
+            </li>
+            <li>
+                <b>Start Date</b>
+                <input type="text" id="start" class="custom_period" value="{{start}}"/>
+            
+            <li>
                 <b>End Date</b> 
-            </li>
-            <li>
-                <input type="text" name ="end" id="end" value="{{end}}" onChange="load_all_graphs();"/>
-            </li>
-            <li class="date_range_seperator">
-                or
-            </li>
-            <li>
-                <b>Range After Start Date</b>
-            </li>
-            <li>
-            <select id="end_range" type="select" onchange="toggle_date_range(this, 'end', 'start_range');
-                                                           load_all_graphs();">
-                    <option value="None" selected="selected">None</option>
-                    <option value="One Day">One Day</option>
-                    <option value="One Week">One Week</option>
-                    <option value="One Month">One Month</option>
-                </select>
-            </li> 
-            <li class="date_range_seperator">
-                or
-            </li>
-            <li>
-            <input id="end_range_now" type="checkbox" onchange="toggle_end_range(this, 'end', 'end_range'); 
-                                                                load_all_graphs();"/>
-                <label for="end_range_now"><b>Now</b></label>
+                <input type="text" id="end" class="custom_period" value="{{end}}"/>
             </li>
         </ul>
     </div>
 
     <div id="graph_controls_refresh">
-        <input type="button" value="Refresh" onclick="refresh_graphs();"/>
+        <input type="button" value="Refresh" onclick="load_all_graphs();"/>
     </div>
 
     <div id="graph_controls_advanced" class="section_toggle controls_toggle clickable" onclick="toggle_form_section(event);">
@@ -75,6 +57,7 @@
 
     <script>
         collapse_all('controls_toggle');
+        $('#hour').trigger('change');
         ready_datepickers();
     </script>
 </div>
