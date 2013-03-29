@@ -8,9 +8,11 @@ Replace this with more appropriate tests for your application.
 from django.test import TestCase
 from django.test.client import Client
 import time
+from django.contrib.auth import get_user_model
+AuthUser = get_user_model()
 
 #Local imports
-from portcullis.models import DataStream, SensorReading, PortcullisUser
+from portcullis.models import DataStream, SensorReading
 
 
 class renderGraphTest(TestCase):
@@ -23,7 +25,7 @@ class renderGraphTest(TestCase):
         for i in range(100000):
             SensorReading.objects.create(datastream = myStream, timestamp = 1339789049 + i, value = 32)
 
-        user = PortcullisUser.objects.create_user('fakename', 'fake@pukkared.com', 'mypassword')
+        user = AuthUser.objects.create_user('fakename', 'fake@pukkared.com', 'mypassword')
         #UserPermission.objects.create(datastream = myStream, user = user, owner = False)
 
     '''

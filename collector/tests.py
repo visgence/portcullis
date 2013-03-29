@@ -7,9 +7,11 @@ Replace this with more appropriate tests for your application.
 #System imports
 from django.test import TestCase
 from django.test.client import Client
+from django.contrib.auth import get_user_model
+AuthUser = get_user_model
 
 #Local imports
-from portcullis.models import DataStream, Key, Device, PortcullisUser
+from portcullis.models import DataStream, Key, Device
 from data_loader import validate_stream
 
 
@@ -18,7 +20,7 @@ class addReadingTest(TestCase):
     def setUp(self):
         self.client = Client()
 
-        owner = PortcullisUser.objects.create(username = "portcullis")
+        owner = AuthUser.objects.create(username = "portcullis")
         myKey1 = Key.objects.create(key = "pear", owner = owner)
         myKey2 = Key.objects.create(key = "apple", owner = owner)
 
@@ -93,7 +95,7 @@ class addReadingBulkTest(TestCase):
     def setUp(self):
         self.client = Client()
 
-        owner = PortcullisUser.objects.create(username = "portcullis") 
+        owner = AuthUser.objects.create(username = "portcullis") 
         myKey1 = Key.objects.create(key = "pear", owner = owner)
         myKey2 = Key.objects.create(key = "apple", owner = owner)
         myDataStream = DataStream.objects.create(node_id = 1, port_id = 1)

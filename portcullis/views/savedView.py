@@ -14,12 +14,14 @@ from django.http import HttpResponse, Http404, HttpResponseForbidden
 from django.template import RequestContext, Context, loader
 from django.views.decorators.http import require_POST
 from django.utils import timezone
-try: import simplejson as json
-except ImportError: import json
+try:
+    import simplejson as json
+except ImportError:
+    import json
 from datetime import datetime, timedelta
 
 # Local Imports
-from portcullis.models import SavedView, Key, DataStream, PortcullisUser
+from portcullis.models import SavedView, Key, DataStream
 from graphs.models import SavedDSGraph
 from graphs.data_reduction import reductFunc
 from check_access import check_access

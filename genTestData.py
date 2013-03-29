@@ -6,8 +6,9 @@ sys.path.insert(0, os.path.expanduser('./'))
 os.environ.setdefault("DJANGO_SETTINGS_MODULE",'settings')
 
 from django.core.exceptions import ObjectDoesNotExist
-
-from portcullis.models import DataStream, ScalingFunction, PortcullisUser
+from django.contrib.auth import get_user_model
+AuthUser = get_user_model()
+from portcullis.models import DataStream, ScalingFunction
 from collector.views.data_loader import insert_reading
 
 import math
@@ -30,7 +31,7 @@ try:
 except ObjectDoesNotExist:
     ds1 = DataStream(id = 1, name = 'Test data 1', description = 'Simple Sign curve',
                      color = 'purple', min_value = -50.0, max_value = 50.0, scaling_function = scaleF, 
-                     owner = PortcullisUser.objects.get(username = 'portcullis'))
+                     owner = AuthUser.objects.get(username = 'portcullis'))
     ds1.save()
 
 try:
@@ -38,7 +39,7 @@ try:
 except ObjectDoesNotExist:
     ds2 = DataStream(id=2, name = 'Test data 2', description = 'Amplitude modulated sin curve.',
                      color = 'red   ', min_value = -50.0, max_value = 50.0, scaling_function = scaleF,
-                     owner = PortcullisUser.objects.get(username = 'portcullis'))
+                     owner = AuthUser.objects.get(username = 'portcullis'))
     ds2.save()
 
 try:
@@ -46,7 +47,7 @@ try:
 except ObjectDoesNotExist:
     ds3 = DataStream(id=3, name = 'Test data 3', description = 'Random amplitude modulation',
                      color = 'blue', min_value = -50.0, max_value = 50.0, scaling_function = scaleF,
-                     owner = PortcullisUser.objects.get(username = 'portcullis'))
+                     owner = AuthUser.objects.get(username = 'portcullis'))
     ds3.save()
 
 if len(sys.argv) > 1:

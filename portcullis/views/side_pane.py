@@ -38,7 +38,7 @@ def streams(request):
 
     t_subtree = loader.get_template('stream_subtree.html')
 
-    #Only get owned and viewable streams if we have a logged in PortcullisUser
+    #Only get owned and viewable streams if we have a logged in User
     owned_streams = []
     viewable_streams = []
     owned_subtree = None

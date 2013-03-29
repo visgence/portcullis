@@ -11,13 +11,15 @@ ADMINS = (
     # ('Your Name', 'your_email@example.com'),
 )
 
+AUTH_USER_MODEL = 'portcullis.PortcullisUser1'
+
 def get_permission_obj():
     '''
     ' This function should be modified to return the object that is used to verify permissions in the
     ' object managers.  This is required for the chucho interface.
     '''
-    from portcullis.models import PortcullisUser
-    return PortcullisUser
+    from django.contrib.auth import get_user_model
+    return get_user_model()
 
 MANAGERS = ADMINS
 

@@ -1,5 +1,7 @@
 from portcullis.models import *
 from django.contrib import admin
+from django.contrib.auth import get_user_model
+AuthUser = get_user_model()
 
 from datetime import datetime
 
@@ -58,7 +60,7 @@ class SavedViewAdmin(admin.ModelAdmin):
         return links + '</ul>'
     widget_list.allow_tags = True
 
-admin.site.register(PortcullisUser)
+admin.site.register(AuthUser)
 admin.site.register(DataStream, DataStreamAdmin)
 admin.site.register(SensorReading, SensorReadingAdmin)
 admin.site.register(ScalingFunction)

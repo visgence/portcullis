@@ -16,6 +16,8 @@ from django.core.context_processors import csrf
 from django.core.urlresolvers import reverse
 from django.contrib.auth import authenticate, login, logout as auth_logout
 from django.views.decorators.http import require_POST
+from django.contrib.auth import get_user_model
+AuthUser = get_user_model()
 try:
     import simplejson as json
 except ImportError:
@@ -23,7 +25,6 @@ except ImportError:
 
 # Local Imports
 from check_access import check_access
-from portcullis.models import PortcullisUser
 
 
 def greeting(request):
@@ -92,7 +93,7 @@ def passwordForm(request):
 
     if isinstance(portcullisUser, HttpResponse):
         return HttpResponse(json.dumps({'errors': portcullisUser.content}), mimetype='application/json')
-    if not isinstance(portcullisUser, PortcullisUser):
+    if not isinstance(portcullisUser, AuthUser):
         error = 'User must be logged in to change password.'
         return HttpResponse(json.dumps({'errors': error}), mimetype='application/json')
 
@@ -117,7 +118,7 @@ def changePassword(request):
 
     if isinstance(portcullisUser, HttpResponse):
         return portcullisUser
-    if not isinstance(portcullisUser, PortcullisUser):
+    if not isinstance(portcullisUser, AuthUser):
         errors = 'Please log in before changing your password.'
         return HttpResponse(json.dumps({'errors': errors}), mimetype='application/json')
 

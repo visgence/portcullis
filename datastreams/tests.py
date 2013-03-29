@@ -11,11 +11,15 @@
 from django.test import TestCase
 from django.test.client import Client
 from urllib import urlencode, urlopen
-try: import simplejson as json
-except ImportError: import json
+from django.contrib.auth import get_user_model
+AuthUser = get_user_model()
+try:
+    import simplejson as json
+except ImportError:
+    import json
 
 #Local Imports
-from portcullis.models import DataStream, PortcullisUser
+from portcullis.models import DataStream
 
 class CreateTest(TestCase):
     '''
@@ -90,7 +94,7 @@ class CreateTest(TestCase):
         '''
 
         #First make sure the ds does not exist yet.
-        owner = PortcullisUser.objects.get(pk=1)
+        owner = AuthUser.objects.get(pk=1)
         self.assertRaises(DataStream.DoesNotExist, DataStream.objects.get, owner=owner, name=self.json_data['name'])
                 
         json_data = self.get_json("superuser_key1")

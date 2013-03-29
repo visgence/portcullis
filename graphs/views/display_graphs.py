@@ -5,11 +5,13 @@ from django.template import Context, loader
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render
 from django.views.decorators.http import require_GET
-try: import simplejson as json
-except ImportError: import json
+try:
+    import simplejson as json
+except ImportError:
+    import json
 
 #Local Imports
-from portcullis.models import DataStream, SensorReading, PortcullisUser, ScalingFunction, Key
+from portcullis.models import DataStream, SensorReading, ScalingFunction, Key
 from check_access import check_access
 from graphs.data_reduction import reduceData, reductFunc
 from graphs.models import SavedDSGraph
@@ -61,12 +63,7 @@ def render_graph(request):
     if jsonData is None:
         raise Http404
 
-    try:
-        portcullisUser = request.user.portcullisuser
-    except AttributeError:
-        portcullisUser = None
-
-    return HttpResponse(getStreamData(json.loads(jsonData), portcullisUser), mimetype="application/json")
+    return HttpResponse(getStreamData(json.loads(jsonData), request.user), mimetype="application/json")
 
 def shared_graph(request, token, id):
     '''
@@ -125,7 +122,7 @@ def getStreamData(g_params, auth, user = None):
     if not isinstance(ds, DataStream):
         # Try auth2
         try:
-            ds = DataStream.objects.get_ds_and_validate(ds_id, user.portcullisuser, 'read')
+            ds = DataStream.objects.get_ds_and_validate(ds_id, user, 'read')
         except AttributeError:
             ds = None
         if not isinstance(ds, DataStream):
