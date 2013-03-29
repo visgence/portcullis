@@ -26,7 +26,7 @@ class CreateTest(TestCase):
     ' Tests for the view file create.py
     '''
 
-    fixtures = ['test_dataStreams.json', 'test_keys.json', 'test_scalingFunctions.json', 'test_portcullisUsers.json']
+    fixtures = ['test_keys.json', 'test_scalingFunctions.json', 'test_portcullisUsers.json', 'test_dataStreams.json']
 
     def setUp(self):
         self.json_data = {
@@ -51,7 +51,7 @@ class CreateTest(TestCase):
 
 
 
-    ''''''''''''''''''' createDs '''''''''''''''''''''
+    ################### createDs ###################
     
     def test_createDs_keyDoesNotExist(self):
         '''
@@ -60,7 +60,7 @@ class CreateTest(TestCase):
         '''
 
         json_data = self.get_json("bad token")
-        response = self.c.post('/datastreams/create/', urlencode({'jsonData':json_data}), content_type='application/json')
+        response = self.c.post('/datastreams/create/', {'jsonData':json_data})
         response_json = json.loads(response.content)
         self.assertEquals(response_json['error'], "From createDs: Key with token 'bad token' does not exist.")
       
@@ -70,7 +70,7 @@ class CreateTest(TestCase):
         '''
 
         json_data = self.get_json("bad token")
-        response = self.c.post('/datastreams/create/', urlencode({'bad_key':json_data}), content_type='application/json')
+        response = self.c.post('/datastreams/create/', {'bad_key':json_data})
         response_json = json.loads(response.content)
         self.assertEqual(response_json['error'], "From createDs: Problem getting json data from request.")
 
@@ -82,7 +82,7 @@ class CreateTest(TestCase):
         ds = DataStream.objects.get(pk=1, name="superuser_ds1")
         self.json_data['name'] = ds.name
         json_data = self.get_json("superuser_key1")
-        response = self.c.post('/datastreams/create/', urlencode({'jsonData':json_data}), content_type='application/json')
+        response = self.c.post('/datastreams/create/', {'jsonData':json_data})
         response_json = json.loads(response.content)
         same_ds = DataStream.objects.get(pk=response_json['id'])
         
@@ -96,12 +96,10 @@ class CreateTest(TestCase):
         #First make sure the ds does not exist yet.
         owner = AuthUser.objects.get(pk=1)
         self.assertRaises(DataStream.DoesNotExist, DataStream.objects.get, owner=owner, name=self.json_data['name'])
-                
         json_data = self.get_json("superuser_key1")
-        response = self.c.post('/datastreams/create/', urlencode({'jsonData':json_data}), content_type='application/json')
+        response = self.c.post('/datastreams/create/', {'jsonData': json_data})
         response_json = json.loads(response.content)
-        new_ds = DataStream.objects.get(pk=response_json['id'])
-        
+        new_ds = DataStream.objects.get(pk=response_json['id'])        
         self.assertEqual(new_ds, DataStream.objects.get(owner=owner, name=self.json_data['name']))
 
     def test_createDs_badScalingFunction(self):
@@ -112,7 +110,7 @@ class CreateTest(TestCase):
        
         self.json_data['scaling_function'] = "bad sc name"
         json_data = self.get_json("superuser_key1")
-        response = self.c.post('/datastreams/create/', urlencode({'jsonData':json_data}), content_type='application/json')
+        response = self.c.post('/datastreams/create/', {'jsonData':json_data})
         response_json = json.loads(response.content)
         
         self.assertEqual(response_json['error'], "From createDs: scaling function with name 'bad sc name' does not exist.")
@@ -125,7 +123,7 @@ class CreateTest(TestCase):
 
         self.json_data['reduction_type'] = "bad choice" 
         json_data = self.get_json("superuser_key1")
-        response = self.c.post('/datastreams/create/', urlencode({'jsonData':json_data}), content_type='application/json')
+        response = self.c.post('/datastreams/create/', {'jsonData':json_data})
         response_json = json.loads(response.content)
         
         self.assertEqual(response_json['error'], "From createDs: There were one or more problems setting DataStream attributes.")
