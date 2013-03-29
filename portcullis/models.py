@@ -16,7 +16,7 @@ from django.conf import settings
 from graphs.data_reduction import reduction_type_choices
 
 
-class PortcullisUserManager1(BaseUserManager):
+class PortcullisUserManager(BaseUserManager):
     '''
     ' Custom user manager for Portcullis User
     '''
@@ -31,7 +31,7 @@ class PortcullisUserManager1(BaseUserManager):
         '''
 
         #Validate user object
-        if not isinstance(user, PortcullisUser1):
+        if not isinstance(user, PortcullisUser):
             raise TypeError("%s is not a PortcullisUser" % str(user))
 
         return True
@@ -66,7 +66,7 @@ class PortcullisUserManager1(BaseUserManager):
         '''
 
         #Validate user object
-        if not isinstance(user, PortcullisUser1):
+        if not isinstance(user, PortcullisUser):
             raise TypeError("%s is not a PortcullisUser" % str(user))
 
         if user.is_superuser:
@@ -86,13 +86,13 @@ class PortcullisUserManager1(BaseUserManager):
         '''
 
         #Validate user object
-        if not isinstance(user, PortcullisUser1):
+        if not isinstance(user, PortcullisUser):
             raise TypeError("%s is not a PortcullisUser" % str(user))
 
         try:
             u = self.get(id = pk)
-        except PortcullisUser1.DoesNotExist as e:
-            raise PortcullisUser1.DoesNotExist("A Portcullis User does not exist for the primary key %s." % str(pk))
+        except PortcullisUser.DoesNotExist as e:
+            raise PortcullisUser.DoesNotExist("A Portcullis User does not exist for the primary key %s." % str(pk))
 
         if user.is_superuser or u == user:
             return u
@@ -100,7 +100,7 @@ class PortcullisUserManager1(BaseUserManager):
         return None
 
 
-class PortcullisUser1(AbstractBaseUser):
+class PortcullisUser(AbstractBaseUser):
     '''
     ' The class that defines users of the system.
     '''
@@ -115,7 +115,7 @@ class PortcullisUser1(AbstractBaseUser):
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['first_name', 'last_name', 'is_superuser', 'is_staff']
 
-    objects = PortcullisUserManager1()
+    objects = PortcullisUserManager()
 
     def get_full_name():
         '''
@@ -132,13 +132,13 @@ class PortcullisUser1(AbstractBaseUser):
     def save(self, *args, **kwargs):
         '''
         ' Overwritten save method to get around not null constraint on 2 fields, that cannot
-        ' be overwritten from PortcullisUser1
+        ' be overwritten from PortcullisUser
         '''
         if self.last_login is None:
             self.last_login = datetime(1900, 1, 1).replace(tzinfo=timezone.utc)
         if self.date_joined is None:
             self.date_joined = timezone.now()
-        super(PortcullisUser1, self).save(*args, **kwargs)
+        super(PortcullisUser, self).save(*args, **kwargs)
 
     def can_view(self, user):
         '''
@@ -164,7 +164,7 @@ class PortcullisUser1(AbstractBaseUser):
         '''
 
         #Validate user object
-        if not isinstance(user, PortcullisUser1):
+        if not isinstance(user, PortcullisUser):
             raise TypeError("%s is not a PortcullisUser" % str(user))
 
         if user.is_superuser or user == self:
@@ -185,7 +185,7 @@ class ScalingFunctionManager(models.Manager):
         '''
 
         #Validate user object
-        if not isinstance(user, PortcullisUser1):
+        if not isinstance(user, PortcullisUser):
             raise TypeError("%s is not a PortcullisUser" % str(user))
 
         if user.is_superuser:
@@ -207,7 +207,7 @@ class ScalingFunctionManager(models.Manager):
         '''
 
         #Validate user object
-        if not isinstance(user, PortcullisUser1):
+        if not isinstance(user, PortcullisUser):
             raise TypeError("%s is not a PortcullisUser" % str(user))
 
         return self.all()
@@ -223,7 +223,7 @@ class ScalingFunctionManager(models.Manager):
         '''
 
         #Validate user object
-        if not isinstance(user, PortcullisUser1):
+        if not isinstance(user, PortcullisUser):
             raise TypeError("%s is not a PortcullisUser" % str(user))
 
         if user.is_superuser:
@@ -244,7 +244,7 @@ class ScalingFunctionManager(models.Manager):
         #TODO: This will need to be updated once we add some kind of ownership to scaling functions.
 
         #Validate user object
-        if not isinstance(user, PortcullisUser1):
+        if not isinstance(user, PortcullisUser):
             raise TypeError("%s is not a PortcullisUser" % str(user))
 
         if not user.is_superuser:
@@ -279,7 +279,7 @@ class ScalingFunction(models.Model):
         #      more robust.
 
         #Validate user object
-        if not isinstance(user, PortcullisUser1):
+        if not isinstance(user, PortcullisUser):
             raise TypeError("%s is not a PortcullisUser" % str(user))
 
         return True
@@ -295,7 +295,7 @@ class ScalingFunction(models.Model):
         '''
 
         #Validate user object
-        if not isinstance(user, PortcullisUser1):
+        if not isinstance(user, PortcullisUser):
             raise TypeError("%s is not a PortcullisUser" % str(user))
 
         if user.is_superuser:
@@ -316,7 +316,7 @@ class KeyManager(models.Manager):
         '''
 
         #Validate user object
-        if not isinstance(user, PortcullisUser1):
+        if not isinstance(user, PortcullisUser):
             raise TypeError("%s is not a PortcullisUser" % str(user))
 
         return True
@@ -393,7 +393,7 @@ class KeyManager(models.Manager):
         '''
         
         #Validate user object
-        if not isinstance(user, PortcullisUser1):
+        if not isinstance(user, PortcullisUser):
             raise TypeError("%s is not a PortcullisUser" % str(user))
 
         '''
@@ -418,7 +418,7 @@ class KeyManager(models.Manager):
         '''
 
         #Validate user object
-        if not isinstance(user, PortcullisUser1):
+        if not isinstance(user, PortcullisUser):
             raise TypeError("%s is not a PortcullisUser" % str(user))
 
         if user.is_superuser:
@@ -438,7 +438,7 @@ class KeyManager(models.Manager):
         '''
 
         #Validate user object
-        if not isinstance(user, PortcullisUser1):
+        if not isinstance(user, PortcullisUser):
             raise TypeError("%s is not a PortcullisUser" % str(user))
 
         try:
@@ -473,7 +473,7 @@ class Key(models.Model):
         #TODO: Needs to be improved later.
 
         #Validate user object
-        if not isinstance(user, PortcullisUser1):
+        if not isinstance(user, PortcullisUser):
             raise TypeError("%s is not a PortcullisUser" % str(user))
 
         return True
@@ -489,7 +489,7 @@ class Key(models.Model):
         '''
 
         #Validate user object
-        if not isinstance(user, PortcullisUser1):
+        if not isinstance(user, PortcullisUser):
             raise TypeError("%s is not a PortcullisUser" % str(user))
 
         if user.is_superuser or user == self.owner:
@@ -538,7 +538,7 @@ class DeviceManager(models.Manager):
         '''
 
         #Validate user object
-        if not isinstance(user, PortcullisUser1):
+        if not isinstance(user, PortcullisUser):
             raise TypeError("%s is not a PortcullisUser" % str(user))
 
         return True
@@ -572,7 +572,7 @@ class DeviceManager(models.Manager):
         '''
 
         #Validate user object
-        if not isinstance(user, PortcullisUser1):
+        if not isinstance(user, PortcullisUser):
             raise TypeError("%s is not a PortcullisUser" % str(user))
 
         if user.is_superuser:
@@ -592,7 +592,7 @@ class DeviceManager(models.Manager):
         '''
 
         #Validate user object
-        if not isinstance(user, PortcullisUser1):
+        if not isinstance(user, PortcullisUser):
             raise TypeError("%s is not a PortcullisUser" % str(user))
 
         try:
@@ -626,7 +626,7 @@ class Device(models.Model):
         '''
 
         #Validate user object
-        if not isinstance(user, PortcullisUser1):
+        if not isinstance(user, PortcullisUser):
             raise TypeError("%s is not a PortcullisUser" % str(user))
 
         return True
@@ -642,7 +642,7 @@ class Device(models.Model):
         '''
 
         #Validate user object
-        if not isinstance(user, PortcullisUser1):
+        if not isinstance(user, PortcullisUser):
             raise TypeError("%s is not a PortcullisUser" % str(user))
 
         if user.is_superuser or user == self.owner:
@@ -669,7 +669,7 @@ class DataStreamManager(models.Manager):
         '''
 
         #Validate user object
-        if not isinstance(user, PortcullisUser1):
+        if not isinstance(user, PortcullisUser):
             raise TypeError("%s is not a PortcullisUser" % str(user))
 
         return True
@@ -712,7 +712,7 @@ class DataStreamManager(models.Manager):
         '''
 
         #Validate object is a PortcullisUser.
-        if not isinstance(user, PortcullisUser1):
+        if not isinstance(user, PortcullisUser):
             raise TypeError("%s is not a PortcullisUser." % str(user))
 
         #Superusers get everything they don't own.
@@ -771,7 +771,7 @@ class DataStreamManager(models.Manager):
         '''
 
         #Validate user object
-        if not isinstance(user, PortcullisUser1):
+        if not isinstance(user, PortcullisUser):
             raise TypeError("%s is not a PortcullisUser" % str(user))
 
         if user.is_superuser:
@@ -791,7 +791,7 @@ class DataStreamManager(models.Manager):
         '''
 
         #Validate user object
-        if not isinstance(user, PortcullisUser1):
+        if not isinstance(user, PortcullisUser):
             raise TypeError("%s is not a PortcullisUser" % str(user))
 
         try:
@@ -840,7 +840,7 @@ class DataStream(models.Model):
         '''
 
         #Validate user object
-        if not isinstance(user, PortcullisUser1):
+        if not isinstance(user, PortcullisUser):
             raise TypeError("%s is not a PortcullisUser" % str(user))
 
         if user.is_superuser or user == self.owner:
@@ -863,7 +863,7 @@ class DataStream(models.Model):
         if self.is_public == True:
             return True
 
-        if isinstance(obj, PortcullisUser1):
+        if isinstance(obj, PortcullisUser):
             if obj == self.owner or obj.is_superuser:
                 return True
             elif obj.id in self.can_read.filter( (Q(expiration__gt = timezone.now()) | Q(expiration = None)) &
@@ -892,7 +892,7 @@ class DataStream(models.Model):
         '           owns a key that is in the can_post M2M field will return true.
         '          Returns false otherwise.
         '''
-        if isinstance(obj, PortcullisUser1):
+        if isinstance(obj, PortcullisUser):
             if obj == self.owner or obj.is_superuser:
                 return True
             elif obj.id in self.can_post.filter( (Q(expiration__gt = timezone.now()) | Q(expiration = None)) &

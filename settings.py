@@ -11,7 +11,7 @@ ADMINS = (
     # ('Your Name', 'your_email@example.com'),
 )
 
-AUTH_USER_MODEL = 'portcullis.PortcullisUser1'
+AUTH_USER_MODEL = 'portcullis.PortcullisUser'
 
 def get_permission_obj():
     '''
