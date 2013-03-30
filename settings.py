@@ -1,5 +1,5 @@
 # Django settings for portcullis project.
-import re,os
+import re, os, sys
 program_path = os.path.realpath(__file__)
 APP_PATH = re.sub('settings.py[c]*$','',program_path); 
 
@@ -15,6 +15,7 @@ MANAGERS = ADMINS
 
 #Global time format for datetime objects
 DT_FORMAT = "%m/%d/%Y %H:%M:%S"
+D_FORMAT = "%m/%d/%Y"
 
 #Import the database settings stored locally.  This allows for different databases
 #under different dev environments without impacting production.
@@ -32,6 +33,11 @@ except:
             'PORT': '',                      # Set to empty string for default. Not used with sqlite3.
         }
     }
+if 'test' in sys.argv:
+    DATABASES['default'] = {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': 'test.db'
+        }
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
