@@ -152,7 +152,7 @@ function on_graph_load(datastream_id)
     var period = get_period();
     if(!period)
         return;
-
+    console.log('ON_GRAPH_LOAD');
     load_graph(datastream_id, period, graph_overview_callback(false));
 }
 
@@ -475,7 +475,7 @@ function load_all_shared_graphs() {
     /*
      * Loads all data for graphs that belong to a shared view in the window.
      */
-
+    console.log('LOAD_ALL_SHARED_GRAPHS');
     var token = $('#auth_token').val();
     $('.portcullis-graph').each(function(i) {
         var url = '/graphs/sharedGraph/' + token + '/' + $('#saved_graph_'+this.id).val() + '/';
@@ -487,7 +487,7 @@ function load_all_graphs() {
     /*
      * Get's all graph divs and loads their data.
      */
-
+    console.log('LOAD_ALL_GRAPHS');
     divs = $(".portcullis-graph");
     var period = get_period();
     if(!period)
@@ -541,11 +541,12 @@ function graph_overview_callback(is_shared) {
     var ranges = get_period();
 
     return function (data) {
-       
+         console.log('rendering the graphs');
         if (is_shared) {
             var start = data.xmin*1000;
             var end = data.xmax*1000;
-
+            $('#custom').attr('checked', 'checked');
+            $('.custom_period').removeAttr('disabled');
             $('#start').val(dateToString(new Date(start)));
             $('#end').val(dateToString(new Date(end)));
             $('#granularity').val(data.granularity);
@@ -571,7 +572,7 @@ function graph_overview_callback(is_shared) {
         }
         else {
             graph_options_visibility(data.datastream_id, '');
-
+            
             //Make a full copy of the data since the two graphs need their own copy to work.
             var dData = $.extend(true, {}, data);
             // Do not give the zoom info to the overview.
@@ -673,6 +674,7 @@ function renderGraph(data, ranges, shouldScale)
 
 function renderOverview(data, ranges)
 {
+    console.log('rendering overview');
     options = {
         legend: { show:false },
         series:     
