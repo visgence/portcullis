@@ -954,6 +954,17 @@ function ready_datepickers()
 }
 
 
+function get_graph(ds_id)
+{
+    var json = JSON.stringify({'stream': ds_id});
+
+    // append to widget container
+    $.get('/graphs/render_simple_graph/', {'json_data': json}, function(data) {
+        $('#graphs').append(data);
+        on_graph_load(ds_id);
+    });
+}
+
 /** Loads a stream to the page if it's checkbox was checked and unloads or stops the loading 
  * of the stream if it's checkbox is unchecked.
  *
