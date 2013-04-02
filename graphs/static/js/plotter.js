@@ -312,7 +312,7 @@ function scale_data(data)
             t_diff = data.data[i][0] - last_t;
             n_t_diff++;
             avg_t_diff = ((n_t_diff-1)*avg_t_diff + t_diff)/n_t_diff;
-            if ( avg_t_diff > 0 && t_diff > 2*avg_t_diff )            
+            if ( avg_t_diff > 0 && t_diff > 3*avg_t_diff )            
                 tmpData.push(null);
         }
         last_t = data.data[i][0];
