@@ -16,6 +16,40 @@ from check_access import check_access
 from graphs.data_reduction import reduceData, reductFunc
 from graphs.models import SavedDSGraph
 
+
+def display_simple_base(request):
+
+    start = request.GET['start']
+    end = request.GET['end']
+    streams = request.GET['streams']
+    
+    t = loader.get_template('base_simple.html')
+    c = RequestContext(request, {
+        'start': start, 
+        'end': end,
+        'streams': streams
+    })
+    return HttpResponse(t.render(c))
+
+def display_simple_graph(request):
+    
+    json_data = json.loads(request.GET['json_data'])
+
+    try:
+        stream = DataStream.objects.get(id = int(json_data['stream']))
+    except ObjectDoesNotExist as e:
+        raise Http404()
+
+    reductions = reductFunc.keys()    
+    t_graph = loader.get_template('graph.html')
+    c_graph = Context({
+        'id': stream.id,
+        'reduction': stream.reduction_type,
+        'reductions': reductions
+    })
+
+    return HttpResponse(t_graph.render(c_graph), mimetype="text/html")
+
 @require_GET
 def display_graph(request):
     '''
@@ -77,7 +111,7 @@ def shared_graph(request, token, id):
         graph = SavedDSGraph.objects.get(id = id)
     except ObjectDoesNotExist:
         raise Http404('Graph %s/%s/ does not exist' % (token, str(id)))
-
+    
     params = {
         'start':         graph.start,
         'end':           graph.end,
@@ -87,7 +121,6 @@ def shared_graph(request, token, id):
         'zoom_start':    graph.zoom_start,
         'zoom_end':      graph.zoom_end
         }
-
     return HttpResponse(getStreamData(params, key, request.user), mimetype="application/json")
     
 
@@ -102,7 +135,6 @@ def getStreamData(g_params, auth, user = None):
     ' auth     - Used for authentication.  This can either be a portcullis user or a key
     ' user     - Secondary authentication.  should only be a request.user.  May change in future...
     '''
-
     start = g_params['start']
     end = g_params['end']
     ds_id = g_params['datastream_id']

@@ -1,0 +1,47 @@
+<html>
+    <head>
+        <script type="text/javascript" src="{{STATIC_URL}}js/jquery-1.8.3.min.js"></script>
+
+        <script type="text/javascript" src="{{STATIC_URL}}js/spin.js"></script>
+        <script type="text/javascript" src="{{STATIC_URL}}js/portcullis_helper.js"></script>
+
+        <script type="text/javascript" src="{{STATIC_URL}}js/layout.js"></script>
+
+        <script type="text/javascript" src="{{STATIC_URL}}js/flot/jquery.flot.min.js"></script>
+        <script type="text/javascript" src="{{STATIC_URL}}js/flot/jquery.flot.selection.min.js"></script>
+        <script type="text/javascript" src="{{STATIC_URL}}js/flot/jquery.flot.crosshair.min.js"></script>
+        <script type="text/javascript" src="{{STATIC_URL}}js/flot/jquery.flot.resize.min.js"></script>
+        <script type="text/javascript" src="{{STATIC_URL}}js/jquery.flot.axislabels.js"></script>
+        
+        <script type="text/javascript" src="{{STATIC_URL}}js/downloadify.min.js"></script>
+        <script type="text/javascript" src="{{STATIC_URL}}js/swfobject.js"></script>
+
+        <script type="text/javascript" src="{{STATIC_URL}}js/plotter.js"></script>
+        <script type="text/javascript" src="/graphs/scaling_functions.js/"></script>
+
+        <script type="text/javascript" src="{{STATIC_URL}}plugins/mini-colors/jquery.minicolors.js"></script>
+
+        <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}plugins/mini-colors/jquery.minicolors.css">
+        
+        <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}css/base.css">
+        <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}css/display_nodes.css">
+        
+        <script type="text/javascript">
+            $(function() {
+                var graphs = {{streams}};
+                for(i in graphs)
+                    get_graph(graphs[i]); 
+            }); 
+        </script>
+    </head>
+    <body>
+        <input type="hidden" value="600" id="granularity"/>
+        <input type="hidden" id="start" value="{{start}}"/>
+        <input type="hidden" id="end" value="{{end}}"/>
+        <input type="hidden" id="custom" checked="checked"/>
+        <div id="graphs"></div>
+    </body>
+</html>
+
+
+

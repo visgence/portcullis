@@ -19,12 +19,11 @@ function create_plot_select_handler(datastream_id)
 { 
     return function(event,ranges) 
     { 
-        if($("#zoom_sync_"+datastream_id).is(':checked'))         
-            zoom_all_graphs(ranges);
-        else
-            zoom_graph(ranges, datastream_id);
+        zoom_all_graphs(ranges);
         var start = new Date(ranges.xaxis.from + timezone_offset);
         var end= new Date(ranges.xaxis.to + timezone_offset);
+        //$('#start').val(dateToString(start));
+        //$('#end').val(dateToString(end));
     };
 }//end create_plot_select_handler
 
@@ -69,11 +68,8 @@ function create_plot_click_handler(datastream_id, latestPos)
 
 function set_graph_range_labels(start, end, datastream_id)
 {
-    var start_date = new Date(start + timezone_offset);
-    var end_date = new Date(end  + timezone_offset);
-
-    $('#start_range_'+datastream_id).text(start_date.toLocaleString());
-    $('#end_range_'+datastream_id).text(end_date.toLocaleString());
+    $('#start_range_'+datastream_id).text(new Date(start-timezone_offset).toLocaleString());
+    $('#end_range_'+datastream_id).text(new Date(end-timezone_offset).toLocaleString());
 }
 
 function reset_graph_selection(datastream_id)
@@ -104,11 +100,12 @@ function show_data_container(datastream_id)
     $("#stream_data_container_"+datastream_id).removeAttr('style'); 
 }
 
-function on_graphs_load() {
-    /*
-     * Sets up all graph bindings and loads all on screen graphs including a shared view if a auth token
-     * is available within the template.
-     */
+/*
+* Sets up all graph bindings and loads all on screen graphs including a shared view if a auth token
+* is available within the template.
+*/
+function on_graphs_load() 
+{
 
     //Find all portcullis graph divs
     $(".portcullis-graph").each(function(i) {
@@ -133,13 +130,13 @@ function on_graphs_load() {
         load_all_graphs();
 }
 
-
-function on_graph_load(datastream_id) {
-    /*
-     * Sets up a specific graphs bindings and loads it's data.
-     *
-     * datastream_id - The stream whose data is to be loaded.
-     */
+/*
+ * Sets up a specific graphs bindings and loads it's data.
+ *
+ * datastream_id - The stream whose data is to be loaded.
+ */
+function on_graph_load(datastream_id) 
+{
     
     //bind main graph
     $("#sensor" + datastream_id).bind("plotselected",create_plot_select_handler(datastream_id));
@@ -151,54 +148,110 @@ function on_graph_load(datastream_id) {
 
     // setup the download link.
     setupDownload(datastream_id);
-   
-    load_graph(datastream_id, get_ranges(), graph_overview_callback(false));
+  
+    var period = get_period();
+    if(!period)
+        return;
+
+    load_graph(datastream_id, period, graph_overview_callback(false));
 }
 
-function modify_date(date, date_range, subtract) {
-    /* Takes a Date object and adds/subtracts a range of time from it based on the date_range passed in.
-     *
-     * date       - Date object to modify.
-     * date_range - The range to to modify the date by. "One Day", "One Week", "One Month".
-     * subtract   - Boolean to tell if we're subtracting the range from the date or not.
-     *
-     * Returns    - New Date object modified according to the parameters
-     */
 
-    var edit_amount = 1;
-    var new_date = new Date(date.toLocaleString());
-
-    if(date_range == "One Week")
-        edit_amount = 7;
-    
-    if(subtract)
-        edit_amount = -edit_amount;
-
-    if(date_range == "One Month")
-        new_date.setMonth(new_date.getMonth() + edit_amount);
-    else
-        new_date.setDate(new_date.getDate() + edit_amount);
-
-    return new_date;
-}
-
-function get_granularity() {
-    /* Gets the granularity currently set on the page. If it doesn't yet exist then a default is set and returned.
-     *
-     * Returns - Integer that is the currently set granularity.
-     */
-
+/* Gets the granularity currently set on the page. If it doesn't yet exist then a default is set and returned.
+ *
+ * Returns - Integer that is the currently set granularity.
+ */
+function get_granularity() 
+{
     //Try and make default width of first graph otherwise default to 300
     var first_graph = $('.graph_container:first .sensor_graph');
     var default_granularity = first_graph.width();
     if(!default_granularity)
         default_granularity = 300;
-
-    if($("#granularity").val() === '')
+  
+    if($('#granularity').val() == null || $('#granularity').val() == undefined || $("#granularity").val() === '') {
+        console.log('setting gran');
         $("#granularity").val(default_granularity);
-
+    }
     return $("#granularity").val();
 }
+
+
+//Time periods used for the time controls in miliseconds
+var periods = {
+    "hour":     60*60*1000,
+    "24_hours": 24*60*60*1000,
+    "week":     7*24*60*60*1000,
+    "year":     365*24*60*60*1000
+};
+
+
+/** Shows or hides the error for the custom time period range.
+ *
+ * If no msg is given (i.e msg results int false) then no msg
+ * is set if showing the error. This means any previous error set
+ * if any will be shown.
+ *
+ * Keyword Args
+ *     hide - Boolean that determines if error should be shown or hidden.
+ *     msg  - Optional string for setting error message to.
+ */
+function custom_period_error(hide, msg)
+{
+    "use strict";
+    if(hide)
+        $('#custom_period_error').css('visibility', 'hidden');
+    else {
+        $('#custom_period_error').css('visibility', '');
+        if(msg)
+            $('#custom_period_error').text(msg);
+    }
+}
+
+/** Get the time period specified by the graph time controls.
+ *
+ *  If custom time is specified but no start and/or end time is given an error
+ *  is given.
+ *
+ * Return: Object containing the start and end time in a format needed by the plotter.
+ * {
+ *    'xaxis': {
+ *       'from': start_time,
+ *       'to':   end_time
+ *    }
+ * }
+ */
+function get_period() 
+{
+    "use strict";
+
+    //In miliseconds
+    var day = 24*60*60*1000;
+
+    if($('#custom').attr('checked')) {
+        if( !$('#start').val() || !$('#end').val() ) {
+            custom_period_error(false, 'Please give a start and end date');
+            return null;
+        }
+
+        var start = (new Date($('#start').val())).getTime() - timezone_offset;
+        var end = (new Date($('#end').val())).getTime() - timezone_offset;
+    }
+    else {
+        var end = new Date().getTime() - timezone_offset; 
+        var start = end - periods[$('.period:checked').attr('id')];
+    }
+
+    //Package up the dates properly
+    var period = { 'xaxis': { 
+        'from': start, 
+        'to':   end
+    }};
+
+    custom_period_error(true);
+    return period;
+}
+
 
 function get_ranges() {
     var d = new Date();
@@ -207,7 +260,7 @@ function get_ranges() {
     var epoch_end;
     var start = new Date($("#start").val());
     var end = new Date($("#end").val());
-    
+
     var start_range = $('#start_range').val();
     var end_range = $('#end_range').val();  
    
@@ -237,16 +290,15 @@ function get_ranges() {
         $("#end").val(dateToString(end));
     }
 
+    /*
     if(start_range != "None")
         start = modify_date(end, start_range, true);
     else if(end_range != "None")
         end = modify_date(start, end_range, false);
-
+    */
     epoch_start = start.getTime() - timezone_offset;
     epoch_end = end.getTime() - timezone_offset;
    
-    console.log("Start: "+dateToString(start));
-    console.log("End: "+dateToString(end));
     var range_data = { 
         xaxis: { 
                   from: epoch_start, 
@@ -255,6 +307,7 @@ function get_ranges() {
     };
     return range_data;
 }
+
 
 /** Get's and returns the range data for a particular graph.
  *
@@ -312,7 +365,7 @@ function scale_data(data)
             t_diff = data.data[i][0] - last_t;
             n_t_diff++;
             avg_t_diff = ((n_t_diff-1)*avg_t_diff + t_diff)/n_t_diff;
-            if ( avg_t_diff > 0 && t_diff > 2*avg_t_diff )            
+            if ( avg_t_diff > 0 && t_diff > 3*avg_t_diff )            
                 tmpData.push(null);
         }
         last_t = data.data[i][0];
@@ -394,7 +447,7 @@ function plot_graph(data, options, div) {
             j++;
         }
     }
-
+    
     var plot = $.plot($(div), [scaled_data], options);
     $(div+"_csv").html(csv);
     $('#datapoints_'+data.datastream_id).text(data.num_readings);
@@ -405,15 +458,14 @@ function plot_graph(data, options, div) {
     return plot;
 }
 
-
-function zoom_graph(ranges, datastream_id) {
-    /*
-     * Gets a new data set for the specified time range and renders just the graph while leaving the overview alone.
-     *
-     * ranges        - Dict like object that contains the start and end range for the data set.
-     * datastream_id - Id of the datastream to get new data for.
-     */
-    
+/*
+ * Gets a new data set for the specified time range and renders just the graph while leaving the overview alone.
+ *
+ * ranges        - Dict like object that contains the start and end range for the data set.
+ * datastream_id - Id of the datastream to get new data for.
+ */
+function zoom_graph(ranges, datastream_id) 
+{
     //request data for the new timeframe
     load_graph(datastream_id, ranges, zoom_graph_callback(ranges, true));
 }
@@ -437,12 +489,13 @@ function load_all_graphs() {
      */
 
     divs = $(".portcullis-graph");
+    var period = get_period();
+    if(!period)
+        return;
 
     //Cycle though all graphs and fetch data from server
     for (var i = 0; i < divs.length; i++) 
-    {
-        load_graph(divs[i].id, get_ranges(), graph_overview_callback(false));
-    }
+        load_graph(divs[i].id, period, graph_overview_callback(false));
 }
 
 
@@ -485,10 +538,10 @@ function graph_overview_callback(is_shared) {
      * Returns: Function that will be used as the callback function and takes the data recieved from server.
      */
 
-    var ranges = get_ranges();
+    var ranges = get_period();
 
     return function (data) {
-        
+       
         if (is_shared) {
             var start = data.xmin*1000;
             var end = data.xmax*1000;
@@ -545,16 +598,15 @@ function load_graph(datastream_id, ranges, callback) {
     var indicator_g = spin(document.getElementById('graph_container_' + datastream_id));
 
     var getData = {};
+
     getData.start = Math.round(ranges.xaxis.from/1000 + timezone_offset/1000);
     getData.end = Math.round(ranges.xaxis.to/1000 + timezone_offset/1000);
     getData.granularity =  granularity;
     getData.datastream_id = datastream_id;
     getData.reduction = $('#reduction_select_' + datastream_id).val();
-
+    
     json_data = JSON.stringify(getData);
     $.get("/graphs/render_graph/", {'json_data': json_data}, function(data) {
-
-        console.log("datastream: "+datastream_id);
         indicator_s.stop();
         indicator_g.stop();
         callback(data);
@@ -570,18 +622,20 @@ function renderGraph(data, ranges, shouldScale)
 
     if (data.zoom_start)
         xmin = data.zoom_start * 1000 - timezone_offset;
-    else if (data.xmin)
+    else if (data.xmin) {
         xmin = data.xmin * 1000 - timezone_offset;
+    }
     else
         xmin = ranges.xaxis.from;
 
     if (data.zoom_end)
         xmax = data.zoom_end * 1000 - timezone_offset;
-    else if ( data.xmax )
+    else if ( data.xmax ) {
         xmax = data.xmax * 1000 - timezone_offset;
+    }
     else
         xmax = ranges.xaxis.to;
-
+  
     var options = 
     { 
         lines: { show: true }, 
@@ -680,38 +734,18 @@ function resetZoom(streamId)
 {
     var overviewData = null;
     var ranges = null;
-    if($("#zoom_sync_"+streamId).is(':checked'))         
+        
+    divs = $(".portcullis-graph:not(.empty)");
+    for (var i = 0; i < divs.length; i++) 
     {
-        divs = $(".portcullis-graph:not(.empty)");
-        for (var i = 0; i < divs.length; i++) 
-        {
-            var datastream_id = divs[i].id;
-            if($("#zoom_sync_"+datastream_id).is(':checked'))         
-            {
-                overviewPlots[datastream_id].clearSelection(true);
-                overviewData = overviewPlots[datastream_id].getData();
-                ranges = {
-                    xaxis: {
-                        from: overviewData[0].xaxis.min,
-                        to: overviewData[0].xaxis.max
-                    }
-                };
-
-                load_graph(datastream_id, ranges, zoom_graph_callback(ranges, false)); 
-            }
-        }
-    }
-    else {
-        overviewPlots[streamId].clearSelection(true);
-        overviewData = overviewPlots[streamId].getData();
-
-        ranges = {
-            xaxis: {
-                from: overviewData[0].xaxis.min,
-                to: overviewData[0].xaxis.max
-            }
-        };
-        load_graph(streamId, ranges, zoom_graph_callback(ranges, false)); 
+        var datastream_id = divs[i].id;
+        overviewPlots[datastream_id].clearSelection(true);
+        overviewData = overviewPlots[datastream_id].getData();
+        ranges = { xaxis: {
+            from: overviewData[0].xaxis.min,
+            to:   overviewData[0].xaxis.max
+        }};
+        load_graph(datastream_id, ranges, zoom_graph_callback(ranges, false)); 
     }
     
     reset_graph_selection(streamId);
@@ -731,11 +765,7 @@ function zoom_all_graphs(ranges)
 {
     divs = $(".portcullis-graph:not(.empty)");
     for (var i = 0; i < divs.length; i++) 
-    {
-        var datastream_id = divs[i].id;
-        if($("#zoom_sync_"+datastream_id).is(':checked'))         
-            zoom_graph(ranges, datastream_id);
-    }
+        zoom_graph(ranges, divs[i].id);
 }
 
 /** Initializes the download button under a given graphs Advanced Options.
@@ -769,45 +799,26 @@ function setupDownload(datastream_id)
     });
 }
 
-/** Enables/disables a date range selector and date picker field. 
- *  Selecting something other than 'None' will disable the other range selector as well as
- *  the date picker field the range selector is next to. Selecting 'None' enables them again.
+
+/** Enables or disables custom time period inputs based on the radio button given.
  *
- *  select         - The date range selector element.
- *  date_id        - The date picker field id.
- *  mutable_select - Id for the date range selector that is not being selected.
+ *  If the radio input has a value of 'custom' then the start and end date fields 
+ *  become enabled while everything else results in them becoming disabled.
+ *
+ * Keyword Args
+ *     radio - Radio input element that was clicked on.
  */
-function toggle_date_range(select, date_id, mutable_select)
+function toggle_time_periods(radio) 
 {
-    var date_field = $("#"+date_id);
-    var selected = $(select).val();
-    
-    if(selected != "None")
-    {
-        date_field.attr('disabled', 'disabled');
-        $('#'+mutable_select).attr('disabled', 'disabled');
-    }
-    else
-    {
-        date_field.removeAttr('disabled');
-        if(!$('#end_range_now').attr('checked'))
-            $('#'+mutable_select).removeAttr('disabled');
-    }
-}
-
-
-
-function toggle_end_range(checkbox)
-{
-    if ($(checkbox).attr('checked')) {
-        $('#end').attr('disabled', 'disabled'); 
-        $('#end_range').attr('disabled', 'disabled'); 
-    }
+    if($(radio).val() == "custom") {
+        $('.custom_period').removeAttr('disabled');
+        if($('#start').val() && $('#end').val())
+            load_all_graphs();
+    } 
     else {
-        if($('#end_range').val() == "None")
-            $('#end').removeAttr('disabled'); 
-        if($('#start_range').val() == "None")
-            $('#end_range').removeAttr('disabled'); 
+        $('.custom_period').attr('disabled', 'disabled');
+        custom_period_error(true);
+        load_all_graphs();
     }
 }
 
@@ -837,13 +848,12 @@ function saveView()
         return graph;
     }));
 
-    ranges = get_ranges();
+    ranges = get_period();
     view.start = Math.round(ranges.xaxis.from/1000 + timezone_offset/1000);
     view.end = Math.round(ranges.xaxis.to/1000 + timezone_offset/1000);
     view.granularity = get_granularity();
 
     csrf = $('input[name="csrfmiddlewaretoken"]').val();
-
     $.post('/portcullis/createSavedView/', {'jsonData': JSON.stringify(view), 'csrfmiddlewaretoken': csrf},
            function (data) {
                if ( 'errors' in data ) {
@@ -944,6 +954,17 @@ function ready_datepickers()
 }
 
 
+function get_graph(ds_id)
+{
+    var json = JSON.stringify({'stream': ds_id});
+
+    // append to widget container
+    $.get('/graphs/render_simple_graph/', {'json_data': json}, function(data) {
+        $('#graphs').append(data);
+        on_graph_load(ds_id);
+    });
+}
+
 /** Loads a stream to the page if it's checkbox was checked and unloads or stops the loading 
  * of the stream if it's checkbox is unchecked.
  *
@@ -953,6 +974,10 @@ function load_unload_stream(checkbox)
 {
     var datastream_id = $(checkbox).val();     
     if($(checkbox).attr('checked')) {
+        if(!get_period()) {
+            $(checkbox).removeAttr('checked');
+            return;
+        }
         var stream = {};
         stream.stream = datastream_id;
         var json = JSON.stringify(stream);
