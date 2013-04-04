@@ -29,7 +29,7 @@ def display_simple_base(request):
         'end': end,
         'streams': streams
     })
-    return HttpResponse(t.render(c))
+    return HttpResponse(t.render(c), mimetype='text/html')
 
 def display_simple_graph(request):
     
