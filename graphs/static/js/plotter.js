@@ -20,8 +20,8 @@ function create_plot_select_handler(datastream_id)
     return function(event,ranges) 
     { 
         zoom_all_graphs(ranges);
-        var start = new Date(ranges.xaxis.from + timezone_offset);
-        var end= new Date(ranges.xaxis.to + timezone_offset);
+        //var start = new Date(ranges.xaxis.from + timezone_offset);
+        //var end= new Date(ranges.xaxis.to + timezone_offset);
         //$('#start').val(dateToString(start));
         //$('#end').val(dateToString(end));
     };
@@ -169,7 +169,7 @@ function get_granularity()
     if(!default_granularity)
         default_granularity = 300;
   
-    if($('#granularity').val() == null || $('#granularity').val() == undefined || $("#granularity").val() === '') {
+    if($('#granularity').val() === null || $('#granularity').val() === undefined || $("#granularity").val() === '') {
         console.log('setting gran');
         $("#granularity").val(default_granularity);
     }
@@ -227,6 +227,8 @@ function get_period()
 
     //In miliseconds
     var day = 24*60*60*1000;
+    var start = null;
+    var end = null;
 
     if($('#custom').attr('checked')) {
         if( !$('#start').val() || !$('#end').val() ) {
@@ -234,12 +236,12 @@ function get_period()
             return null;
         }
 
-        var start = (new Date($('#start').val())).getTime() - timezone_offset;
-        var end = (new Date($('#end').val())).getTime() - timezone_offset;
+        start = (new Date($('#start').val())).getTime() + timezone_offset;
+        end = (new Date($('#end').val())).getTime() + timezone_offset;
     }
     else {
-        var end = new Date().getTime() - timezone_offset; 
-        var start = end - periods[$('.period:checked').attr('id')];
+        end = new Date().getTime();
+        start = end - periods[$('.period:checked').attr('id')];
     }
 
     //Package up the dates properly
@@ -250,62 +252,6 @@ function get_period()
 
     custom_period_error(true);
     return period;
-}
-
-
-function get_ranges() {
-    var d = new Date();
-    var range = (48 * 60 * 60);    
-    var epoch_start;
-    var epoch_end;
-    var start = new Date($("#start").val());
-    var end = new Date($("#end").val());
-
-    var start_range = $('#start_range').val();
-    var end_range = $('#end_range').val();  
-   
-    var end_now = $('#end_range_now').attr('checked');
-
-    if(end_now) {
-        end = new Date(d.getTime());
-    }
-    else if((start_range != "None" && end_range == "None" && !$("#end").val()) ||
-       ($("#start").val() && !$("#end").val()))
-    {
-        end = new Date(start.getTime() + range*1000);
-        $("#end").val(dateToString(end));
-    }
-    else if((end_range != "None" && start_range == "None" && !$("#start").val()) ||
-            (!$("#start").val() && $("#end").val()))
-    {
-        start = new Date(end.getTime() - range*1000);
-        $("#start").val(dateToString(start));
-    }
-    else if(!$("#start").val() && !$("#end").val())
-    {    
-        start = new Date(d.getTime() - range*1000);
-        end= new Date(d.getTime());
- 
-        $("#start").val(dateToString(start));
-        $("#end").val(dateToString(end));
-    }
-
-    /*
-    if(start_range != "None")
-        start = modify_date(end, start_range, true);
-    else if(end_range != "None")
-        end = modify_date(start, end_range, false);
-    */
-    epoch_start = start.getTime() - timezone_offset;
-    epoch_end = end.getTime() - timezone_offset;
-   
-    var range_data = { 
-        xaxis: { 
-                  from: epoch_start, 
-                    to: epoch_end
-        }
-    };
-    return range_data;
 }
 
 
@@ -361,7 +307,7 @@ function scale_data(data)
 
     for(var i=0;i<data.data.length;i++) 
     {
-        if (i > 0 && tmpData[tmpData.length-1] ) {
+        if (i > 0 && tmpData[tmpData.length-1]) {
             t_diff = data.data[i][0] - last_t;
             n_t_diff++;
             avg_t_diff = ((n_t_diff-1)*avg_t_diff + t_diff)/n_t_diff;
