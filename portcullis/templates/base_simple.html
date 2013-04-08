@@ -25,7 +25,16 @@
         
         <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}css/base.css">
         <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}css/display_nodes.css">
-        
+         
+    </head>
+    <body>
+        <input type="hidden" value="600" id="granularity"/>
+        <input type="hidden" id="start" value="{{start}}"/>
+        <input type="hidden" id="end" value="{{end}}"/>
+        <input type="hidden" id="custom" checked="checked"/>
+        <div id="graphs"></div>
+
+
         <script type="text/javascript">
             $(function() {
                 var start = utc_to_local({{start}});
@@ -38,12 +47,5 @@
                     get_graph(graphs[i]); 
             }); 
         </script>
-    </head>
-    <body>
-        <input type="hidden" value="600" id="granularity"/>
-        <input type="hidden" id="start" value="{{start}}"/>
-        <input type="hidden" id="end" value="{{end}}"/>
-        <input type="hidden" id="custom" checked="checked"/>
-        <div id="graphs"></div>
     </body>
 </html>
