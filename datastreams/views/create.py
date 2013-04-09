@@ -44,7 +44,7 @@ def createDs(request):
     '''
 
     #TODO: for now screw permissions, but later, put them in!!
-    print request.POST
+    
     try:
         json_data = json.loads(request.POST.get("jsonData"))
     except Exception as e:
@@ -56,56 +56,82 @@ def createDs(request):
         transaction.rollback()
         return get_http_response("From createDs: json data is not a list.", '')
 
-    return_data = []
+    errors = []
+    return_ids = []
     for data in json_data:
-        print data 
+        
         try:
             key = Key.objects.get(key=data['token'])
         except Key.DoesNotExist as e:
-            transaction.rollback()
-            return get_http_response("From createDs: Key with token '%s' does not exist." % str(data['token']), str(e))
+            error = "From createDs: Key with token '%s' does not exist." % str(data['token'])
+            errors.append({"error": error, "exception": str(e)})
+            continue
         except KeyError as e:
-            transaction.rollback()
-            return get_http_response("From createDs: 'token' does not exist in the json data.", str(e))
-
+            errors.append({"error": "'token' does not exist in the json data.", "exception": str(e)})
+            continue
+        
         try:
             ds_name = data['ds_data']['name']
         except Exception as e:
-            transaction.rollback()
-            return get_http_response("From createDs: Exception getting DS name: %s." % type(e), str(e))
-
+            error = "From createDs: Exception getting DS name: %s." % type(e) 
+            errors.append({"error": error, "exception": str(e)})
+            continue
+        
         try:
             ds = DataStream.objects.get(name=ds_name, owner=key.owner)
         except DataStream.DoesNotExist:
-            ds = DataStream(owner=key.owner)
-            for attr, val in data['ds_data'].iteritems():
-                if attr == "scaling_function":
-                    try:
-                        sc = ScalingFunction.objects.get(name=val)
-                    except ScalingFunction.DoesNotExist as e:
-                        transaction.rollback()
-                        return get_http_response("From createDs: scaling function with name '%s' does not exist." % str(val), str(e))
-                    setattr(ds, attr, sc)
-                else:
-                    try:
-                        setattr(ds, attr, val)
-                    except Exception as e:
-                        transaction.rollback()
-                        error = "From createDs: There was a problem setting '%s' with the value '%s'." % (str(attr), str(val))
-                        return get_http_response(error, str(e))
-            try:
-                ds.full_clean()
-                ds.save()
-            except ValidationError as e:
-                transaction.rollback()
-                return get_http_response("From createDs: There were one or more problems setting DataStream attributes.", str(e))
+            ds = create_ds(key, data) 
 
-        return_data.append(ds.pk)
+            #If not a ds then an error
+            if not isinstance(ds, DataStream):
+                errors.append(ds)
+                continue
+
+        return_ids.append(ds.pk)
         ds.can_read.add(key)
         ds.can_post.add(key)
 
     transaction.commit()
-    return HttpResponse(json.dumps(return_data), mimetype="application/json")
+    return HttpResponse(json.dumps({'ids': return_ids, "errors": errors}), mimetype="application/json")
+
+
+def create_ds(key, data):
+    '''
+    ' Creates a new Datastream given a key and some data.  The keys owner is used as the Datastream's owner.
+    ' The data needs to contain the name for the Datastream as a minimum in order to create it.
+    '
+    ' Keyword Arguments: 
+    '   key  - Valid key object.
+    '   data - Dictionary of key value pairs for the data to create the Datastream with 
+    '
+    ' Returns: New Datastream object or dictionary containing any exceptions and errors that occured
+    '''
+
+    ds = DataStream(owner=key.owner)
+    for attr, val in data['ds_data'].iteritems():
+
+        if attr == "scaling_function":
+            try:
+                sc = ScalingFunction.objects.get(name=val)
+            except ScalingFunction.DoesNotExist as e:
+                error = "From createDs: scaling function with name '%s' does not exist." % str(val)
+                return {"error": error, "exception": str(e)}
+
+            setattr(ds, attr, sc)
+        else:
+            try:
+                setattr(ds, attr, val)
+            except Exception as e:
+                error = "From createDs: There was a problem setting '%s' with the value '%s'." % (str(attr), str(val))
+                return {"error": error, "exception": str(e)}
+    try:
+        ds.full_clean()
+        ds.save()
+    except ValidationError as e:
+        error = "From createDs: There were one or more problems setting DataStream attributes."
+        return {"error": error, "exception": str(e)}
+
+    return ds
 
 
 def get_http_response(msg, e):
