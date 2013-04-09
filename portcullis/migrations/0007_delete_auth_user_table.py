@@ -2,16 +2,19 @@
 import datetime
 from south.db import db
 from south.v2 import SchemaMigration
-from django.db import models
+from django.db import models, DatabaseError
 
 
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Delete auth User Table
-        db.delete_table(u'auth_user_groups')
-        db.delete_table(u'auth_user_user_permissions')
-        db.delete_table(u'auth_user')
+        try:
+            # Delete auth User Table, but might not have ever existed.
+            db.delete_table(u'auth_user_groups')
+            db.delete_table(u'auth_user_user_permissions')
+            db.delete_table(u'auth_user')
+        except DatabaseError:
+            pass
 
     def backwards(self, orm):
         #  Create auth User table
