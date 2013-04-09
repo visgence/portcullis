@@ -52,7 +52,6 @@ function create_plot_click_handler(datastream_id, latestPos)
             var p2 = series.data[j];
             if ((p1 !== null && p1 !== undefined) && (p2 !== null && p2 !== undefined) ) {
                 y = p1[1] + (p2[1] - p1[1]) * (pos.x - p1[0]) / (p2[0] - p1[0]);
-
                 var time = new Date(pos.x + timezone_offset);
                 $('#graph_selection_'+datastream_id).removeAttr('style');
                 $('#selected_value_'+datastream_id).text(y.toFixed(2));
@@ -168,7 +167,6 @@ function get_granularity()
         default_granularity = 300;
   
     if($('#granularity').val() === null || $('#granularity').val() === undefined || $("#granularity").val() === '') {
-        console.log('setting gran');
         $("#granularity").val(default_granularity);
     }
     return $("#granularity").val();
@@ -391,9 +389,6 @@ function plot_graph(data, options, div) {
             j++;
         }
     }
-    console.log("DATA POINT");
-    console.log(data.raw_data);
-    console.log(data.data);
       
     var plot = $.plot($(div), [scaled_data], options);
     $(div+"_csv").html(csv);
@@ -413,7 +408,6 @@ function plot_graph(data, options, div) {
  */
 function zoom_graph(ranges, datastream_id) 
 {
-    console.log(ranges);
     //request data for the new timeframe
     load_graph(datastream_id, ranges, zoom_graph_callback(ranges, true));
 }
@@ -423,7 +417,6 @@ function load_all_shared_graphs() {
     /*
      * Loads all data for graphs that belong to a shared view in the window.
      */
-    console.log('LOAD_ALL_SHARED_GRAPHS');
     var token = $('#auth_token').val();
     $('.portcullis-graph').each(function(i) {
         var url = '/graphs/sharedGraph/' + token + '/' + $('#saved_graph_'+this.id).val() + '/';
@@ -435,7 +428,6 @@ function load_all_graphs() {
     /*
      * Get's all graph divs and loads their data.
      */
-    console.log('LOAD_ALL_GRAPHS');
     divs = $(".portcullis-graph");
     var period = get_period();
     if(!period)
@@ -471,7 +463,12 @@ function zoom_graph_callback(ranges, select) {
        
         if (select){
             //Highlight zoomed section on overview graph
-            overviewPlots[data.datastream_id].setSelection({xaxis: {from: ranges.xaxis.from, to: ranges.xaxis.to}}, true);
+            overviewPlots[data.datastream_id].setSelection({
+                xaxis: {
+                    from: ranges.xaxis.from.getTime() - timezone_offset, 
+                    to:   ranges.xaxis.to.getTime() - timezone_offset
+                }
+            }, true);
         }
         //If user had datapoint selected then un-select it.
         reset_graph_selection(data.datastream_id);
@@ -547,8 +544,6 @@ function load_graph(datastream_id, ranges, callback) {
 
     var getData = {};
   
-    console.log("INSIDE LOAD_GRAPH");
-    
     getData.start = Math.round(ranges.xaxis.from.getTime()/1000);
     getData.end = Math.round(ranges.xaxis.to.getTime()/1000);
     getData.granularity =  granularity;
@@ -623,7 +618,6 @@ function renderGraph(data, ranges, shouldScale)
 
 function renderOverview(data, ranges)
 {
-    console.log('rendering overview');
     options = {
         legend: { show:false },
         series:     
