@@ -10,29 +10,33 @@ class Migration(DataMigration):
         '''
         ' Migrate data from old user model to new user model.
         '''
-        for user in orm.PortcullisUser.objects.all():
-            # Create a new user
-            if user.email in [None, '']:
-                email = user.username
-            else:
-                email = user.email
-            nuser = orm.PortcullisUser1(
-                id = user.id,
-                email = email,
-                first_name = user.first_name,
-                last_name = user.last_name,
-                last_login = user.last_login,
-                date_joined = user.date_joined,
-                is_superuser = user.is_superuser,
-                is_staff = user.is_staff,
-                is_active = user.is_active,
-                password = user.password
-                )
-            nuser.save()
+        # Do in a try, because the auth_table might never have existed.
+        try:
+            for user in orm.PortcullisUser.objects.all():
+                # Create a new user
+                if user.email in [None, '']:
+                    email = user.username
+                else:
+                    email = user.email
+                nuser = orm.PortcullisUser1(
+                    id = user.id,
+                    email = email,
+                    first_name = user.first_name,
+                    last_name = user.last_name,
+                    last_login = user.last_login,
+                    date_joined = user.date_joined,
+                    is_superuser = user.is_superuser,
+                    is_staff = user.is_staff,
+                    is_active = user.is_active,
+                    password = user.password
+                    )
+                nuser.save()
+        except DatabaseError:
+            pass
 
     def backwards(self, orm):
         '''
-        ' Migrate data from old user model to new user model.
+        ' Migrate data from new user model to old user model.
         ' The username is going to be copied from the email.
         '''
         for user in orm['portcullis.PortcullisUser1'].objects.all():
