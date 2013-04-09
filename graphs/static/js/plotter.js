@@ -385,7 +385,7 @@ function plot_graph(data, options, div) {
     var csv="time,raw reading,scaled value\n";
     for (var i=0, j=0; i < scaled_data.data.length; i++) {
         if ( data.data[i] ) {
-            csv += data.raw_data[i][0]+",";
+            csv += data.data[i][0]+",";
             csv += data.raw_data[j][1]+",";
             csv += scaled_data.data[i][1]+"\n";
             j++;
