@@ -127,12 +127,13 @@ function on_graphs_load()
         load_all_graphs();
 }
 
+//TODO: delete perm parameter when we get embeded graphs for sniffer working better
 /*
  * Sets up a specific graphs bindings and loads it's data.
  *
  * datastream_id - The stream whose data is to be loaded.
  */
-function on_graph_load(datastream_id) 
+function on_graph_load(datastream_id, perm) 
 {
     
     //bind main graph
@@ -150,7 +151,7 @@ function on_graph_load(datastream_id)
     if(!period)
         return;
     
-    load_graph(datastream_id, period, graph_overview_callback(false));
+    load_graph(datastream_id, period, graph_overview_callback(false, perm));
 }
 
 
@@ -475,7 +476,8 @@ function zoom_graph_callback(ranges, select) {
     };
 }
 
-function graph_overview_callback(is_shared) {
+//TODO: delete perm permission when we get embeded graphs working better for sniffer
+function graph_overview_callback(is_shared, perm) {
     /*
      * Returns a callback that renders a graph and overview using data recieved from server.  If there is no data
      * or insufficient privilages then an empty graph is rendered with an appropriate message.
@@ -899,14 +901,14 @@ function ready_datepickers()
 }
 
 
-function get_graph(ds_id)
+function get_graph(ds_id, token)
 {
-    var json = JSON.stringify({'stream': ds_id});
+    var json = JSON.stringify({'stream': ds_id, 'token': token});
 
     // append to widget container
     $.get('/graphs/render_simple_graph/', {'json_data': json}, function(data) {
         $('#graphs').append(data);
-        on_graph_load(ds_id);
+        on_graph_load(ds_id ,data.permission);
     });
 }
 

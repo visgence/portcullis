@@ -19,16 +19,14 @@ from graphs.models import SavedDSGraph
 
 def display_simple_base(request):
 
-    start = request.GET['start']
-    end = request.GET['end']
-    streams = request.GET['streams']
-    
     t = loader.get_template('base_simple.html')
     c = RequestContext(request, {
-        'start': start, 
-        'end': end,
-        'streams': streams
+        'start': request.GET['start'], 
+        'end': request.GET['end'],
+        'streams': request.GET['streams'],
+        'token': request.GET['token']
     })
+
     return HttpResponse(t.render(c), mimetype='text/html')
 
 def display_simple_graph(request):
@@ -40,12 +38,24 @@ def display_simple_graph(request):
     except ObjectDoesNotExist as e:
         raise Http404()
 
+    perm = True
+    if not stream.is_public:
+        token = request.GET.get('token', '')
+        
+        try:
+            key = Key.objects.get(key = token)
+            if not key.isCurrent() or key not in stream.can_read.all():
+                perm = False
+        except Key.DoesNotExist as e:
+            perm = False
+
     reductions = reductFunc.keys()    
     t_graph = loader.get_template('graph.html')
     c_graph = Context({
-        'id': stream.id,
-        'reduction': stream.reduction_type,
-        'reductions': reductions
+        'id':         stream.id,
+        'reduction':  stream.reduction_type,
+        'reductions': reductions,
+        'permission': perm
     })
 
     return HttpResponse(t_graph.render(c_graph), mimetype="text/html")
