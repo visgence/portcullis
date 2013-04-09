@@ -37,10 +37,8 @@
 
         <script type="text/javascript">
             $(function() {
-                var start = utc_to_local({{start}});
-                var end = utc_to_local({{end}});
-                $('#start').val(dateToString(new Date(start))); 
-                $('#end').val(dateToString(new Date(end))); 
+                    $('#start').val(dateToString(new Date({{start}}*1000 + timezone_offset))); 
+                    $('#end').val(dateToString(new Date({{end}}*1000 + timezone_offset))); 
 
                 var graphs = {{streams}};
                 for(i in graphs)
