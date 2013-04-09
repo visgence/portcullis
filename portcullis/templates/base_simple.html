@@ -37,8 +37,8 @@
 
         <script type="text/javascript">
             $(function() {
-                    $('#start').val(dateToString(new Date({{start}}*1000 + timezone_offset))); 
-                    $('#end').val(dateToString(new Date({{end}}*1000 + timezone_offset))); 
+                    $('#start').val(dateToString(new Date({{start}}*1000))); 
+                    $('#end').val(dateToString(new Date({{end}}*1000))); 
 
                 var graphs = {{streams}};
                 for(i in graphs)

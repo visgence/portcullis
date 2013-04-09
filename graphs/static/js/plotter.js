@@ -211,7 +211,7 @@ function custom_period_error(hide, msg)
  *  If custom time is specified but no start and/or end time is given an error
  *  is given.
  *
- * Return: Object containing the start and end time in a format needed by the plotter.
+ * Return: Object containing the start and end time Date objects.
  * {
  *    'xaxis': {
  *       'from': start_time,
