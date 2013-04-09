@@ -960,3 +960,22 @@ function dateToString(date)
         ' ' + String(date.getHours()) + ':' + String(date.getMinutes()) + ':' + String(date.getSeconds());
     return dStr;
 }
+
+/** Takes a UTC timestamp in seconds and converts it into a local timezone timestamp in miliseconds.
+ *
+ * Keyword Args
+ *     timestamp - UTC timestamp in seconds
+ *
+ * Return: A timestamp converted from the UTC time to the local timezone time.
+ */
+function utc_to_local(timestamp) 
+{
+    //Create date obj for local timezone offset
+    var tz_date = new Date();
+    var tz_offset = tz_date.getTimezoneOffset()*60*1000;
+
+    //Turn to miliseconds then add in time zone offset
+    var local_timestamp = timestamp*1000 - tz_offset;
+
+    return local_timestamp
+}
