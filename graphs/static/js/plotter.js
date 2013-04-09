@@ -19,11 +19,9 @@ function create_plot_select_handler(datastream_id)
 { 
     return function(event,ranges) 
     { 
+        ranges.xaxis.from = new Date(ranges.xaxis.from + timezone_offset);
+        ranges.xaxis.to = new Date(ranges.xaxis.to + timezone_offset);
         zoom_all_graphs(ranges);
-        //var start = new Date(ranges.xaxis.from + timezone_offset);
-        //var end= new Date(ranges.xaxis.to + timezone_offset);
-        //$('#start').val(dateToString(start));
-        //$('#end').val(dateToString(end));
     };
 }//end create_plot_select_handler
 
@@ -68,8 +66,8 @@ function create_plot_click_handler(datastream_id, latestPos)
 
 function set_graph_range_labels(start, end, datastream_id)
 {
-    $('#start_range_'+datastream_id).text(new Date(start-timezone_offset).toLocaleString());
-    $('#end_range_'+datastream_id).text(new Date(end-timezone_offset).toLocaleString());
+    $('#start_range_'+datastream_id).text(dateToString(start));
+    $('#end_range_'+datastream_id).text(dateToString(end));
 }
 
 function reset_graph_selection(datastream_id)
@@ -152,7 +150,7 @@ function on_graph_load(datastream_id)
     var period = get_period();
     if(!period)
         return;
-    console.log('ON_GRAPH_LOAD');
+    
     load_graph(datastream_id, period, graph_overview_callback(false));
 }
 
@@ -236,12 +234,12 @@ function get_period()
             return null;
         }
 
-        start = (new Date($('#start').val())).getTime() + timezone_offset;
-        end = (new Date($('#end').val())).getTime() + timezone_offset;
+        start = (new Date($('#start').val()));
+        end = (new Date($('#end').val()));
     }
     else {
-        end = new Date().getTime();
-        start = end - periods[$('.period:checked').attr('id')];
+        end = new Date();
+        start = new Date(end.getTime() - periods[$('.period:checked').attr('id')]);
     }
 
     //Package up the dates properly
@@ -304,7 +302,7 @@ function scale_data(data)
     var last_t = 0;
 
     data.raw_data = data.data;
-
+    
     for(var i=0;i<data.data.length;i++) 
     {
         if (i > 0 && tmpData[tmpData.length-1]) {
@@ -316,7 +314,7 @@ function scale_data(data)
         }
         last_t = data.data[i][0];
         var tmp = [];
-        tmp[0] = data.data[i][0] = data.data[i][0]*1000 - timezone_offset;//converting seconds to milliseconds
+        tmp[0] = data.data[i][0]*1000 - timezone_offset;//converting seconds to milliseconds
         tmp[1] = scaling_functions[data.scaling_function](data.data[i][1]);
 
         tmpData.push(tmp);
@@ -387,13 +385,16 @@ function plot_graph(data, options, div) {
     var csv="time,raw reading,scaled value\n";
     for (var i=0, j=0; i < scaled_data.data.length; i++) {
         if ( data.data[i] ) {
-            csv += data.data[i][0]+",";
+            csv += data.raw_data[i][0]+",";
             csv += data.raw_data[j][1]+",";
             csv += scaled_data.data[i][1]+"\n";
             j++;
         }
     }
-    
+    console.log("DATA POINT");
+    console.log(data.raw_data);
+    console.log(data.data);
+      
     var plot = $.plot($(div), [scaled_data], options);
     $(div+"_csv").html(csv);
     $('#datapoints_'+data.datastream_id).text(data.num_readings);
@@ -412,6 +413,7 @@ function plot_graph(data, options, div) {
  */
 function zoom_graph(ranges, datastream_id) 
 {
+    console.log(ranges);
     //request data for the new timeframe
     load_graph(datastream_id, ranges, zoom_graph_callback(ranges, true));
 }
@@ -487,7 +489,7 @@ function graph_overview_callback(is_shared) {
     var ranges = get_period();
 
     return function (data) {
-         console.log('rendering the graphs');
+        
         if (is_shared) {
             var start = data.xmin*1000;
             var end = data.xmax*1000;
@@ -497,7 +499,6 @@ function graph_overview_callback(is_shared) {
             $('#end').val(dateToString(new Date(end)));
             $('#granularity').val(data.granularity);
         }
-
 
         var msg = '';
         if(data.data.length === 0) {
@@ -545,9 +546,11 @@ function load_graph(datastream_id, ranges, callback) {
     var indicator_g = spin(document.getElementById('graph_container_' + datastream_id));
 
     var getData = {};
-
-    getData.start = Math.round(ranges.xaxis.from/1000 + timezone_offset/1000);
-    getData.end = Math.round(ranges.xaxis.to/1000 + timezone_offset/1000);
+  
+    console.log("INSIDE LOAD_GRAPH");
+    
+    getData.start = Math.round(ranges.xaxis.from.getTime()/1000);
+    getData.end = Math.round(ranges.xaxis.to.getTime()/1000);
     getData.granularity =  granularity;
     getData.datastream_id = datastream_id;
     getData.reduction = $('#reduction_select_' + datastream_id).val();
@@ -568,17 +571,17 @@ function renderGraph(data, ranges, shouldScale)
     var xmax = null;
 
     if (data.zoom_start)
-        xmin = data.zoom_start * 1000 - timezone_offset;
+        xmin = new Date(data.zoom_start * 1000)
     else if (data.xmin) {
-        xmin = data.xmin * 1000 - timezone_offset;
+        xmin = new Date(data.xmin * 1000);
     }
     else
         xmin = ranges.xaxis.from;
 
     if (data.zoom_end)
-        xmax = data.zoom_end * 1000 - timezone_offset;
+        xmax = new Date(data.zoom_end * 1000);
     else if ( data.xmax ) {
-        xmax = data.xmax * 1000 - timezone_offset;
+        xmax = new Date(data.xmax * 1000);
     }
     else
         xmax = ranges.xaxis.to;
@@ -590,8 +593,8 @@ function renderGraph(data, ranges, shouldScale)
         {     
             mode: "time", 
             timeformat: " %m-%d %h:%M %p",
-            min: xmin,
-            max: xmax,
+            min: xmin.getTime() - timezone_offset,
+            max: xmax.getTime() - timezone_offset,
             ticks: 5
         },
         selection: {mode: "x"},
@@ -690,8 +693,8 @@ function resetZoom(streamId)
         overviewPlots[datastream_id].clearSelection(true);
         overviewData = overviewPlots[datastream_id].getData();
         ranges = { xaxis: {
-            from: overviewData[0].xaxis.min,
-            to:   overviewData[0].xaxis.max
+            from: new Date(overviewData[0].xaxis.min + timezone_offset),
+            to:   new Date(overviewData[0].xaxis.max + timezone_offset)
         }};
         load_graph(datastream_id, ranges, zoom_graph_callback(ranges, false)); 
     }
@@ -972,7 +975,7 @@ function utc_to_local(timestamp)
 {
     //Create date obj for local timezone offset
     var tz_date = new Date();
-    var tz_offset = tz_date.getTimezoneOffset()*1000;
+    var tz_offset = tz_date.getTimezoneOffset()*60*1000;
 
     //Turn to miliseconds then add in time zone offset
     var local_timestamp = timestamp*1000 - tz_offset;
