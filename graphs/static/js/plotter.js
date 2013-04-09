@@ -976,5 +976,5 @@ function utc_to_local(timestamp)
     //Turn to miliseconds then add in time zone offset
     var local_timestamp = timestamp*1000 + tz_date.getTimezoneOffset();
 
-    return local_timetamp
+    return local_timestamp
 }
