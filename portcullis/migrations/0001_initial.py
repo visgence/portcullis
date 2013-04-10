@@ -2,17 +2,20 @@
 import datetime
 from south.db import db
 from south.v2 import SchemaMigration
-from django.db import models
+from django.db import models, DatabaseError
 
 
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Adding model 'PortcullisUser'
-        db.create_table('portcullis_portcullisuser', (
-            ('user_ptr', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['auth.User'], unique=True, primary_key=True)),
-        ))
-        db.send_create_signal('portcullis', ['PortcullisUser'])
+        try:  # If this fails, it probably doesn't have an auth users table.
+            # Adding model 'PortcullisUser'
+            db.create_table('portcullis_portcullisuser', (
+                    ('user_ptr', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['auth.User'], unique=True, primary_key=True)),
+                    ))
+            db.send_create_signal('portcullis', ['PortcullisUser'])
+        except DatabaseError:
+            pass
 
         # Adding model 'ScalingFunction'
         db.create_table('portcullis_scalingfunction', (
