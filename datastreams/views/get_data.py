@@ -16,7 +16,7 @@ except ImportError:
 
 
 # Local imports
-from portcullis.models import Datastream, SensorReading
+from portcullis.models import DataStream, SensorReading
 
 
 def get_data_by_ds_column(request):
@@ -27,7 +27,8 @@ def get_data_by_ds_column(request):
     ' returns - HttpResponse containing jsondata {<ds_id>: [(<timestamp>, <value>), ...], ... }
     '''
     # TODO: Check perms, etc.
-
+    import time
+    beg_time = time.time()
     jsonData = request.REQUEST.get('jsonData', None)
     if jsonData is None:
         error = 'Error: No jsonData received.'
@@ -48,13 +49,13 @@ def get_data_by_ds_column(request):
         return HttpResponse(json.dumps({'errors': error}, mimetype='application/json'))
 
     # Scrub column, so it is safe to use in query
-    ds_columns = [x.get_attname_column()[1] for x in Datastream._meta.fields]
+    ds_columns = [x.get_attname_column()[1] for x in DataStream._meta.fields]
 
     if column not in ds_columns:
-        error = 'Error: Column Name %s not in Datastream table.' % column
+        error = 'Error: Column Name %s not in DataStream table.' % column
         return HttpResponse(json.dumps({'errors': error}, mimetype='application/json'))
 
-    data_points = SensorReading.objects.filter(
+    data_points = SensorReading.objects.select_related().filter(
         timestamp__gte=time_start,
         timestamp__lte=time_end
         ).extra(
@@ -70,9 +71,8 @@ def get_data_by_ds_column(request):
         'start': time_start,
         'end': time_end
         }
-    for point in data_points:
+    for point in list(data_points:
         if point.datastream.id not in data:
             data[point.datastream.id] = []
         data[point.datastream.id].append((point.timestamp, point.value))
-
     return HttpResponse(json.dumps(data), mimetype='application/json')
