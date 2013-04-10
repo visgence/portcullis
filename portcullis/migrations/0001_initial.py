@@ -8,14 +8,31 @@ from django.db import models, DatabaseError
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        try:  # If this fails, it probably doesn't have an auth users table.
-            # Adding model 'PortcullisUser'
-            db.create_table('portcullis_portcullisuser', (
-                    ('user_ptr', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['auth.User'], unique=True, primary_key=True)),
-                    ))
-            db.send_create_signal('portcullis', ['PortcullisUser'])
+        try:  # If this fails, it probably has an auth users table.
+            db.create_table(u'auth_user', (
+                    (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+                    ('username', self.gf('django.db.models.fields.CharField')(max_length=30, unique=True)),
+                    ('password', self.gf('django.db.models.fields.CharField')(max_length=128)),
+                    ('last_login', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now())),
+                    ('email', self.gf('django.db.models.fields.CharField')(max_length=75, blank=True)),
+                    ('first_name', self.gf('django.db.models.fields.CharField')(max_length=30, blank=True)),
+                    ('last_name', self.gf('django.db.models.fields.CharField')(max_length=30, blank=True)),
+                    ('is_superuser', self.gf('django.db.models.fields.BooleanField')(default=False)),
+                    ('is_staff', self.gf('django.db.models.fields.BooleanField')(default=False)),
+                    ('is_active', self.gf('django.db.models.fields.BooleanField')(default=True)),
+                    ('date_joined', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now()))
+                ))
+            print "Sending create signal"
+            db.send_create_signal(u'auth', ['User'])
+            
         except DatabaseError:
             pass
+
+            # Adding model 'PortcullisUser'
+        db.create_table('portcullis_portcullisuser', (
+                ('user_ptr', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['auth.User'], unique=True, primary_key=True)),
+                ))
+        db.send_create_signal('portcullis', ['PortcullisUser'])
 
         # Adding model 'ScalingFunction'
         db.create_table('portcullis_scalingfunction', (
