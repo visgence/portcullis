@@ -1,7 +1,7 @@
 [
     {
-	    "pk": 1,
-    	"model": "auth.user",
+    	"pk": 1,
+    	"model": "portcullis.PortcullisUser",
         "fields": {
             "username": "superuser",
             "first_name": "super",
@@ -16,14 +16,8 @@
         }
     },
     {
-        "pk":1,
-        "model": "portcullis.PortcullisUser",
-        "fields": {
-        }
-    },
-    {
 	    "pk": 2,
-    	"model": "auth.user",
+    	"model": "portcullis.PortcullisUser",
         "fields": {
             "username": "staffuser",
             "first_name": "staff",
@@ -37,15 +31,9 @@
             "is_superuser": false
         }
     },
-    {
-        "pk":2,
-        "model": "portcullis.PortcullisUser",
-        "fields": {
-        }
-    },
     {	    
         "pk": 3,
-    	"model": "auth.user",
+    	"model": "portcullis.PortcullisUser",
         "fields": {
             "username": "normaluser",
             "first_name": "noraml",
@@ -59,15 +47,9 @@
             "is_superuser": false
         }
     },
-    {
-        "pk":3,
-        "model": "portcullis.PortcullisUser",
-        "fields": {
-        }
-    },
     {	    
         "pk": 4,
-    	"model": "auth.user",
+    	"model": "portcullis.PortcullisUser",
         "fields": {
             "username": "invalidkeysuser",
             "first_name": "invalidkeys",
@@ -81,15 +63,9 @@
             "is_superuser": false
         }
     },
-    {
-        "pk":4,
-        "model": "portcullis.PortcullisUser",
-        "fields": {
-        }
-    },
     {	    
         "pk": 5,
-    	"model": "auth.user",
+    	"model": "portcullis.PortcullisUser",
         "fields": {
             "username": "validkeysuser",
             "first_name": "validkeys",
@@ -103,15 +79,9 @@
             "is_superuser": false
         }
     },
-    {
-        "pk":5,
-        "model": "portcullis.PortcullisUser",
-        "fields": {
-        }
-    },
     {	    
         "pk": 6,
-    	"model": "auth.user",
+    	"model": "portcullis.PortcullisUser",
         "fields": {
             "username": "normaluser_nokeys",
             "first_name": "noraml",
@@ -125,15 +95,9 @@
             "is_superuser": false
         }
     },
-    {
-        "pk":6,
-        "model": "portcullis.PortcullisUser",
-        "fields": {
-        }
-    },
     {	    
         "pk": 7,
-    	"model": "auth.user",
+    	"model": "portcullis.PortcullisUser",
         "fields": {
             "username": "superuser_nokeys",
             "first_name": "super",
@@ -147,10 +111,4 @@
             "is_superuser": true
         }
     },
-    {
-        "pk":7,
-        "model": "portcullis.PortcullisUser",
-        "fields": {
-        }
-    }
 ]

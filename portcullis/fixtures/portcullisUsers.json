@@ -1,14 +1,11 @@
 [
     {
-	    "pk": 1,
-    	"model": "auth.user",
+	"pk": 1,
+    	"model": "portcullis.PortcullisUser",
         "fields": {
-            "username": "superuser",
             "first_name": "super",
             "last_name": "user",
             "email": "superuser@visgence.com",
-            "groups": [],
-            "user_permissions": [],
             "password": "pbkdf2_sha256$10000$gwTfNcIAzabR$gUAEJu84LwzegTXl1gCNAr/ls6YVwUD5xXJlbRBQB4o=",
             "is_staff": true,
             "is_active": true,
@@ -16,53 +13,29 @@
         }
     },
     {
-        "pk":1,
-        "model": "portcullis.PortcullisUser",
+	"pk": 2,
+    	"model": "portcullis.PortcullisUser",
         "fields": {
-        }
-    },
-    {
-	    "pk": 2,
-    	"model": "auth.user",
-        "fields": {
-            "username": "staffuser",
             "first_name": "staff",
             "last_name": "user",
             "email": "staffuser@visgence.com",
-            "groups": [],
-            "user_permissions": [],
             "password": "pbkdf2_sha256$10000$gwTfNcIAzabR$gUAEJu84LwzegTXl1gCNAr/ls6YVwUD5xXJlbRBQB4o=",
             "is_staff": true,
             "is_active": true,
             "is_superuser": false
         }
     },
-    {
-        "pk":2,
-        "model": "portcullis.PortcullisUser",
-        "fields": {
-        }
-    },
     {	    
         "pk": 3,
-    	"model": "auth.user",
+    	"model": "portcullis.PortcullisUser",
         "fields": {
-            "username": "normaluser",
-            "first_name": "noraml",
+            "first_name": "normal",
             "last_name": "user",
             "email": "normaluser@visgence.com",
-            "groups": [],
-            "user_permissions": [],
             "password": "pbkdf2_sha256$10000$gwTfNcIAzabR$gUAEJu84LwzegTXl1gCNAr/ls6YVwUD5xXJlbRBQB4o=",
             "is_staff": false,
             "is_active": true,
             "is_superuser": false
         }
     },
-    {
-        "pk":3,
-        "model": "portcullis.PortcullisUser",
-        "fields": {
-        }
-    }
 ]
