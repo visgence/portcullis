@@ -17,6 +17,7 @@ except ImportError:
 
 # Local imports
 from portcullis.models import DataStream, SensorReading
+from portcullis.utils import DecimalEncoder
 
 
 def get_data_by_ds_column(request):
@@ -77,8 +78,6 @@ def get_data_by_ds_column(request):
     datastream_ids = data_points.order_by('datastream').distinct('datastream').values_list('datastream', flat=True)
 
     for id in datastream_ids:
-        points = data_points.filter(datastream=id).values_list('timestamp', 'value')
-        data[id] = [(x[0], float(x[1])) for x in points]
-
+        data[id] = list(data_points.filter(datastream=id).values_list('timestamp', 'value'))
     print 'Took: %f seconds' % (time.time() - beg_time)
-    return HttpResponse(json.dumps(data), mimetype='application/json')
+    return HttpResponse(json.dumps(data, cls=DecimalEncoder), mimetype='application/json')
