@@ -16,12 +16,15 @@ except ImportError:
 
 
 # Local imports
+from portcullis.models import Datastream, SensorReading
+
+
 def get_data_by_ds_column(request):
     '''
     ' This view will take a column name/value and a time range (in epoch secs),
     ' and return a json response containing all the matching sensor data points.
     '
-    ' returns - HttpResponse containing jsondata {ds_id: [(timestamp, value), ...], ... }
+    ' returns - HttpResponse containing jsondata {<ds_id>: [(<timestamp>, <value>), ...], ... }
     '''
     # TODO: Check perms, etc.
 
@@ -41,18 +44,32 @@ def get_data_by_ds_column(request):
         time_start = jsonData['start']
         time_end = jsonData['end']
     except KeyError as e:
-        error = 'Error: KeyError: %s' + str(e)
+        error = 'Error: KeyError: ' + str(e)
         return HttpResponse(json.dumps({'errors': error}, mimetype='application/json'))
 
-    # TODO: Scrub column, so it is safe to use in query
+    # Scrub column, so it is safe to use in query
+    ds_columns = [x.get_attname_column()[1] for x in Datastream._meta.fields]
+
+    if column not in ds_columns:
+        error = 'Error: Column Name %s not in Datastream table.' % column
+        return HttpResponse(json.dumps({'errors': error}, mimetype='application/json'))
 
     data_points = SensorReading.objects.filter(
         timestamp__gte=time_start,
         timestamp__lte=time_end
         ).extra(
-        where=['portcullis_sensorreading.datastream_id IN (SELECT portcullis_datastream.id FROM portcullis_datastream WHERE portcullis_datastream.' + column + ' LIKE %s )'], params=['%' + value + '%'])
+        where=['portcullis_sensorreading.datastream_id IN (' +
+               'SELECT portcullis_datastream.id ' +
+               'FROM portcullis_datastream ' +
+               'WHERE portcullis_datastream.' + column + ' LIKE %s )'],
+        params=['%' + value + '%'])
 
-    data = {}
+    data = {
+        'column': column,
+        'value': value,
+        'start': time_start,
+        'end': time_end
+        }
     for point in data_points:
         if point.datastream.id not in data:
             data[point.datastream.id] = []
