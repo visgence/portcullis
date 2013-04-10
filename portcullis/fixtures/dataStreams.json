@@ -20,9 +20,6 @@
         "model": "portcullis.datastream",
         "fields": {
             "reduction_type": "mean",
-            "can_post": [
-                "key2"
-            ],
             "name": "Bits Out",
             "color": "red",
             "max_value": null,
