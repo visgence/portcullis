@@ -71,13 +71,14 @@ def get_data_by_ds_column(request):
         'column': column,
         'value': value,
         'start': time_start,
-        'end': time_end
+        'end': time_end,
+        'streams': {}
         }
 
     # Get the datastreams that we are interested.
     datastream_ids = data_points.order_by('datastream').distinct('datastream').values_list('datastream', flat=True)
 
     for id in datastream_ids:
-        data[id] = list(data_points.filter(datastream=id).values_list('timestamp', 'value'))
+        data['streams'][id] = list(data_points.filter(datastream=id).values_list('timestamp', 'value'))
     print 'Took: %f seconds' % (time.time() - beg_time)
     return HttpResponse(json.dumps(data, cls=DecimalEncoder), mimetype='application/json')
