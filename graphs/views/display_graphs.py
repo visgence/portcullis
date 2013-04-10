@@ -1,7 +1,6 @@
 #System Imports
-from django.template import RequestContext, Context
+from django.template import RequestContext, Context, loader
 from django.http import HttpResponse, Http404
-from django.template import Context, loader
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render
 from django.views.decorators.http import require_GET
@@ -11,7 +10,7 @@ except ImportError:
     import json
 
 #Local Imports
-from portcullis.models import DataStream, SensorReading, ScalingFunction, Key
+from portcullis.models import DataStream, SensorReading, Key
 from check_access import check_access
 from graphs.data_reduction import reduceData, reductFunc
 from graphs.models import SavedDSGraph
@@ -24,29 +23,28 @@ def display_simple_base(request):
         'start': request.GET['start'], 
         'end': request.GET['end'],
         'streams': request.GET['streams'],
-        'token': request.GET['token']
+        'token': request.GET.get('token', '')
     })
 
     return HttpResponse(t.render(c), mimetype='text/html')
 
 def display_simple_graph(request):
-    
     json_data = json.loads(request.GET['json_data'])
 
     try:
         stream = DataStream.objects.get(id = int(json_data['stream']))
-    except ObjectDoesNotExist as e:
+    except ObjectDoesNotExist:
         raise Http404()
 
     perm = True
     if not stream.is_public:
-        token = request.GET.get('token', '')
+        token = json_data['token']
         
         try:
             key = Key.objects.get(key = token)
             if not key.isCurrent() or key not in stream.can_read.all():
                 perm = False
-        except Key.DoesNotExist as e:
+        except Key.DoesNotExist:
             perm = False
 
     reductions = reductFunc.keys()    
@@ -57,8 +55,9 @@ def display_simple_graph(request):
         'reductions': reductions,
         'permission': perm
     })
+    r_graph = t_graph.render(c_graph)
 
-    return HttpResponse(t_graph.render(c_graph), mimetype="text/html")
+    return HttpResponse(json.dumps({'graph': r_graph, "perm": perm}), mimetype="application/json")
 
 @require_GET
 def display_graph(request):
@@ -76,7 +75,7 @@ def display_graph(request):
         stream = DataStream.objects.get(id = int(json_data['stream']))
         if not stream.can_view(user):
             raise Http404("Sorry, but you do not have permission to view this graph.")
-    except ObjectDoesNotExist as e:
+    except ObjectDoesNotExist:
         raise Http404()
 
     reductions = reductFunc.keys()    
@@ -152,13 +151,12 @@ def getStreamData(g_params, auth, user = None):
     reduction_type = g_params['reduction']
     zoom_start = None
     zoom_end = None
-
+   
     if 'zoom_start' in g_params:
         zoom_start = g_params['zoom_start']
     if 'zoom_end' in g_params:
         zoom_end = g_params['zoom_end']
 
-    
     ds = DataStream.objects.get_ds_and_validate(ds_id, auth, 'read')
     
     if not isinstance(ds, DataStream):
