@@ -150,7 +150,6 @@ function on_graph_load(datastream_id, perm)
     var period = get_period();
     if(!period)
         return;
-    
     load_graph(datastream_id, period, graph_overview_callback(false, perm));
 }
 
@@ -421,7 +420,7 @@ function load_all_shared_graphs() {
     var token = $('#auth_token').val();
     $('.portcullis-graph').each(function(i) {
         var url = '/graphs/sharedGraph/' + token + '/' + $('#saved_graph_'+this.id).val() + '/';
-        $.get(url, graph_overview_callback(true));
+        $.get(url, graph_overview_callback(true, true));
     });
 }
 
@@ -436,7 +435,7 @@ function load_all_graphs() {
 
     //Cycle though all graphs and fetch data from server
     for (var i = 0; i < divs.length; i++) 
-        load_graph(divs[i].id, period, graph_overview_callback(false));
+        load_graph(divs[i].id, period, graph_overview_callback(false, true));
 }
 
 
@@ -508,7 +507,7 @@ function graph_overview_callback(is_shared, perm) {
             //Add empty class so everything that needs graphs with data can ignore.
             $('#'+data.datastream_id).addClass('empty');
         }
-        else if(!data.permission) {
+        else if(!data.permission || !perm) {
             msg = "You do not have permission to view this graph.";
             plots[data.datastream_id] = plot_empty_graph(data.datastream_id, msg);
             graph_options_visibility(data.datastream_id, 'none');
@@ -545,7 +544,8 @@ function load_graph(datastream_id, ranges, callback) {
     var indicator_g = spin(document.getElementById('graph_container_' + datastream_id));
 
     var getData = {};
-  
+ 
+    console.log(ranges);
     getData.start = Math.round(ranges.xaxis.from.getTime()/1000);
     getData.end = Math.round(ranges.xaxis.to.getTime()/1000);
     getData.granularity =  granularity;
@@ -904,11 +904,11 @@ function ready_datepickers()
 function get_graph(ds_id, token)
 {
     var json = JSON.stringify({'stream': ds_id, 'token': token});
-
+    
     // append to widget container
     $.get('/graphs/render_simple_graph/', {'json_data': json}, function(data) {
-        $('#graphs').append(data);
-        on_graph_load(ds_id ,data.permission);
+        $('#graphs').append(data.graph);
+        on_graph_load(ds_id ,data.perm);
     });
 }
 
@@ -936,7 +936,7 @@ function load_unload_stream(checkbox)
         // append to widget container
         $.get('/graphs/', {'json_data': json}, function(data) {
             $('#widget_container').append(data);
-            on_graph_load(datastream_id);
+            on_graph_load(datastream_id, true);
             $('#share_link').removeClass('display_none');
         });
     }
