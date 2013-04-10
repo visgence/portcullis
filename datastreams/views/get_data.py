@@ -65,14 +65,20 @@ def get_data_by_ds_column(request):
                'WHERE portcullis_datastream.' + column + ' LIKE %s )'],
         params=['%' + value + '%'])
 
+    # Echo back query
     data = {
         'column': column,
         'value': value,
         'start': time_start,
         'end': time_end
         }
-    for point in list(data_points:
-        if point.datastream.id not in data:
-            data[point.datastream.id] = []
-        data[point.datastream.id].append((point.timestamp, point.value))
+
+    # Get the datastreams that we are interested.
+    datastream_ids = data_points.order_by('datastream').distinct('datastream').values_list('datastream', flat=True)
+
+    for id in datastream_ids:
+        points = data_points.filter(datastream=id).values_list('timestamp', 'value')
+        data[id] = [(x[0], float(x[1])) for x in points]
+
+    print 'Took: %f seconds' % (time.time() - beg_time)
     return HttpResponse(json.dumps(data), mimetype='application/json')
