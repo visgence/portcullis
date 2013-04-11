@@ -56,25 +56,25 @@ def createDs(request):
         transaction.rollback()
         return get_http_response("From createDs: json data is not a list.", '')
 
-    errors = []
-    return_ids = []
+    errors = {}
+    return_ids = {}
     for data in json_data:
         
         try:
             key = Key.objects.get(key=data['token'])
         except Key.DoesNotExist as e:
             error = "From createDs: Key with token '%s' does not exist." % str(data['token'])
-            errors.append({"error": error, "exception": str(e)})
+            errors.append({"errors": error, "exception": str(e)})
             continue
         except KeyError as e:
-            errors.append({"error": "'token' does not exist in the json data.", "exception": str(e)})
+            errors.append({"errors": "'token' does not exist in the json data.", "exception": str(e)})
             continue
         
         try:
             ds_name = data['ds_data']['name']
         except Exception as e:
             error = "From createDs: Exception getting DS name: %s." % type(e) 
-            errors.append({"error": error, "exception": str(e)})
+            errors.append({"errors": error, "exception": str(e)})
             continue
         
         try:
@@ -84,10 +84,10 @@ def createDs(request):
 
             #If not a ds then an error
             if not isinstance(ds, DataStream):
-                errors.append(ds)
+                errors[ds_name] = ds
                 continue
 
-        return_ids.append(ds.pk)
+        return_ids[ds_name] = ds.pk
         ds.can_read.add(key)
         ds.can_post.add(key)
 
@@ -115,7 +115,7 @@ def create_ds(key, data):
                 sc = ScalingFunction.objects.get(name=val)
             except ScalingFunction.DoesNotExist as e:
                 error = "From createDs: scaling function with name '%s' does not exist." % str(val)
-                return {"error": error, "exception": str(e)}
+                return {"errors": error, "exception": str(e)}
 
             setattr(ds, attr, sc)
         else:
@@ -123,13 +123,13 @@ def create_ds(key, data):
                 setattr(ds, attr, val)
             except Exception as e:
                 error = "From createDs: There was a problem setting '%s' with the value '%s'." % (str(attr), str(val))
-                return {"error": error, "exception": str(e)}
+                return {"errors": error, "exception": str(e)}
     try:
         ds.full_clean()
         ds.save()
     except ValidationError as e:
         error = "From createDs: There were one or more problems setting DataStream attributes."
-        return {"error": error, "exception": str(e)}
+        return {"errors": error, "exception": str(e)}
 
     return ds
 
@@ -147,7 +147,7 @@ def get_http_response(msg, e):
     '''
 
     return_data = {
-        'error':     msg,
+        'errors':     msg,
         'exception': e
     }
 
