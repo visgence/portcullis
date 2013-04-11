@@ -56,8 +56,8 @@ def createDs(request):
         transaction.rollback()
         return get_http_response("From createDs: json data is not a list.", '')
 
-    errors = []
-    return_ids = []
+    errors = {}
+    return_ids = {}
     for data in json_data:
         
         try:
@@ -84,10 +84,10 @@ def createDs(request):
 
             #If not a ds then an error
             if not isinstance(ds, DataStream):
-                errors.append(ds)
+                errors[ds_name] = ds
                 continue
 
-        return_ids.append(ds.pk)
+        return_ids[ds_name] = ds.pk
         ds.can_read.add(key)
         ds.can_post.add(key)
 
