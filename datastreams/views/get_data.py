@@ -25,7 +25,7 @@ def get_data_by_ds_column(request):
     ' This view will take a column name/value and a time range (in epoch secs),
     ' and return a json response containing all the matching sensor data points.
     '
-    ' returns - HttpResponse containing jsondata {<ds_id>: [(<timestamp>, <value>), ...], ... }
+    ' returns - HttpResponse containing jsondata {'echo of query', 'streams': [[<ds_id>, <value>, <timestamp>]] }
     '''
     # TODO: Check perms, etc.
     import time
@@ -56,7 +56,7 @@ def get_data_by_ds_column(request):
         error = 'Error: Column Name %s not in DataStream table.' % column
         return HttpResponse(json.dumps({'errors': error}, mimetype='application/json'))
 
-    data_points = SensorReading.objects.select_related().filter(
+    data_points = list(SensorReading.objects.select_related().filter(
         timestamp__gte=time_start,
         timestamp__lte=time_end
         ).extra(
@@ -64,21 +64,17 @@ def get_data_by_ds_column(request):
                'SELECT portcullis_datastream.id ' +
                'FROM portcullis_datastream ' +
                'WHERE portcullis_datastream.' + column + ' LIKE %s )'],
-        params=['%' + value + '%'])
+        params=['%' + value + '%']).values_list('datastream', 'value', 'timestamp'))
 
-    # Echo back query
+    # Echo back query, and send data
     data = {
         'column': column,
         'value': value,
         'start': time_start,
         'end': time_end,
-        'streams': {}
+        'streams': data_points
         }
 
-    # Get the datastreams that we are interested.
-    datastream_ids = data_points.order_by('datastream').distinct('datastream').values_list('datastream', flat=True)
-
-    for id in datastream_ids:
-        data['streams'][id] = list(data_points.filter(datastream=id).values_list('timestamp', 'value'))
-    print 'Took: %f seconds' % (time.time() - beg_time)
+    print 'Took: %f seconds before JSON' % (time.time() - beg_time)
+    return_data = json.dumps(data, cls=DecimalEncoder)
     return HttpResponse(json.dumps(data, cls=DecimalEncoder), mimetype='application/json')
