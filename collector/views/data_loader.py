@@ -102,16 +102,17 @@ def add_list(request, auth_token=None):
                 error_string += "\nNo data was passed for insertion! Please be sure to pass some data.\n"
                 continue
 
-            # Get the datastream, if possible
-            ds = DataStream.objects.get_ds_and_validate(ds_id, key, 'post')
-            if not isinstance(ds, DataStream):
-                error_string += '\n' + ds + '\n'
-            else:
-                try:
-                    insert_reading(ds, raw_sensor_value, timestamp)
-                    insertion_successes += 1
-                except SensorReadingCollision as e:
-                    error_string += '\n' + str(e) + '\n'
+            if ds_id is not None:
+                # Get the datastream, if possible
+                ds = DataStream.objects.get_ds_and_validate(ds_id, key, 'post')
+                if not isinstance(ds, DataStream):
+                    error_string += '\n' + ds + '\n'
+                else:
+                    try:
+                        insert_reading(ds, raw_sensor_value, timestamp)
+                        insertion_successes += 1
+                    except SensorReadingCollision as e:
+                        error_string += '\n' + str(e) + '\n'
 
         #Give a message based on number of insertions, attempts, errors etc
         if(error_string is '' and insertion_attempts != 0):
