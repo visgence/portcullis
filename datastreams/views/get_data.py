@@ -50,7 +50,7 @@ def get_data_by_ds_column(request):
         return HttpResponse(json.dumps({'errors': error}, mimetype='application/json'))
 
     # Scrub column, so it is safe to use in query
-    #ds_columns = [x.get_attname_column()[1] for x in DataStream._meta.fields]
+    ds_columns = [x.get_attname_column()[1] for x in DataStream._meta.fields]
 
     if column not in ds_columns:
         error = 'Error: Column Name %s not in DataStream table.' % column
