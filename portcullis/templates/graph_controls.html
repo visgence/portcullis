@@ -32,14 +32,16 @@
                 <input type="text" id="start" class="custom_period" disabled="disabled" value="{{start}}"/>
             
             <li class="period_controls">
-                <span class="custom_period_label"><b>End Date</b></label>
+                <span class="custom_period_label"><b>End Date</b></span>
                 <input type="text" id="end" class="custom_period" disabled="disabled" value="{{end}}"/>
             </li>
         </ul>
     </div>
 
     <div id="graph_controls_refresh">
-        <input type="button" value="Refresh" onclick="load_all_graphs();"/>
+        <input type="button" value="Refresh" id="refresh" onclick="load_all_graphs();"/>
+        <input type="checkbox" id="auto_refresh" onchange="auto_refresh(this);"/>
+        <label for="auto_refresh">Auto Refresh (30 Seconds)</label>
     </div>
 
     <div id="graph_controls_advanced" class="section_toggle controls_toggle clickable" onclick="toggle_form_section(event);">

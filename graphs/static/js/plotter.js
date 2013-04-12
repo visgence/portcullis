@@ -978,3 +978,24 @@ function utc_to_local(timestamp)
 
     return local_timestamp
 }
+
+
+/** Checks that status of the auto_refresh checkbox to see if it's checked. If it is then
+ *  a time interval of 30 seconds is set to refresh all graphs.
+ *
+ * Keyword Args
+ *     chk_ele - Checkbox element that was clicked
+ */
+function auto_refresh(chk_ele)
+{
+    if($(chk_ele).attr('checked')) {
+        var refreshBtn = $('#refresh');
+        
+        setInterval(function() {
+            if($('#auto_refresh').attr('checked')) {
+                console.log('refreshing!');
+                $(refreshBtn).trigger('click');
+            }
+        }, 30000);
+    }
+}
