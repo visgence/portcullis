@@ -23,11 +23,11 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
 
         # Make sure we have the current submodules
-        sys.stdout.write('Updating git-submodules...')
-        sys.stdout.flush()
-        repo = git.Repo(APP_PATH)
-        repo.submodule_update(to_latest_revision=False)
-        print "Done"
+        #sys.stdout.write('Updating git-submodules...')
+        #sys.stdout.flush()
+        #repo = git.Repo(APP_PATH)
+        #repo.submodule_update(to_latest_revision=False)
+        #print "Done"
 
         call_command('syncdb', interactive=False)
         call_command('migrate')
