@@ -56,15 +56,13 @@ def get_data_by_ds_column(request):
         error = 'Error: Column Name %s not in DataStream table.' % column
         return HttpResponse(json.dumps({'errors': error}, mimetype='application/json'))
 
-    data_points = list(SensorReading.objects.select_related().filter(
-        timestamp__gte=time_start,
-        timestamp__lte=time_end
-        ).extra(
-        where=['portcullis_sensorreading.datastream_id IN (' +
-               'SELECT portcullis_datastream.id ' +
-               'FROM portcullis_datastream ' +
-               'WHERE portcullis_datastream.' + column + ' LIKE %s )'],
-        params=['%' + value + '%']).values_list('datastream', 'value', 'timestamp'))
+    kwargs = {
+        'timestamp__gte':                   time_start,
+        'timestamp__lte':                   time_end,
+        'datastream__'+column+'__contains': value
+    }
+
+    data_points = list(SensorReading.objects.select_related().filter(**kwargs).values_list('datastream', 'value', 'timestamp'))
 
     elapsed_time = time.time() - beg_time
     print 'Took: %f seconds before JSON' % elapsed_time
