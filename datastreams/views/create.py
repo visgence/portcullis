@@ -18,6 +18,7 @@ except ImportError:
     import json
 
 from django.db import transaction
+import time
 
 #Local Imports
 from portcullis.models import DataStream, Key, ScalingFunction
@@ -42,7 +43,7 @@ def createDs(request):
     '
     ' Returns: HttpResponse with Json containing a list with the new DataStream's ids or error is anything went wrong.
     '''
-
+    timingMark = time.time()
     #TODO: for now screw permissions, but later, put them in!!
     
     try:
@@ -92,7 +93,8 @@ def createDs(request):
         ds.can_post.add(key)
 
     transaction.commit()
-    return HttpResponse(json.dumps({'ids': return_ids, "errors": errors}), mimetype="application/json")
+    elapsedTime = time.time() - timingMark
+    return HttpResponse(json.dumps({'ids': return_ids, "errors": errors, "time": elapsedTime}), mimetype="application/json")
 
 
 def create_ds(key, data):
