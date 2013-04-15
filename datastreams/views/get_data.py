@@ -66,15 +66,17 @@ def get_data_by_ds_column(request):
                'WHERE portcullis_datastream.' + column + ' LIKE %s )'],
         params=['%' + value + '%']).values_list('datastream', 'value', 'timestamp'))
 
+    elapsed_time = time.time() - beg_time
+    print 'Took: %f seconds before JSON' % elapsed_time
     # Echo back query, and send data
     data = {
-        'column': column,
-        'value': value,
-        'start': time_start,
-        'end': time_end,
-        'streams': data_points
+        'column':  column,
+        'value':   value,
+        'start':   time_start,
+        'end':     time_end,
+        'streams': data_points,
+        'time':    elapsed_time
         }
 
-    print 'Took: %f seconds before JSON' % (time.time() - beg_time)
     return_data = json.dumps(data, cls=DecimalEncoder)
     return HttpResponse(json.dumps(data, cls=DecimalEncoder), mimetype='application/json')
