@@ -29,4 +29,4 @@ urlpatterns += staticfiles_urlpatterns()
 
 if DEBUG:
     urlpatterns += url(r'^images\/(?P<path>.*)$', 'django.views.static.serve', {
-            'document_root': APP_PATH + 'portcullis/static/plugins/slickGrid/images'}),
+            'document_root': APP_PATH + 'chucho/static/plugins/slickGrid/images'}),
