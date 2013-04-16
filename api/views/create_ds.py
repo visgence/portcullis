@@ -27,7 +27,7 @@ from portcullis.models import DataStream, Key, ScalingFunction
 @require_POST
 @csrf_exempt
 @transaction.commit_manually
-def createDs(request):
+def create_datastreams(request):
     '''
     ' Creates DataStreams with an array of data from json and with the owner of the specified token.
     '
