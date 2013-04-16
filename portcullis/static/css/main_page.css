@@ -39,6 +39,12 @@
     text-align: center;
 }
 
+#side_pane .streams
+{
+    list-style: none;
+    padding: 0;
+}
+
 #content
 {
     margin-left: 300px;
