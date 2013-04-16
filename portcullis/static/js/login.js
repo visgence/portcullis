@@ -16,7 +16,7 @@ function login()
         'csrfmiddlewaretoken': csrf
     };
 
-    $.post('/portcullis/login/', data, post_login);
+    $.post('/api/login/', data, post_login);
 }
 
 function post_login(data)
@@ -73,7 +73,7 @@ function changePassDialog()
                     return;
                 }
                 var csrf = $('input[name="csrfmiddlewaretoken"]').val();
-                $.post('/portcullis/changePassword/', {csrfmiddlewaretoken: csrf,
+                $.post('/api/changePassword/', {csrfmiddlewaretoken: csrf,
                                                       jsonData: JSON.stringify(postData)},
                        function(resp) {
                            if ( resp.errors ) {
@@ -97,7 +97,7 @@ function changePassDialog()
         }
     ];
     
-    $.get('/portcullis/passwordForm/', {}, function(resp) {
+    $.get('/api/passwordForm/', {}, function(resp) {
         if ( resp.errors ) {
             makeDialog(resp.errors, 'Error', [{text:'OK', click: function(){$(this).dialog('close');}}]);
         }
