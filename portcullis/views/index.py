@@ -9,10 +9,10 @@
 # System imports
 from django.http import HttpResponse
 from django.template import RequestContext, loader
+from django.core.context_processors import csrf
 
 # Local imports
 from portcullis.views.side_pane import skeleton
-from portcullis.views.login import greeting
 from portcullis.views.saved_view import saved_view
 
 def index(request, content = None, content_id = None):
@@ -40,3 +40,22 @@ def index(request, content = None, content_id = None):
                                   'content_pane':content_pane
                                   })
     return HttpResponse(t.render(c), mimetype="text/html")
+
+
+def greeting(request):
+    '''
+    ' Render the greeting or login html in the main page.
+    '''
+
+    # TODO: When check_access is updated, may use it here.
+
+    if request.user.is_authenticated() and request.user.is_active:
+        greeting_temp = loader.get_template('greeting.html')
+    else:
+        greeting_temp = loader.get_template('login.html')
+
+    greeting_c = RequestContext(request, {'user': request.user})
+    greeting_c.update(csrf(request))
+    return greeting_temp.render(greeting_c)
+
+

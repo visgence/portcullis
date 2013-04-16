@@ -10,4 +10,8 @@ urlpatterns = patterns('api.views',
     url(r'^sharedGraph/(?P<token>.+)/(?P<id>\d{1,4})/$', 'get_data.shared_graph'),
     url(r'^scaling_functions.js/$', 'scaling_functions.scaling_functions'),
     url(r'^create_saved_view/$', 'create_shared.create_saved_view', name='api-create-saved-view'),
+    url(r'^login/$', 'login.user_login', name='api-login'),
+    url(r'^logout/$', 'login.logout', name='api-logout'),
+    url(r'^passwordForm/$', 'login.password_form', name='api-password_form'),
+    url(r'^changePassword/$', 'login.change_password', name='api-change_password'),
 )

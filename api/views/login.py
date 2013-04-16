@@ -12,7 +12,6 @@
 #System Imports
 from django.http import HttpResponseRedirect, HttpResponse
 from django.template import RequestContext, loader
-from django.core.context_processors import csrf
 from django.core.urlresolvers import reverse
 from django.contrib.auth import authenticate, login, logout as auth_logout
 from django.views.decorators.http import require_POST
@@ -27,32 +26,9 @@ except ImportError:
 from check_access import check_access
 
 
-def greeting(request):
-    '''
-    ' Render the greeting or login html in the main page.
-    '''
-
-    # TODO: When check_access is updated, may use it here.
-
-    if request.user.is_authenticated() and request.user.is_active:
-        greeting_temp = loader.get_template('greeting.html')
-    else:
-        greeting_temp = loader.get_template('login.html')
-
-    greeting_c = RequestContext(request, {'user': request.user})
-    greeting_c.update(csrf(request))
-    return greeting_temp.render(greeting_c)
-
-
 def user_login(request):
 
     error = ''
-
-    #Read next url to be redirected to
-    try:
-        redirect_to = request.REQUEST["next"]
-    except KeyError:
-        pass
 
     if request.method == 'POST':
         json_data = json.loads(request.POST['json_data'])
@@ -84,7 +60,7 @@ def logout(request):
     return HttpResponseRedirect(reverse('portcullis-index'))
 
 
-def passwordForm(request):
+def password_form(request):
     '''
     ' This view will render the change password request form.
     '''
@@ -104,7 +80,7 @@ def passwordForm(request):
 
 
 @require_POST
-def changePassword(request):
+def change_password(request):
     '''
     ' This view will allow a user to change their password.
     '
