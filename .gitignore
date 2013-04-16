@@ -1,6 +1,7 @@
 # Project Settings #
 ###################
 .project
+.ropeproject
 
 # Static directory from ./manage collectstatic #
 ################################################
