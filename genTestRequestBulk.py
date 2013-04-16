@@ -4,7 +4,6 @@ import sys
 from urllib import urlencode, urlopen
 import math
 import time
-import random
 try: import simplejson as json
 except ImportError: import json
 
@@ -35,7 +34,7 @@ for t in range(startTime, startTime + 60*60*24*31*nMonths, 10*60):
 
     params['json'] = json.dumps(data)
 
-    resp = urlopen('http://localhost:8000/collector/addList/?%s' % urlencode(params))
+    resp = urlopen('http://localhost:8000/api/addList/?%s' % urlencode(params))
     print 'Http Response: '
     print resp.read()
     print

@@ -166,7 +166,7 @@ INSTALLED_APPS = (
     'portcullis',
     'datastreams',
     'graphs',
-    'collector',
+    'api',
     'snmpPoller',
     'chucho',
     'south'

@@ -19,8 +19,7 @@ urlpatterns = patterns(
     url(r'^admin/', include(admin.site.urls)),
     url(r'^portcullis/', include('portcullis.urls')),
     url(r'^datastreams/', include('datastreams.urls')),
-    url(r'^collector/', include('collector.urls')),
-    url(r'^api/', include('collector.shortUrls')),
+    url(r'^api/', include('api.urls')),
     url(r'(?i)^utilities/', include('chucho.urls')),
     url(dajaxice_config.dajaxice_url, include('dajaxice.urls')),
 )
