@@ -8,4 +8,5 @@ urlpatterns = patterns('api.views',
     url(r'^join_column/$', 'get_data.get_data_by_ds_column', name='datastream-join-column'),
     url(r'^render_graph/$', 'get_data.render_graph'),
     url(r'^sharedGraph/(?P<token>.+)/(?P<id>\d{1,4})/$', 'get_data.shared_graph'),
+    url(r'^scaling_functions.js/$', 'scaling_functions.scaling_functions'),
 )
