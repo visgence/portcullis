@@ -801,7 +801,7 @@ function saveView()
     view.granularity = get_granularity();
 
     csrf = $('input[name="csrfmiddlewaretoken"]').val();
-    $.post('/portcullis/createSavedView/', {'jsonData': JSON.stringify(view), 'csrfmiddlewaretoken': csrf},
+    $.post('/api/create_saved_view/', {'jsonData': JSON.stringify(view), 'csrfmiddlewaretoken': csrf},
            function (data) {
                if ( 'errors' in data ) {
                    span = '<span></span>';

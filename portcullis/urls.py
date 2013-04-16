@@ -1,4 +1,4 @@
-from django.conf.urls import patterns, include, url
+from django.conf.urls import patterns, url
 
 urlpatterns = patterns(
     'portcullis.views',
@@ -9,8 +9,7 @@ urlpatterns = patterns(
     url(r'^changePassword/$', 'login.changePassword', name='portcullis-changePassword'),
     url(r'^side_pane/$', 'side_pane.skeleton', name='side_pane-skeleton'),
     url(r'^streams/$', 'side_pane.streams', name='side_pane-streams'),
-    url(r'^(?P<content>savedView)/(?P<content_id>.+)/$', 'index.index', name='portcullis-saved-view'),
-    url(r'^createSavedView/$', 'savedView.createSavedView', name='portcullis-saveView'),
+    url(r'^(?P<content>saved_view)/(?P<content_id>.+)/$', 'index.index', name='portcullis-saved-view'),
 )
 
 

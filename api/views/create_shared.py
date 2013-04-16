@@ -1,5 +1,5 @@
 """
-" portcullis/views/savedView.py
+" api/views/savedView.py
 " Contributing Authors:
 "    Jeremiah Davis (Visgence, Inc)
 "
@@ -8,61 +8,27 @@
 
 
 # System Imports
-from django.core.urlresolvers import reverse
 from django.db import transaction
-from django.http import HttpResponse, Http404, HttpResponseForbidden
-from django.template import RequestContext, Context, loader
 from django.views.decorators.http import require_POST
+from django.http import HttpResponse, Http404, HttpResponseForbidden
+from django.core.urlresolvers import reverse
 from django.utils import timezone
+from datetime import timedelta
+
 try:
     import simplejson as json
 except ImportError:
     import json
-from datetime import datetime, timedelta
 
 # Local Imports
+from check_access import check_access
 from portcullis.models import SavedView, Key, DataStream
 from graphs.models import SavedDSGraph
-from graphs.data_reduction import reductFunc
-from check_access import check_access
 
-def savedView(request, token):
-    '''
-    ' This view will render the main page for sharing views, with the divs
-    ' for widgets.  The widgets will be loaded with ajax after page load.
-    '
-    ' TODO: When other kinds of  widgets are added, add them to the page also.
-    '''
-    # validate the token, consuming a use if applicable
-    key = Key.objects.validate(token)
-    if not isinstance(key, Key):
-        raise Http404(key)
-
-    # Load the instance, if there is one.
-    view = SavedView.objects.get(key = key)
-
-    reductions = reductFunc.keys()
-    graphs = []
-    t_graph = loader.get_template('graph.html')
-    for w in view.widget.all():
-        c_graph = Context({
-                'id': w.saveddsgraph.datastream.id,
-                'reductions': reductions,
-                'widget_id': w.id
-                })
-        graphs.append(t_graph.render(c_graph))
-
-    t = loader.get_template('content_container.html')
-    c = RequestContext(request, {
-                                    'widgets': graphs,
-                                    'token': token,
-                                 })
-
-    return HttpResponse(t.render(c))
 
 @transaction.commit_manually
 @require_POST
-def createSavedView(request):
+def create_saved_view(request):
     '''
     ' Create a savedView and return the token or link for that shared view.
     '''
@@ -129,7 +95,7 @@ def createSavedView(request):
             return HttpResponse(json.dumps({'errors': message}), mimetype='application/json')
         
         graph = SavedDSGraph(datastream = ds, start = start, end = end,
-                             reduction_type = graphData['reduction'], granularity = gran,
+                             reduction_type = reduction, granularity = gran,
                              zoom_start = zoom_start, zoom_end = zoom_end)
         try:
             graph.save()
@@ -138,7 +104,7 @@ def createSavedView(request):
             transaction.rollback()
             return HttpResponse(json.dumps({'errors': 'Error saving graph: %s' % e.message}),mimetype='application/json')
         
-    link = reverse('portcullis-saved-view', args = ['savedView', key.key])
+    link = reverse('portcullis-saved-view', args = ['saved_view', key.key])
 
     transaction.commit()
     
