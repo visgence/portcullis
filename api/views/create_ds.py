@@ -53,13 +53,17 @@ def create_datastreams(request):
     except Exception as e:
         transaction.rollback()
         errors.append({ 'error': "Missing jsonData from request.", 'exception': str(e) })
-        return HttpResponse(json.dumps(errors), mimetype = "application/json")
+        resp = HttpResponse(json.dumps(errors), mimetype = "application/json")
+        resp['Access-Control-Allow-Origin'] = '*'
+        return resp
     
     #jsonData should contain a list of data.
     if not isinstance(json_data, list):
         transaction.rollback()
         errors.append({ 'error': "jsonData is not a list.", 'exception': None })
-        return HttpResponse(json.dumps(errors), mimetype = "application/json")
+        resp = HttpResponse(json.dumps(errors), mimetype = "application/json")
+        resp['Access-Control-Allow-Origin'] = '*'
+        return resp
 
     return_ids = {}
     for data in json_data:
@@ -97,7 +101,9 @@ def create_datastreams(request):
 
     transaction.commit()
     elapsedTime = time.time() - timingMark
-    return HttpResponse(json.dumps({'ids': return_ids, "errors": errors, "time": elapsedTime}), mimetype="application/json")
+    resp = HttpResponse(json.dumps({'ids': return_ids, "errors": errors, "time": elapsedTime}), mimetype="application/json")
+    resp['Access-Control-Allow-Origin'] = '*'
+    return resp
 
 
 def create_ds(key, data):

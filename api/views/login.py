@@ -45,14 +45,18 @@ def user_login(request):
                     'greeting': greeting_page.render(greeting_c),
                 }
 
-                return HttpResponse(json.dumps(data), mimetype="application/json")
+                resp = HttpResponse(json.dumps(data), mimetype="application/json")
+                resp['Access-Control-Allow-Origin'] = '*'
+                return resp
             else:
                 error = "This account is disabled"
         else:
             error = "Invalid username and/or password"
 
     return_data = {'error': error}
-    return HttpResponse(json.dumps(return_data), mimetype="application/json")
+    resp = HttpResponse(json.dumps(return_data), mimetype="application/json")
+    resp['Access-Control-Allow-Origin'] = '*'
+    return resp
 
 
 def logout(request):
@@ -68,15 +72,21 @@ def password_form(request):
     portcullisUser = check_access(request)
 
     if isinstance(portcullisUser, HttpResponse):
-        return HttpResponse(json.dumps({'errors': portcullisUser.content}), mimetype='application/json')
+        resp = HttpResponse(json.dumps({'errors': portcullisUser.content}), mimetype='application/json')
+        resp['Access-Control-Allow-Origin'] = '*'
+        return resp
     if not isinstance(portcullisUser, AuthUser):
         error = 'User must be logged in to change password.'
-        return HttpResponse(json.dumps({'errors': error}), mimetype='application/json')
+        resp = HttpResponse(json.dumps({'errors': error}), mimetype='application/json')
+        resp['Access-Control-Allow-Origin'] = '*'
+        return resp
 
     t = loader.get_template('passwordForm.html')
     c = RequestContext(request, {'user': portcullisUser})
-
-    return HttpResponse(json.dumps({'html': t.render(c)}), mimetype='application/json')
+    
+    resp = HttpResponse(json.dumps({'html': t.render(c)}), mimetype='application/json')
+    resp['Access-Control-Allow-Origin'] = '*'
+    return resp
 
 
 @require_POST
@@ -96,7 +106,9 @@ def change_password(request):
         return portcullisUser
     if not isinstance(portcullisUser, AuthUser):
         errors = 'Please log in before changing your password.'
-        return HttpResponse(json.dumps({'errors': errors}), mimetype='application/json')
+        resp = HttpResponse(json.dumps({'errors': errors}), mimetype='application/json')
+        resp['Access-Control-Allow-Origin'] = '*'
+        return resp
 
     jsonData = request.REQUEST.get('jsonData', None)
 
@@ -104,26 +116,36 @@ def change_password(request):
         jsonData = json.loads(jsonData)
     except Exception as e:
         errors = 'JSON Exception: %s: %s' % (type(e), e.message)
-        return HttpResponse(json.dumps({'errors': errors}), mimetype='application/json')
+        resp = HttpResponse(json.dumps({'errors': errors}), mimetype='application/json')
+        resp['Access-Control-Allow-Origin'] = '*'
+        return resp
 
     try:
         oldPassword = jsonData['oldPassword']
         newPassword = jsonData['newPassword']
     except KeyError as e:
         errors = 'KeyError: %s' % e.message
-        return HttpResponse(json.dumps({'errors': errors}), mimetype='application/json')
+        resp = HttpResponse(json.dumps({'errors': errors}), mimetype='application/json')
+        resp['Access-Control-Allow-Origin'] = '*'
+        return resp
 
     # Make sure old password is valid
     user = authenticate(username=portcullisUser.get_username(), password=oldPassword)
     if user is None or user != portcullisUser:
         errors = 'Authentication Error: Username and password are not correct'
-        return HttpResponse(json.dumps({'errors': errors}), mimetype='application/json')
+        resp = HttpResponse(json.dumps({'errors': errors}), mimetype='application/json')
+        resp['Access-Control-Allow-Origin'] = '*'
+        return resp
     elif not user.is_active:
         errors = 'Authentication Error: User is not active.  You must be active to change password.'
-        return HttpResponse(json.dumps({'errors': errors}), mimetype='application/json')
+        resp = HttpResponse(json.dumps({'errors': errors}), mimetype='application/json')
+        resp['Access-Control-Allow-Origin'] = '*'
+        return resp
 
     # Change the password
     portcullisUser.set_password(newPassword)
     portcullisUser.save()
     success = 'Password successfully changed!'
-    return HttpResponse(json.dumps({'success': success}), mimetype='application/json')
+    resp = HttpResponse(json.dumps({'success': success}), mimetype='application/json')
+    resp['Access-Control-Allow-Origin'] = '*'
+    return resp

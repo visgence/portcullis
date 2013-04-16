@@ -35,12 +35,16 @@ def get_data_by_ds_column(request):
     jsonData = request.REQUEST.get('jsonData', None)
     if jsonData is None:
         error = 'Error: No jsonData received.'
-        return HttpResponse(json.dumps({'errors': error}), mimetype='application/json')
+        resp = HttpResponse(json.dumps({'errors': error}), mimetype='application/json')
+        resp['Access-Control-Allow-Origin'] = '*'
+        return resp
     try:
         jsonData = json.loads(jsonData)
     except Exception as e:
         error = 'Error: Invalid JSON: ' + str(e)
-        return HttpResponse(json.dumps({'errors': error}, mimetype='application/json'))
+        resp = HttpResponse(json.dumps({'errors': error}, mimetype='application/json'))
+        resp['Access-Control-Allow-Origin'] = '*'
+        return resp
 
     try:
         column = jsonData['column']
@@ -49,14 +53,18 @@ def get_data_by_ds_column(request):
         time_end = jsonData['end']
     except KeyError as e:
         error = 'Error: KeyError: ' + str(e)
-        return HttpResponse(json.dumps({'errors': error}, mimetype='application/json'))
+        resp = HttpResponse(json.dumps({'errors': error}, mimetype='application/json'))
+        resp['Access-Control-Allow-Origin'] = '*'
+        return resp
 
     # Scrub column, so it is safe to use in query
     ds_columns = [x.get_attname_column()[1] for x in DataStream._meta.fields]
 
     if column not in ds_columns:
         error = 'Error: Column Name %s not in DataStream table.' % column
-        return HttpResponse(json.dumps({'errors': error}, mimetype='application/json'))
+        resp = HttpResponse(json.dumps({'errors': error}, mimetype='application/json'))
+        resp['Access-Control-Allow-Origin'] = '*'
+        return resp
 
     kwargs = {
         'timestamp__gte':                   time_start,
@@ -78,7 +86,9 @@ def get_data_by_ds_column(request):
         'time':    elapsed_time
         }
 
-    return HttpResponse(json.dumps(data, cls=DecimalEncoder), mimetype='application/json')
+    resp = HttpResponse(json.dumps(data, cls=DecimalEncoder), mimetype='application/json')
+    resp['Access-Control-Allow-Origin'] = '*'
+    return resp
 
 
 def render_graph(request):
@@ -89,7 +99,9 @@ def render_graph(request):
     if jsonData is None:
         raise Http404
 
-    return HttpResponse(getStreamData(json.loads(jsonData), request.user), mimetype="application/json")
+    resp =HttpResponse(getStreamData(json.loads(jsonData), request.user), mimetype="application/json")
+    resp['Access-Control-Allow-Origin'] = '*'
+    return resp
 
 
 def shared_graph(request, token, id):
@@ -114,7 +126,9 @@ def shared_graph(request, token, id):
         'zoom_start':    graph.zoom_start,
         'zoom_end':      graph.zoom_end
         }
-    return HttpResponse(getStreamData(params, key, request.user), mimetype="application/json")
+    resp = HttpResponse(getStreamData(params, key, request.user), mimetype="application/json")
+    resp['Access-Control-Allow-Origin'] = '*'
+    return resp
     
 
 def getStreamData(g_params, auth, user = None):

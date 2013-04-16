@@ -1,7 +1,7 @@
 #System Imports
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse
-from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
+from django.core.exceptions import ObjectDoesNotExist
 try:
     import simplejson as json
 except ImportError:
@@ -26,27 +26,37 @@ def add_reading(request):
 
     key = Key.objects.validate(auth_token)
     if key is None:
-        return HttpResponse('Incorrect Authentication!')
+        resp = HttpResponse('Incorrect Authentication!')
+        resp['Access-Control-Allow-Origin'] = '*'
+        return resp
 
     #Is there even any data?
     if(raw_sensor_value is None or raw_sensor_value == ""):
-        return HttpResponse("No data was passed for insertion! Please be sure to pass some data. Example: value=233")
+        resp = HttpResponse("No data was passed for insertion! Please be sure to pass some data. Example: value=233")
+        resp['Access-Control-Allow-Origin'] = '*'
+        return resp
 
     if datastream_id is None or datastream_id == '':
-        return HttpResponse('Cannot identify datastream, please give datastream_id.')
+        resp = HttpResponse('Cannot identify datastream, please give datastream_id.')
+        resp['Access-Control-Allow-Origin'] = '*'
+        return resp
 
     # get and validate datastream permission
     datastream = DataStream.objects.get_ds_and_validate(datastream_id, key, 'post')
     # Assume if we don't get a DS object we get an error string.
     if not isinstance(datastream, DataStream):
-        return HttpResponse(datastream)
+        resp = HttpResponse(datastream)
+        resp['Access-Control-Allow-Origin'] = '*'
+        return resp
 
     #Insert
     try:
         insert_reading(datastream, raw_sensor_value)
 
     except SensorReadingCollision as e:
-        return HttpResponse(e)
+        resp = HttpResponse(e)
+        resp['Access-Control-Allow-Origin'] = '*'
+        return resp
     return HttpResponse('Successfully inserted record')
 
 
@@ -67,16 +77,22 @@ def add_list(request, auth_token=None):
             try:
                 json_text = urllib.unquote(request.REQUEST.get('d'))
             except:
-                return HttpResponse("No json received. Please send a serialized array of arrays in the form [[datastream_id,value1,time1],[datastream_id,value2,time2]].  time is optional.")
+                resp = HttpResponse("No json received. Please send a serialized array of arrays in the form [[datastream_id,value1,time1],[datastream_id,value2,time2]].  time is optional.")
+                resp['Access-Control-Allow-Origin'] = '*'
+                return resp
 
         key = Key.objects.validate(auth_token)
         if key is None:
-            return HttpResponse('Incorrect Authentication!')
+            resp = HttpResponse('Incorrect Authentication!')
+            resp['Access-Control-Allow-Origin'] = '*'
+            return resp
 
         try:
             readings = json.loads(json_text)
         except Exception as e:
-            return HttpResponse('Error: Invalid JSON: %s: %s' % (type(e), e.message), mimetype='text/html')
+            resp = HttpResponse('Error: Invalid JSON: %s: %s' % (type(e), e.message), mimetype='text/html')
+            resp['Access-Control-Allow-Origin'] = '*'
+            return resp
 
         insertion_attempts = 0
         insertion_successes = 0
@@ -123,17 +139,23 @@ def add_list(request, auth_token=None):
             success_message = "\n\nTotal Insertion Attempts: %s" % insertion_attempts
             success_message += "\n\nSuccessful Insertions : %s" % insertion_successes
             success_message += "\n\nAll records inserted!"
-            return HttpResponse(success_message)
+            resp = HttpResponse(success_message)
+            resp['Access-Control-Allow-Origin'] = '*'
+            return resp
         else:
             error_string += "\n\nTotal Insertion Attempts: %s" % insertion_attempts
             error_string += "\n\nSuccessful Insertions : %s" % insertion_successes
             failed_insertions = insertion_attempts - insertion_successes
             error_string += "\n\nFailed Insertions : %s" % failed_insertions
-            return HttpResponse(error_string)
+            resp = HttpResponse(error_string)
+            resp['Access-Control-Allow-Origin'] = '*'
+            return resp
 
     except Exception as e:
         message = 'Unexpected error occured! Exception: %s: %s' % (type(e), e.message)
-        return HttpResponse(message, mimetype="text/html")
+        resp = HttpResponse(message, mimetype="text/html")
+        resp['Access-Control-Allow-Origin'] = '*'
+        return resp
 
 
 def insert_reading(datastream, raw_sensor_value, timestamp=None):

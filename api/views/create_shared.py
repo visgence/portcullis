@@ -37,12 +37,15 @@ def create_saved_view(request):
 
     if isinstance(portcullisUser, HttpResponse):
         transaction.rollback()
+        portcullisUser['Access-Control-Allow-Origin'] = '*'
         return portcullisUser
     if request.user.is_anonymous():
         transaction.rollback()
         # TODO: Should not be a return, should be a raise, but don't have a 403 right now,
         #But should be okay, because save has not been called yet.
-        return HttpResponseForbidden('Must be logged in to create saved view')
+        resp = HttpResponseForbidden('Must be logged in to create saved view')
+        resp['Access-Control-Allow-Origin'] = '*'
+        return resp
 
     if 'jsonData' not in request.POST:
         transaction.rollback()
@@ -52,7 +55,9 @@ def create_saved_view(request):
         jsonData = json.loads(request.POST['jsonData'])
     except Exception as e:
         transaction.rollback()
-        return HttpResponse(json.dumps({'errors': 'Ivalid json: %s' % e.message}, mimetype="application/json"))
+        resp = HttpResponse(json.dumps({'errors': 'Ivalid json: %s' % e.message}, mimetype="application/json"))
+        resp['Access-Control-Allow-Origin'] = '*'
+        return resp
 
     expires = timezone.now() + timedelta(days=7)
     key = Key.objects.generateKey(portcullisUser, 'Saved view', expires, 20)
@@ -67,19 +72,25 @@ def create_saved_view(request):
     except Exception as e:
         transaction.rollback()
         message = 'Error getting json data: %s: %s:' % (type(e), e.message)
-        return HttpResponse(json.dumps({'errors': message}), mimetype="application/json")
+        resp = HttpResponse(json.dumps({'errors': message}), mimetype="application/json")
+        resp['Access-Control-Allow-Origin'] = '*'
+        return resp
 
     for graphData in jsonData['graphs']:
         try:
             ds = DataStream.objects.get(id = graphData['ds_id'])
         except DataStream.DoesNotExist:
             transaction.rollback()
-            return HttpResponse(json.dumps({'errors': 'Datastream does not exist.'}), mimetype="application/json")
+            resp = HttpResponse(json.dumps({'errors': 'Datastream does not exist.'}), mimetype="application/json")
+            resp['Access-Control-Allow-Origin'] = '*'
+            return resp
         except Exception as e:
             transaction.rollback()
-            return HttpResponse(json.dumps(
+            resp = HttpResponse(json.dumps(
                     {'errors': 'Unknown error occurred: %s: %s' % (type(e), e.message)},
                     mimetype="application/json"))
+            resp['Access-Control-Allow-Origin'] = '*'
+            return resp
                                
         # Make sure not to add the key if not the owner.
         if key not in ds.can_read.all() and portcullisUser == ds.owner and not ds.is_public:
@@ -92,7 +103,9 @@ def create_saved_view(request):
         except Exception as e:
             transaction.rollback()
             message = 'Error getting json data for datastream %d: %s' % (ds.id, e.message)
-            return HttpResponse(json.dumps({'errors': message}), mimetype='application/json')
+            resp = HttpResponse(json.dumps({'errors': message}), mimetype='application/json')
+            resp['Access-Control-Allow-Origin'] = '*'
+            return resp
         
         graph = SavedDSGraph(datastream = ds, start = start, end = end,
                              reduction_type = reduction, granularity = gran,
@@ -102,11 +115,15 @@ def create_saved_view(request):
             savedView.widget.add(graph)
         except Exception as e:
             transaction.rollback()
-            return HttpResponse(json.dumps({'errors': 'Error saving graph: %s' % e.message}),mimetype='application/json')
+            resp = HttpResponse(json.dumps({'errors': 'Error saving graph: %s' % e.message}),mimetype='application/json')
+            resp['Access-Control-Allow-Origin'] = '*'
+            return resp
         
     link = reverse('portcullis-saved-view', args = ['saved_view', key.key])
 
     transaction.commit()
     
-    return HttpResponse(json.dumps({'html':'<a href="%s">%s</a>' % (link, link)}), mimetype='application/json')
+    resp = HttpResponse(json.dumps({'html':'<a href="%s">%s</a>' % (link, link)}), mimetype='application/json')
+    resp['Access-Control-Allow-Origin'] = '*'
+    return resp
     
