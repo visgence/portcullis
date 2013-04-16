@@ -18,7 +18,6 @@ urlpatterns = patterns(
     url(r'^graphs/', include('graphs.urls')),
     url(r'^admin/', include(admin.site.urls)),
     url(r'^portcullis/', include('portcullis.urls')),
-    url(r'^datastreams/', include('datastreams.urls')),
     url(r'^api/', include('api.urls')),
     url(r'(?i)^utilities/', include('chucho.urls')),
     url(dajaxice_config.dajaxice_url, include('dajaxice.urls')),

@@ -164,7 +164,6 @@ INSTALLED_APPS = (
     # Uncomment the next line to enable admin documentation:
     # 'django.contrib.admindocs',
     'portcullis',
-    'datastreams',
     'graphs',
     'api',
     'snmpPoller',
