@@ -9,7 +9,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth import get_user_model
 AuthUser = get_user_model()
 from portcullis.models import DataStream, ScalingFunction
-from api.views.data_loader import insert_reading
+from api.views.reading_loader import insert_reading
 
 import math
 import time
