@@ -41,41 +41,44 @@ def createDs(request):
     ' This json is then given to a dictionary to be sent as the request like so:
     '   { "jsonData": json_stuff }
     '
-    ' Returns: HttpResponse with Json containing a list with the new DataStream's ids or error is anything went wrong.
+    ' Returns: HttpResponse with Json containing a list with the new DataStream's ids and a dictionary of errors
     '''
     timingMark = time.time()
     #TODO: for now screw permissions, but later, put them in!!
     
+    errors = []
+
     try:
         json_data = json.loads(request.POST.get("jsonData"))
     except Exception as e:
         transaction.rollback()
-        return get_http_response("From createDs: Problem getting json data from request.", str(e))
+        errors.append({ 'error': "Missing jsonData from request.", 'exception': str(e) })
+        return HttpResponse(json.dumps(errors), mimetype = "application/json")
     
     #jsonData should contain a list of data.
     if not isinstance(json_data, list):
         transaction.rollback()
-        return get_http_response("From createDs: json data is not a list.", '')
+        errors.append({ 'error': "jsonData is not a list.", 'exception': None })
+        return HttpResponse(json.dumps(errors), mimetype = "application/json")
 
-    errors = {}
     return_ids = {}
     for data in json_data:
         
         try:
             key = Key.objects.get(key=data['token'])
         except Key.DoesNotExist as e:
-            error = "From createDs: Key with token '%s' does not exist." % str(data['token'])
-            errors.append({"errors": error, "exception": str(e)})
+            error = "Key with token '%s' does not exist." % str(data['token'])
+            errors.append({"error": error, "exception": str(e)})
             continue
         except KeyError as e:
-            errors.append({"errors": "'token' does not exist in the json data.", "exception": str(e)})
+            errors.append({"error": "The key 'token' does not exist in the dictionary jsonData.", "exception": str(e)})
             continue
         
         try:
             ds_name = data['ds_data']['name']
         except Exception as e:
-            error = "From createDs: Exception getting DS name: %s." % type(e) 
-            errors.append({"errors": error, "exception": str(e)})
+            error = "Exception getting DataStream name %s." % type(e) 
+            errors.append({"error": error, "exception": str(e)})
             continue
         
         try:
@@ -85,7 +88,7 @@ def createDs(request):
 
             #If not a ds then an error
             if not isinstance(ds, DataStream):
-                errors[ds_name] = ds
+                errors.append(ds)
                 continue
 
         return_ids[ds_name] = ds.pk
@@ -116,41 +119,23 @@ def create_ds(key, data):
             try:
                 sc = ScalingFunction.objects.get(name=val)
             except ScalingFunction.DoesNotExist as e:
-                error = "From createDs: scaling function with name '%s' does not exist." % str(val)
-                return {"errors": error, "exception": str(e)}
+                error = "ScalingFunction with the name '%s' does not exist." % str(val)
+                return {"error": error, "exception": str(e)}
 
             setattr(ds, attr, sc)
         else:
             try:
                 setattr(ds, attr, val)
             except Exception as e:
-                error = "From createDs: There was a problem setting '%s' with the value '%s'." % (str(attr), str(val))
-                return {"errors": error, "exception": str(e)}
+                error = "There was a problem setting '%s' with the value '%s'." % (str(attr), str(val))
+                return {"error": error, "exception": str(e)}
     try:
         ds.full_clean()
         ds.save()
     except ValidationError as e:
-        error = "From createDs: There were one or more problems setting DataStream attributes."
-        return {"errors": error, "exception": str(e)}
+        error = "There were one or more problems setting DataStream attributes."
+        return {"error": error, "exception": str(e)}
 
     return ds
 
 
-def get_http_response(msg, e):
-    '''
-    ' Helper method for createDs that returns a HttpResponse with dumped json containing an error message
-    ' and an exception.
-    '
-    ' Keyword Arguments:
-    '   msg - String error message.
-    '   e   - String exception that was caught.
-    '
-    ' Return: HttpResonse object containing json for errors and exceptions.
-    '''
-
-    return_data = {
-        'errors':     msg,
-        'exception': e
-    }
-
-    return HttpResponse(json.dumps(return_data), mimetype="application/json")
