@@ -419,7 +419,7 @@ function load_all_shared_graphs() {
      */
     var token = $('#auth_token').val();
     $('.portcullis-graph').each(function(i) {
-        var url = '/graphs/sharedGraph/' + token + '/' + $('#saved_graph_'+this.id).val() + '/';
+        var url = '/api/sharedGraph/' + token + '/' + $('#saved_graph_'+this.id).val() + '/';
         $.get(url, graph_overview_callback(true, true));
     });
 }
@@ -553,7 +553,7 @@ function load_graph(datastream_id, ranges, callback) {
     getData.reduction = $('#reduction_select_' + datastream_id).val();
     
     json_data = JSON.stringify(getData);
-    $.get("/graphs/render_graph/", {'json_data': json_data}, function(data) {
+    $.get("/api/render_graph/", {'json_data': json_data}, function(data) {
         indicator_s.stop();
         indicator_g.stop();
         callback(data);
