@@ -60,7 +60,7 @@ class CreateTest(TestCase):
         '''
 
         json_data = self.get_json("bad token")
-        response = self.c.post('/datastreams/create/', {'jsonData':json_data})
+        response = self.c.post('/api/create_ds/', {'jsonData':json_data})
         response_json = json.loads(response.content)
         self.assertEquals(response_json['error'], "From createDs: Key with token 'bad token' does not exist.")
       
@@ -70,7 +70,7 @@ class CreateTest(TestCase):
         '''
 
         json_data = self.get_json("bad token")
-        response = self.c.post('/datastreams/create/', {'bad_key':json_data})
+        response = self.c.post('/api/create_ds/', {'bad_key':json_data})
         response_json = json.loads(response.content)
         self.assertEqual(response_json['error'], "From createDs: Problem getting json data from request.")
 
@@ -82,7 +82,7 @@ class CreateTest(TestCase):
         ds = DataStream.objects.get(pk=1, name="superuser_ds1")
         self.json_data['name'] = ds.name
         json_data = self.get_json("superuser_key1")
-        response = self.c.post('/datastreams/create/', {'jsonData':json_data})
+        response = self.c.post('/api/create_ds/', {'jsonData':json_data})
         response_json = json.loads(response.content)
         same_ds = DataStream.objects.get(pk=response_json['id'])
         
@@ -97,7 +97,7 @@ class CreateTest(TestCase):
         owner = AuthUser.objects.get(pk=1)
         self.assertRaises(DataStream.DoesNotExist, DataStream.objects.get, owner=owner, name=self.json_data['name'])
         json_data = self.get_json("superuser_key1")
-        response = self.c.post('/datastreams/create/', {'jsonData': json_data})
+        response = self.c.post('/api/create_ds/', {'jsonData': json_data})
         response_json = json.loads(response.content)
         new_ds = DataStream.objects.get(pk=response_json['id'])        
         self.assertEqual(new_ds, DataStream.objects.get(owner=owner, name=self.json_data['name']))
@@ -110,7 +110,7 @@ class CreateTest(TestCase):
        
         self.json_data['scaling_function'] = "bad sc name"
         json_data = self.get_json("superuser_key1")
-        response = self.c.post('/datastreams/create/', {'jsonData':json_data})
+        response = self.c.post('/api/create_ds/', {'jsonData':json_data})
         response_json = json.loads(response.content)
         
         self.assertEqual(response_json['error'], "From createDs: scaling function with name 'bad sc name' does not exist.")
@@ -123,7 +123,7 @@ class CreateTest(TestCase):
 
         self.json_data['reduction_type'] = "bad choice" 
         json_data = self.get_json("superuser_key1")
-        response = self.c.post('/datastreams/create/', {'jsonData':json_data})
+        response = self.c.post('/api/create_ds/', {'jsonData':json_data})
         response_json = json.loads(response.content)
         
         self.assertEqual(response_json['error'], "From createDs: There were one or more problems setting DataStream attributes.")
