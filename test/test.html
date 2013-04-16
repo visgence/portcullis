@@ -1,0 +1,15 @@
+<html>
+    <script type="text/javascript" src="http://code.jquery.com/jquery-1.9.1.js">//not empty</script>
+    <script type="text/javascript">
+        $.support.cors = true;
+        $.get("http://portcullis.visgence.com/datastreams/join_column"
+              ,JSON.stringify([])
+              ,function(data){
+                alert(data);
+              });
+    </script>
+
+    <body>
+    <div id="result"></div>
+    </body>
+</html>
