@@ -25,7 +25,9 @@ def display_simple_base(request):
         'token': request.GET.get('token', '')
     })
 
-    return HttpResponse(t.render(c), mimetype='text/html')
+    resp = HttpResponse(t.render(c), mimetype='text/html')
+    resp['Access-Control-Allow-Origin'] = '*'
+    return resp
 
 def display_simple_graph(request):
     json_data = json.loads(request.GET['json_data'])
