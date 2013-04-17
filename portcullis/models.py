@@ -807,7 +807,7 @@ class DataStreamManager(models.Manager):
 
 class DataStream(models.Model):
     units = models.CharField(max_length=32, blank=True)
-    name = models.CharField(max_length=128)
+    name = models.CharField(max_length=128, db_index=True)
     description = models.CharField(max_length=64, blank=True)
     color = models.CharField(max_length=32, blank=True)
     min_value = models.DecimalField(null=True, max_digits=20, decimal_places=6, blank=True)
