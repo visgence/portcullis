@@ -221,8 +221,6 @@ function get_period()
 {
     "use strict";
 
-    //In miliseconds
-    var day = 24*60*60*1000;
     var start = null;
     var end = null;
 
@@ -272,19 +270,21 @@ function get_period()
  */
 function get_graph_range (g_id) 
 {
+    "use strict";
+
     var graph = plots[g_id];
     var axes = graph.getAxes();
     var ranges = {
         xaxis: {
-            from: axes.xaxis.min,
-            to  : axes.xaxis.max
+            'from': new Date(axes.xaxis.min + timezone_offset),
+            'to'  : new Date(axes.xaxis.max + timezone_offset)
         },
         yaxis: {
-            from: axes.yaxis.min,
-            to  : axes.yaxis.max
+            'from': axes.yaxis.min,
+            'to'  : axes.yaxis.max
         }
     };
-
+    
     return ranges;
 }
 
@@ -545,7 +545,6 @@ function load_graph(datastream_id, ranges, callback) {
 
     var getData = {};
  
-    console.log(ranges);
     getData.start = Math.round(ranges.xaxis.from.getTime()/1000);
     getData.end = Math.round(ranges.xaxis.to.getTime()/1000);
     getData.granularity =  granularity;
