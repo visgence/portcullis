@@ -1,5 +1,5 @@
 """
-" datastreams/views/create.py
+" api/views/create_ds.py
 " Contributing Authors:
 "    Bretton Murphy (Visgence, Inc)
 "    Jerry Davis (Visgence, Inc)
@@ -8,7 +8,6 @@
 """
 
 #System Imports
-from django.http import HttpResponse
 from django.core.exceptions import ValidationError
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
@@ -22,6 +21,7 @@ import time
 
 #Local Imports
 from portcullis.models import DataStream, Key, ScalingFunction
+from api.utilites import cors_http_response_json
 
 
 @require_POST
@@ -53,17 +53,13 @@ def create_datastreams(request):
     except Exception as e:
         transaction.rollback()
         errors.append({ 'error': "Missing jsonData from request.", 'exception': str(e) })
-        resp = HttpResponse(json.dumps(errors), mimetype = "application/json")
-        resp['Access-Control-Allow-Origin'] = '*'
-        return resp
+        return cors_http_response_json(errors)
     
     #jsonData should contain a list of data.
     if not isinstance(json_data, list):
         transaction.rollback()
         errors.append({ 'error': "jsonData is not a list.", 'exception': None })
-        resp = HttpResponse(json.dumps(errors), mimetype = "application/json")
-        resp['Access-Control-Allow-Origin'] = '*'
-        return resp
+        return cors_http_response_json(errors)
 
     return_ids = {}
     for data in json_data:
@@ -101,9 +97,7 @@ def create_datastreams(request):
 
     transaction.commit()
     elapsedTime = time.time() - timingMark
-    resp = HttpResponse(json.dumps({'ids': return_ids, "errors": errors, "time": elapsedTime}), mimetype="application/json")
-    resp['Access-Control-Allow-Origin'] = '*'
-    return resp
+    return cors_http_response_json({'ids': return_ids, "errors": errors, "time": elapsedTime})
 
 
 def create_ds(key, data):

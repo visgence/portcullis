@@ -6,12 +6,11 @@ print BASE_DIR
 sys.path.insert(0,BASE_DIR)
 os.environ.setdefault("DJANGO_SETTINGS_MODULE",'settings')
 import netsnmp
-from datetime import datetime
 from django.utils.timezone import now
 from snmpPoller.models import *
 
 
-url = "http://192.168.11.19:8080/collector/add_reading/"
+url = "http://192.168.11.19:8080/api/add_reading/"
 authToken = "correcthorsebatterystaple"
 
 
