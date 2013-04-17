@@ -9,6 +9,7 @@
 
 #System Imports
 from django.core.exceptions import ValidationError
+from django.db import IntegrityError
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 try:
@@ -55,25 +56,33 @@ def create_datastreams(request):
         errors.append({ 'error': "Missing jsonData from request.", 'exception': str(e) })
         return cors_http_response_json(errors)
     
-    #jsonData should contain a list of data.
-    if not isinstance(json_data, list):
+    if 'key' in json_data:
+        try:
+            key = Key.objects.get(key=json_data['key'])
+        except Key.DoesNotExist as e:
+            transaction.rollback()
+            errors.append({'error': 'Key not in Database: ' + str(json_data['key']), 'exception': str(e)})
+            return cors_http_response_json(errors)
+    else:
         transaction.rollback()
-        errors.append({ 'error': "jsonData is not a list.", 'exception': None })
+        errors.append({'error': 'No Key received.', 'exception': None})
+        return cors_http_response_json(errors)
+
+    owner = key.owner
+
+    if 'datastreams' not in json_data:
+        transaction.rollback()
+        errors.append({ 'error': 'No datastream data received', 'exception': None })
+        return cors_http_response_json(errors)
+
+    if not isinstance(json_data['datastreams'], list):
+        transaction.rollback()
+        errors.append({'error': 'Datastream object not a list.', 'exception': None})
         return cors_http_response_json(errors)
 
     return_ids = {}
-    for data in json_data:
-        
-        try:
-            key = Key.objects.get(key=data['token'])
-        except Key.DoesNotExist as e:
-            error = "Key with token '%s' does not exist." % str(data['token'])
-            errors.append({"error": error, "exception": str(e)})
-            continue
-        except KeyError as e:
-            errors.append({"error": "The key 'token' does not exist in the dictionary jsonData.", "exception": str(e)})
-            continue
-        
+    for data in json_data['datastreams']:
+             
         try:
             ds_name = data['ds_data']['name']
         except Exception as e:
@@ -82,14 +91,15 @@ def create_datastreams(request):
             continue
         
         try:
-            ds = DataStream.objects.get(name=ds_name, owner=key.owner)
-        except DataStream.DoesNotExist:
-            ds = create_ds(key, data) 
+            ds = create_ds(owner, data) 
 
             #If not a ds then an error
             if not isinstance(ds, DataStream):
                 errors.append(ds)
                 continue
+
+        except IntegrityError:
+            ds = DataStream.objects.get(name=ds_name, owner=owner)
 
         return_ids[ds_name] = ds.pk
         ds.can_read.add(key)
@@ -100,7 +110,7 @@ def create_datastreams(request):
     return cors_http_response_json({'ids': return_ids, "errors": errors, "time": elapsedTime})
 
 
-def create_ds(key, data):
+def create_ds(owner, data):
     '''
     ' Creates a new Datastream given a key and some data.  The keys owner is used as the Datastream's owner.
     ' The data needs to contain the name for the Datastream as a minimum in order to create it.
@@ -111,13 +121,13 @@ def create_ds(key, data):
     '
     ' Returns: New Datastream object or dictionary containing any exceptions and errors that occured
     '''
-
-    ds = DataStream(owner=key.owner)
+    timingMark = time.time()
+    ds = DataStream(owner=owner)
     for attr, val in data['ds_data'].iteritems():
 
         if attr == "scaling_function":
             try:
-                sc = ScalingFunction.objects.get(name=val)
+                sc = ScalingFunction.objects.get(name__iexact=val)
             except ScalingFunction.DoesNotExist as e:
                 error = "ScalingFunction with the name '%s' does not exist." % str(val)
                 return {"error": error, "exception": str(e)}
@@ -129,13 +139,16 @@ def create_ds(key, data):
             except Exception as e:
                 error = "There was a problem setting '%s' with the value '%s'." % (str(attr), str(val))
                 return {"error": error, "exception": str(e)}
+    print 'Assign attr time: %f' % (time.time() - timingMark)
+    timingMark = time.time()
     try:
         ds.full_clean()
         ds.save()
     except ValidationError as e:
         error = "There were one or more problems setting DataStream attributes."
         return {"error": error, "exception": str(e)}
-
+    print 'Clean and save time: %f' % (time.time() - timingMark)
+    print
     return ds
 
 
