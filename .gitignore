@@ -20,6 +20,7 @@ local_database_settings.py
 *.db
 *.db-journal
 *.log
+*.sql
 
 # Editor backup files #
 #######################
