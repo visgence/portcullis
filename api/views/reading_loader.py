@@ -1,3 +1,12 @@
+"""
+" api/views/reading_loader.py
+" Contributing Authors:
+"    Jeremiah Davis (Visgence, Inc)
+"
+" (c) 2012 Visgence, Inc.
+"""
+
+
 #System Imports
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse

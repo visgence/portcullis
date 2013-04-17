@@ -1,5 +1,5 @@
 """
-" api/views/savedView.py
+" api/views/create_shared.py
 " Contributing Authors:
 "    Jeremiah Davis (Visgence, Inc)
 "
@@ -41,8 +41,6 @@ def create_saved_view(request):
         return portcullisUser
     if request.user.is_anonymous():
         transaction.rollback()
-        # TODO: Should not be a return, should be a raise, but don't have a 403 right now,
-        #But should be okay, because save has not been called yet.
         resp = HttpResponseForbidden('Must be logged in to create saved view')
         resp['Access-Control-Allow-Origin'] = '*'
         return resp

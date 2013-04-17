@@ -1,5 +1,5 @@
 '''
-' datastreams/views/get_data.py
+' api/views/get_data.py
 ' Contributing Authors:
 '    Jeremiah Davis (Visgence, Inc)
 '
