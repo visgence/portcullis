@@ -7,7 +7,7 @@
 '''
 
 # System imports
-from django.http import HttpResponse, Http404
+from django.http import HttpResponse
 from django.core.exceptions import ObjectDoesNotExist
 try:
     import simplejson as json
@@ -89,7 +89,7 @@ def render_graph(request):
     if jsonData is None:
         return cors_http_response_json({'error': "Unrecognized data."})
 
-    return cors_http_response_json(getStreamData(json.loads(jsonData), request.user))
+    return cors_http_response_json(get_stream_data(json.loads(jsonData), request.user))
 
 
 def shared_graph(request, token, id):
@@ -115,12 +115,12 @@ def shared_graph(request, token, id):
         'zoom_end':      graph.zoom_end
         }
     
-    return cors_http_response_json(getStreamData(params, key, request.user))
+    return cors_http_response_json(get_stream_data(params, key, request.user))
 
 
-def getStreamData(g_params, auth, user = None):
+def get_stream_data(g_params, auth, user = None):
     '''
-    ' This function will return streamData serialized to JSON for graphing.
+    ' This function will return streamData for graphing
     '
     ' g_params - A dictionary containing all the necessary information to get the stream data
     '            for graphing.
@@ -158,7 +158,7 @@ def getStreamData(g_params, auth, user = None):
                 'ds_label':            ds,
                 "datastream_id":    ds_id,
                 }
-            return json.dumps(stream_data)
+            return stream_data
     
     #Pull the data for this stream
     #Check if there are less points in timeframe then granularity
@@ -202,5 +202,5 @@ def getStreamData(g_params, auth, user = None):
         }
 
 
-    return json.dumps(stream_data)
+    return stream_data
 
