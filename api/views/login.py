@@ -24,6 +24,7 @@ except ImportError:
 
 # Local Imports
 from check_access import check_access
+from api.utilites import cors_http_response_json
 
 
 def user_login(request):
@@ -45,18 +46,13 @@ def user_login(request):
                     'greeting': greeting_page.render(greeting_c),
                 }
 
-                resp = HttpResponse(json.dumps(data), mimetype="application/json")
-                resp['Access-Control-Allow-Origin'] = '*'
-                return resp
+                return cors_http_response_json(data)
             else:
                 error = "This account is disabled"
         else:
             error = "Invalid username and/or password"
 
-    return_data = {'error': error}
-    resp = HttpResponse(json.dumps(return_data), mimetype="application/json")
-    resp['Access-Control-Allow-Origin'] = '*'
-    return resp
+    return cors_http_response_json({'error': error})
 
 
 def logout(request):
@@ -72,21 +68,13 @@ def password_form(request):
     portcullisUser = check_access(request)
 
     if isinstance(portcullisUser, HttpResponse):
-        resp = HttpResponse(json.dumps({'errors': portcullisUser.content}), mimetype='application/json')
-        resp['Access-Control-Allow-Origin'] = '*'
-        return resp
+        return cors_http_response_json({'errors': portcullisUser.content})
     if not isinstance(portcullisUser, AuthUser):
-        error = 'User must be logged in to change password.'
-        resp = HttpResponse(json.dumps({'errors': error}), mimetype='application/json')
-        resp['Access-Control-Allow-Origin'] = '*'
-        return resp
+        return cors_http_response_json({'errors': 'User must be logged in to change password.'})
 
     t = loader.get_template('passwordForm.html')
     c = RequestContext(request, {'user': portcullisUser})
-    
-    resp = HttpResponse(json.dumps({'html': t.render(c)}), mimetype='application/json')
-    resp['Access-Control-Allow-Origin'] = '*'
-    return resp
+    return cors_http_response_json({'html': t.render(c)})
 
 
 @require_POST
@@ -103,49 +91,32 @@ def change_password(request):
     portcullisUser = check_access(request)
 
     if isinstance(portcullisUser, HttpResponse):
-        return portcullisUser
+        return cors_http_response_json({'errors': portcullisUser.content})
     if not isinstance(portcullisUser, AuthUser):
-        errors = 'Please log in before changing your password.'
-        resp = HttpResponse(json.dumps({'errors': errors}), mimetype='application/json')
-        resp['Access-Control-Allow-Origin'] = '*'
-        return resp
+        return cors_http_response_json({'errors': 'Please log in before changing your password.'})
 
     jsonData = request.REQUEST.get('jsonData', None)
 
     try:
         jsonData = json.loads(jsonData)
     except Exception as e:
-        errors = 'JSON Exception: %s: %s' % (type(e), e.message)
-        resp = HttpResponse(json.dumps({'errors': errors}), mimetype='application/json')
-        resp['Access-Control-Allow-Origin'] = '*'
-        return resp
+        return cors_http_response_json({'errors': 'JSON Exception: %s: %s' % (type(e), e.message)})
 
     try:
         oldPassword = jsonData['oldPassword']
         newPassword = jsonData['newPassword']
     except KeyError as e:
-        errors = 'KeyError: %s' % e.message
-        resp = HttpResponse(json.dumps({'errors': errors}), mimetype='application/json')
-        resp['Access-Control-Allow-Origin'] = '*'
-        return resp
+        return cors_http_response_json({'errors': 'KeyError: %s' % e.message})
 
     # Make sure old password is valid
     user = authenticate(username=portcullisUser.get_username(), password=oldPassword)
     if user is None or user != portcullisUser:
-        errors = 'Authentication Error: Username and password are not correct'
-        resp = HttpResponse(json.dumps({'errors': errors}), mimetype='application/json')
-        resp['Access-Control-Allow-Origin'] = '*'
-        return resp
+        return cors_http_response_json({'errors': 'Authentication Error: Username and password are not correct'})
     elif not user.is_active:
-        errors = 'Authentication Error: User is not active.  You must be active to change password.'
-        resp = HttpResponse(json.dumps({'errors': errors}), mimetype='application/json')
-        resp['Access-Control-Allow-Origin'] = '*'
-        return resp
+        error = 'Authentication Error: User is not active.  You must be active to change password.'
+        return cors_http_response_json({'errors': error})
 
     # Change the password
     portcullisUser.set_password(newPassword)
     portcullisUser.save()
-    success = 'Password successfully changed!'
-    resp = HttpResponse(json.dumps({'success': success}), mimetype='application/json')
-    resp['Access-Control-Allow-Origin'] = '*'
-    return resp
+    return cors_http_response_json({'success': 'Password successfully changed!'})

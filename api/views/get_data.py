@@ -20,6 +20,7 @@ from portcullis.models import DataStream, SensorReading, Key
 from graphs.models import SavedDSGraph
 from portcullis.utils import DecimalEncoder
 from graphs.data_reduction import reduceData
+from api.utilites import cors_http_response_json
 
 
 def get_data_by_ds_column(request):
@@ -34,17 +35,12 @@ def get_data_by_ds_column(request):
     beg_time = time.time()
     jsonData = request.REQUEST.get('jsonData', None)
     if jsonData is None:
-        error = 'Error: No jsonData received.'
-        resp = HttpResponse(json.dumps({'errors': error}), mimetype='application/json')
-        resp['Access-Control-Allow-Origin'] = '*'
-        return resp
+        return cors_http_response_json({'errors': 'Error: No jsonData received.'})
+
     try:
         jsonData = json.loads(jsonData)
     except Exception as e:
-        error = 'Error: Invalid JSON: ' + str(e)
-        resp = HttpResponse(json.dumps({'errors': error}, mimetype='application/json'))
-        resp['Access-Control-Allow-Origin'] = '*'
-        return resp
+        return cors_http_response_json({'errors': 'Error: Invalid JSON: ' + str(e)})
 
     try:
         column = jsonData['column']
@@ -52,19 +48,13 @@ def get_data_by_ds_column(request):
         time_start = jsonData['start']
         time_end = jsonData['end']
     except KeyError as e:
-        error = 'Error: KeyError: ' + str(e)
-        resp = HttpResponse(json.dumps({'errors': error}, mimetype='application/json'))
-        resp['Access-Control-Allow-Origin'] = '*'
-        return resp
+        return cors_http_response_json({'errors': 'Error: KeyError: ' + str(e)})
 
     # Scrub column, so it is safe to use in query
     ds_columns = [x.get_attname_column()[1] for x in DataStream._meta.fields]
 
     if column not in ds_columns:
-        error = 'Error: Column Name %s not in DataStream table.' % column
-        resp = HttpResponse(json.dumps({'errors': error}, mimetype='application/json'))
-        resp['Access-Control-Allow-Origin'] = '*'
-        return resp
+        return cors_http_response_json({'errors': 'Error: Column Name %s not in DataStream table.' % column})
 
     kwargs = {
         'timestamp__gte':                   time_start,
@@ -97,11 +87,9 @@ def render_graph(request):
     '''
     jsonData = request.REQUEST.get('json_data', None)
     if jsonData is None:
-        raise Http404
+        return cors_http_response_json({'error': "Unrecognized data."})
 
-    resp =HttpResponse(getStreamData(json.loads(jsonData), request.user), mimetype="application/json")
-    resp['Access-Control-Allow-Origin'] = '*'
-    return resp
+    return cors_http_response_json(getStreamData(json.loads(jsonData), request.user))
 
 
 def shared_graph(request, token, id):
@@ -115,7 +103,7 @@ def shared_graph(request, token, id):
         # Get the graph from the id.
         graph = SavedDSGraph.objects.get(id = id)
     except ObjectDoesNotExist:
-        raise Http404('Graph %s/%s/ does not exist' % (token, str(id)))
+        return cors_http_response_json({'error': 'Graph %s/%s/ does not exist' % (token, str(id))})
     
     params = {
         'start':         graph.start,
@@ -126,10 +114,9 @@ def shared_graph(request, token, id):
         'zoom_start':    graph.zoom_start,
         'zoom_end':      graph.zoom_end
         }
-    resp = HttpResponse(getStreamData(params, key, request.user), mimetype="application/json")
-    resp['Access-Control-Allow-Origin'] = '*'
-    return resp
     
+    return cors_http_response_json(getStreamData(params, key, request.user))
+
 
 def getStreamData(g_params, auth, user = None):
     '''
