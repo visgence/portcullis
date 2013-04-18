@@ -32,15 +32,7 @@ def create_datastreams(request):
     '''
     ' Creates DataStreams with an array of data from json and with the owner of the specified token.
     '
-    ' The json required format is the following:
-    '   [{
-    '       "token"  : key token,
-    '       "ds_data": Dictionary of key value pairs. Keys are names that match datastream field names and
-    '                  value is the value to set to the new object.
-    '   }, etc]
-    '
-    ' This json is then given to a dictionary to be sent as the request like so:
-    '   { "jsonData": json_stuff }
+    ' The json required format is the following: TBD
     '
     ' Returns: HttpResponse with Json containing a list with the new DataStream's ids and a dictionary of errors
     '''
@@ -84,7 +76,7 @@ def create_datastreams(request):
     for data in json_data['datastreams']:
              
         try:
-            ds_name = data['ds_data']['name']
+            ds_name = data['name']
         except Exception as e:
             error = "Exception getting DataStream name %s." % type(e) 
             errors.append({"error": error, "exception": str(e)})
@@ -128,7 +120,7 @@ def create_ds(owner, data):
     '''
     timingMark = time.time()
     ds = DataStream(owner=owner)
-    for attr, val in data['ds_data'].iteritems():
+    for attr, val in data.iteritems():
 
         if attr == "scaling_function":
             try:

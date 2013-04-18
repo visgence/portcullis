@@ -7,7 +7,7 @@ import random
 time0 = time()
 # Generate a list of dictionaries to create new datastreams
 key = 'uVRa5QQlWqXp8KWJ69ayRg=='
-payload = [{'ds_data':{'name': ''.join(random.choice(string.printable) for x in range(20)), 'scaling_function':'identity', 'is_public': True, 'units': 'Derps'}} for z in range(5)]
+payload = [{'name': ''.join(random.choice(string.printable) for x in range(10)), 'scaling_function':'identity', 'is_public': True, 'units': 'Derps'} for z in range(600)]
 
 time1 = time()
 resp = requests.post('http://localhost:8080/api/create/', {'jsonData': json.dumps({'key': key, 'datastreams':payload}) })
