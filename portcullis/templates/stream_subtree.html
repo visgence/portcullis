@@ -1,7 +1,7 @@
 
 {# If it is a node, make a clickable that will ajax call stream_subtree. Otherwise, checkbox. #}
 <ul class="streams">
-    {% for node in nodes %}
+    {% for node in nodes.iterkeys %}
         <li>
             <div id="{{path}}{{node}}|" group="{{group}}" class="subtree_toggle clickable" onclick="toggle_subtree(event);">
                 <span class="collapse_state">+</span>
@@ -11,7 +11,7 @@
         </li>
     {% endfor %}
         
-    {% for name, id in leaves.items %}
+    {% for name, id in leaves.iteritems %}
         <li>
             <div id="stream_span_{{id}}">
                 <input type="checkbox" class="stream" id="stream_{{id}}"
