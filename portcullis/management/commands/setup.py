@@ -11,7 +11,7 @@ from django.core.management import call_command
 from django.core.management.base import BaseCommand
 from settings import APP_PATH
 from shutil import copyfile
-import git
+#import git
 import sys
 
 # local imports
