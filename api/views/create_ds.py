@@ -27,7 +27,7 @@ from api.utilites import cors_http_response_json
 
 @require_POST
 @csrf_exempt
-@transaction.commit_manually
+#@transaction.commit_manually
 def create_datastreams(request):
     '''
     ' Creates DataStreams with an array of data from json and with the owner of the specified token.
@@ -52,7 +52,7 @@ def create_datastreams(request):
     try:
         json_data = json.loads(request.POST.get("jsonData"))
     except Exception as e:
-        transaction.rollback()
+        #transaction.rollback()
         errors.append({ 'error': "Missing jsonData from request.", 'exception': str(e) })
         return cors_http_response_json(errors)
     
@@ -60,23 +60,23 @@ def create_datastreams(request):
         try:
             key = Key.objects.get(key=json_data['key'])
         except Key.DoesNotExist as e:
-            transaction.rollback()
+            #transaction.rollback()
             errors.append({'error': 'Key not in Database: ' + str(json_data['key']), 'exception': str(e)})
             return cors_http_response_json(errors)
     else:
-        transaction.rollback()
+        #transaction.rollback()
         errors.append({'error': 'No Key received.', 'exception': None})
         return cors_http_response_json(errors)
 
     owner = key.owner
 
     if 'datastreams' not in json_data:
-        transaction.rollback()
+        #transaction.rollback()
         errors.append({ 'error': 'No datastream data received', 'exception': None })
         return cors_http_response_json(errors)
 
     if not isinstance(json_data['datastreams'], list):
-        transaction.rollback()
+        #transaction.rollback()
         errors.append({'error': 'Datastream object not a list.', 'exception': None})
         return cors_http_response_json(errors)
 
@@ -110,7 +110,7 @@ def create_datastreams(request):
         ds.can_read.add(key)
         ds.can_post.add(key)
 
-    transaction.commit()
+    #transaction.commit()
     elapsedTime = time.time() - timingMark
     return cors_http_response_json({'ids': return_ids, "errors": errors, "time": elapsedTime})
 
@@ -151,7 +151,7 @@ def create_ds(owner, data):
         ds.save()
     except ValidationError as e:
         unique_error = u'Data stream with this Owner and Name already exists.'
-        if '__all__' in e.mesage_dict and unique_error in e.message_dict['__all__']:
+        if '__all__' in e.message_dict and unique_error in e.message_dict['__all__']:
             raise e
         error = "There were one or more problems setting DataStream attributes."
         return {"error": error, "exception": str(e)}
