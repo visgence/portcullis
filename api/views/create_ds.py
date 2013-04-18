@@ -98,8 +98,13 @@ def create_datastreams(request):
                 errors.append(ds)
                 continue
 
-        except IntegrityError:
-            ds = DataStream.objects.get(name=ds_name, owner=owner)
+        except (IntegrityError, ValidationError) as e:
+            try:
+                ds = DataStream.objects.get(name=ds_name, owner=owner)
+            except DataStream.DoesNotExist:
+                error = 'Unexpected error getting datastream!  Datastream does not exist, but could not create.'
+                errors.append({'error': error, 'exception': str(e)})
+                continue
 
         return_ids[ds_name] = ds.pk
         ds.can_read.add(key)
@@ -145,6 +150,9 @@ def create_ds(owner, data):
         ds.full_clean()
         ds.save()
     except ValidationError as e:
+        unique_error = u'Data stream with this Owner and Name already exists.'
+        if '__all__' in e.mesage_dict and unique_error in e.message_dict['__all__']:
+            raise e
         error = "There were one or more problems setting DataStream attributes."
         return {"error": error, "exception": str(e)}
     print 'Clean and save time: %f' % (time.time() - timingMark)
