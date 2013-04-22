@@ -6,7 +6,7 @@ APP_PATH = re.sub('settings.py[c]*$','',program_path);
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
-
+DOMAIN = 'http://localhost:8080'
 ADMINS = (
     # ('Your Name', 'your_email@example.com'),
 )
