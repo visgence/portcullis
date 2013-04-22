@@ -86,7 +86,7 @@ def stream_subtree(request, name, group):
             return json.dumps({'errors': 'Duplicate name in Database!'})
 
     t = loader.get_template('stream_subtree.html')
-    nodes = OrderedDict(sorted(nodes.iteritems(), key=lambda t: t[0])
+    nodes = OrderedDict(sorted(nodes.iteritems(), key=lambda t: t[0]))
     leaves = OrderedDict(sorted(leaves.iteritems(), key=lambda t: t[0]))
     c = Context({
             'nodes':  nodes,
