@@ -69,7 +69,7 @@ def stream_subtree(request, name, group):
         return json.dumps({'errors': 'Error: You must be logged in to see the %s datastream type.' % group})
 
     level = name.count('|')
-    nodes = []
+    nodes = {}
     leaves = {}
 
     for s in streams:
@@ -79,15 +79,15 @@ def stream_subtree(request, name, group):
         # Is this a node or leaf?
         if len(split_name) > level + 1:
             if (n_name) not in nodes:
-                nodes.append(n_name)
+                nodes[n_name] = None
         elif n_name not in leaves:
             leaves[n_name] = s.id
         else:
             return json.dumps({'errors': 'Duplicate name in Database!'})
 
     t = loader.get_template('stream_subtree.html')
-    nodes.sort()
-    leaves = OrderedDict(sorted(leaves.items(), key=lambda t: t[0]))
+    nodes = OrderedDict(sorted(noes.iteritems(), key=lambda t: t[0])
+    leaves = OrderedDict(sorted(leaves.iteritems(), key=lambda t: t[0]))
     c = Context({
             'nodes':  nodes,
             'leaves': leaves,
