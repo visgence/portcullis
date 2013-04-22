@@ -13,17 +13,18 @@ except ImportError:
 from portcullis.models import DataStream, Key
 from check_access import check_access
 from graphs.data_reduction import reductFunc
-
+from settings import DOMAIN
 
 def display_simple_base(request):
 
     t = loader.get_template('base_simple.html')
     c = RequestContext(request, {
-        'start': request.GET['start'], 
-        'end': request.GET['end'],
-        'streams': request.GET['streams'],
-        'token': request.GET.get('token', '')
-    })
+            'DOMAIN': DOMAIN,
+            'start': request.GET['start'], 
+            'end': request.GET['end'],
+            'streams': request.GET['streams'],
+            'token': request.GET.get('token', '')
+            })
 
     resp = HttpResponse(t.render(c), mimetype='text/html')
     resp['Access-Control-Allow-Origin'] = '*'
@@ -99,3 +100,14 @@ def render_graph_container(request):
     c_graph_contain = RequestContext(request, {})
     return HttpResponse(t_graph_contain.render(c_graph_contain), mimetype="text/html")
 
+def plotter(request):
+    '''
+    ' This view returns plotter.js rendered with absolute urls.
+    '''
+    t = loader.get_template('plotter.js')
+    c = RequestContext(request, {
+            'DOMAIN': DOMAIN
+            })
+    resp = HttpResponse(t.render(c), mimetype='text/javascript')
+    resp['Access-Control-Allow-Origin'] = '*'
+    return resp
