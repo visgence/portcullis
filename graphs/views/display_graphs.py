@@ -58,8 +58,9 @@ def display_simple_graph(request):
         'permission': perm
     })
     r_graph = t_graph.render(c_graph)
-
-    return HttpResponse(json.dumps({'graph': r_graph, "perm": perm}), mimetype="application/json")
+    resp = HttpResponse(json.dumps({'graph': r_graph, "perm": perm}), mimetype="application/json")
+    resp['Access-Control-Allow-Origin'] = '*'
+    return resp
 
 @require_GET
 def display_graph(request):
