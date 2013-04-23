@@ -487,7 +487,8 @@ function graph_overview_callback(is_shared, perm) {
     var ranges = get_period();
 
     return function (data) {
-        
+        if (typeof(data) == 'string')
+            data = JSON.parse(data);
         if (is_shared) {
             var start = data.xmin*1000;
             var end = data.xmax*1000;
@@ -550,7 +551,7 @@ function load_graph(datastream_id, ranges, callback) {
     getData.granularity =  granularity;
     getData.datastream_id = datastream_id;
     getData.reduction = $('#reduction_select_' + datastream_id).val();
-    
+    $.support.cors = true;
     json_data = JSON.stringify(getData);
     $.get("{{DOMAIN}}{% url 'api-render_graph' %}", {'json_data': json_data}, function(data) {
         indicator_s.stop();
@@ -739,8 +740,8 @@ function setupDownload(datastream_id)
             alert('You must have actual data points or there is nothing to save!'); 
         },
         transparent: false,
-        swf: '/static/media/downloadify.swf',
-        downloadImage: '/static/images/download.png',
+        swf: '{{DOMAIN}}/static/media/downloadify.swf',
+        downloadImage: '{{DOMAIN}}/static/images/download.png',
         width: 100,
         height: 30,
         append: false
@@ -800,7 +801,7 @@ function saveView()
     view.start = Math.round(ranges.xaxis.from/1000 + timezone_offset/1000);
     view.end = Math.round(ranges.xaxis.to/1000 + timezone_offset/1000);
     view.granularity = get_granularity();
-
+    $.support.cors = true;
     csrf = $('input[name="csrfmiddlewaretoken"]').val();
     $.post('{{DOMAIN}}{% url "api-create-saved-view" %}', {'jsonData': JSON.stringify(view), 'csrfmiddlewaretoken': csrf},
            function (data) {
@@ -829,7 +830,7 @@ function ready_minicolors(datastream_id)
 { 
     var graph_data = plots[datastream_id].getData();
     var default_color = graph_data[0].color;
-
+    var self = this;
     $('#minicolor_'+datastream_id).minicolors({
         animationSpeed: 100,
         animationEasing: 'swing',
@@ -837,7 +838,9 @@ function ready_minicolors(datastream_id)
         control: 'wheel',
         defaultValue: default_color,
         hide: function() {
-            var hex = this.minicolors('value');
+            console.log(this);
+            console.log(self);
+            var hex = self.minicolors('value');
             var graph = plots[datastream_id];
             var overview = overviewPlots[datastream_id];
            
@@ -905,10 +908,9 @@ function ready_datepickers()
 function get_graph(ds_id, token)
 {
     var json = JSON.stringify({'datastream_id': ds_id, 'token': token});
-    
+    $.support.cors = true;
     // append to widget container
     $.get('{{DOMAIN}}{% url "graphs-simple_graph" %}', {'json_data': json}, function(data) {
-        console.log(data);
         if (typeof(data) == 'string')
             data = JSON.parse(data);
         $('#graphs').append(data.graph);
@@ -936,9 +938,11 @@ function load_unload_stream(checkbox)
         //If we're already loading this graph
         if($('#graph_container_'+datastream_id).length)
             return;
-        
+        $.support.cors = true;
         // append to widget container
         $.get('{{DOMAIN}}{% url "graphs" %}', {'json_data': json}, function(data) {
+            if (typeof(data) == 'string')
+                JSON.parse(data)
             $('#widget_container').append(data);
             on_graph_load(datastream_id, true);
             $('#share_link').removeClass('display_none');
