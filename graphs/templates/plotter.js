@@ -551,6 +551,12 @@ function load_graph(datastream_id, ranges, callback) {
     getData.granularity =  granularity;
     getData.datastream_id = datastream_id;
     getData.reduction = $('#reduction_select_' + datastream_id).val();
+    var zoomE = $('#zoom-range');
+    if (zoomE) {
+        getData.zoom_start = $(zoomE).data('start');
+        getData.zoom_start = $(zoomE).data('end');
+        $(zoomE).remove();
+    }
     $.support.cors = true;
     json_data = JSON.stringify(getData);
     $.get("{{DOMAIN}}{% url 'api-render_graph' %}", {'json_data': json_data}, function(data) {
@@ -902,7 +908,7 @@ function ready_datepickers()
 }
 
 
-function get_graph(ds_id, token, zoom_start, zoom_end)
+function get_graph(ds_id, token)
 {
     var json = JSON.stringify({'datastream_id': ds_id, 'token': token});
     $.support.cors = true;
@@ -913,16 +919,6 @@ function get_graph(ds_id, token, zoom_start, zoom_end)
         $('#graphs').append(data.graph);
         on_graph_load(ds_id ,data.perm);
     });
-    if ( zoom_start && zoom_end ) {
-        graph_req.done(function() {
-            var zoom_range = {
-                xaxis: {from: new Date(zoom_start*1000),
-                        to: new Date(zoom_end*1000)
-                       }
-            };            
-            zoom_graph(zoom_range, ds_id);
-        });
-    }
 }
 
 /** Loads a stream to the page if it's checkbox was checked and unloads or stops the loading 
