@@ -830,7 +830,6 @@ function ready_minicolors(datastream_id)
 { 
     var graph_data = plots[datastream_id].getData();
     var default_color = graph_data[0].color;
-    var self = this;
     $('#minicolor_'+datastream_id).minicolors({
         animationSpeed: 100,
         animationEasing: 'swing',
@@ -838,9 +837,7 @@ function ready_minicolors(datastream_id)
         control: 'wheel',
         defaultValue: default_color,
         hide: function() {
-            console.log(this);
-            console.log(self);
-            var hex = self.minicolors('value');
+            var hex = $(this).minicolors('value');
             var graph = plots[datastream_id];
             var overview = overviewPlots[datastream_id];
            
