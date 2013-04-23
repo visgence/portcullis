@@ -902,7 +902,7 @@ function ready_datepickers()
 
 function get_graph(ds_id, token)
 {
-    var json = JSON.stringify({'stream': ds_id, 'token': token});
+    var json = JSON.stringify({'datastream_id': ds_id, 'token': token});
     
     // append to widget container
     $.get('{{DOMAIN}}{% url "graphs-simple_graph" %}', {'json_data': json}, function(data) {
