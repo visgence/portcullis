@@ -552,7 +552,7 @@ function load_graph(datastream_id, ranges, callback) {
     getData.reduction = $('#reduction_select_' + datastream_id).val();
     
     json_data = JSON.stringify(getData);
-    $.get("{% url 'api-render_graph' %}", {'json_data': json_data}, function(data) {
+    $.get("{{DOMAIN}}{% url 'api-render_graph' %}", {'json_data': json_data}, function(data) {
         indicator_s.stop();
         indicator_g.stop();
         callback(data);
@@ -800,7 +800,7 @@ function saveView()
     view.granularity = get_granularity();
 
     csrf = $('input[name="csrfmiddlewaretoken"]').val();
-    $.post('{% url "api-create-saved-view" %}', {'jsonData': JSON.stringify(view), 'csrfmiddlewaretoken': csrf},
+    $.post('{{DOMAIN}}{% url "api-create-saved-view" %}', {'jsonData': JSON.stringify(view), 'csrfmiddlewaretoken': csrf},
            function (data) {
                if ( 'errors' in data ) {
                    span = '<span></span>';
@@ -905,7 +905,7 @@ function get_graph(ds_id, token)
     var json = JSON.stringify({'stream': ds_id, 'token': token});
     
     // append to widget container
-    $.get('{% url "graphs-simple_graph" %}', {'json_data': json}, function(data) {
+    $.get('{{DOMAIN}}{% url "graphs-simple_graph" %}', {'json_data': json}, function(data) {
         $('#graphs').append(data.graph);
         on_graph_load(ds_id ,data.perm);
     });
@@ -933,7 +933,7 @@ function load_unload_stream(checkbox)
             return;
         
         // append to widget container
-        $.get('{% url "graphs" %}', {'json_data': json}, function(data) {
+        $.get('{{DOMAIN}}{% url "graphs" %}', {'json_data': json}, function(data) {
             $('#widget_container').append(data);
             on_graph_load(datastream_id, true);
             $('#share_link').removeClass('display_none');
