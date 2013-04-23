@@ -555,6 +555,8 @@ function load_graph(datastream_id, ranges, callback) {
     $.get("{{DOMAIN}}{% url 'api-render_graph' %}", {'json_data': json_data}, function(data) {
         indicator_s.stop();
         indicator_g.stop();
+        if(typeof(data) == 'string')
+            data = JSON.parse(data);
         callback(data);
     });
 }
