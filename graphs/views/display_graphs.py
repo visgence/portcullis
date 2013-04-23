@@ -34,7 +34,7 @@ def display_simple_graph(request):
     json_data = json.loads(request.GET['json_data'])
 
     try:
-        stream = DataStream.objects.get(id = int(json_data['stream']))
+        stream = DataStream.objects.get(id = int(json_data['datastream_id']))
     except ObjectDoesNotExist:
         raise Http404()
 
