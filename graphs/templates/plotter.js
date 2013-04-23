@@ -908,6 +908,9 @@ function get_graph(ds_id, token)
     
     // append to widget container
     $.get('{{DOMAIN}}{% url "graphs-simple_graph" %}', {'json_data': json}, function(data) {
+        console.log(data);
+        if (typeof(data) == 'string')
+            data = JSON.parse(data);
         $('#graphs').append(data.graph);
         on_graph_load(ds_id ,data.perm);
     });
