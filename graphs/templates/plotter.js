@@ -913,7 +913,7 @@ function get_graph(ds_id, token, zoom_start, zoom_end)
         $('#graphs').append(data.graph);
         on_graph_load(ds_id ,data.perm);
     });
-    if ( !(zoom_start && zoom_end) ) {
+    if ( zoom_start && zoom_end ) {
         graph_req.done(function() {
             var zoom_range = {
                 xaxis: {from: new Date(zoom_start*1000),
