@@ -133,7 +133,10 @@ def get_stream_data(g_params, auth, user = None):
     end = g_params['end']
     ds_id = g_params['datastream_id']
     granularity = int(g_params['granularity'])
-    reduction_type = g_params['reduction']
+    try:
+        reduction_type = g_params['reduction']
+    except:
+        reduction_type = 'mean'
     zoom_start = None
     zoom_end = None
    

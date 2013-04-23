@@ -89,7 +89,7 @@ def stream_tree_top(streams):
     '    A dictionary containing the top level of the tree as strings.  The values are True for nodes, and
     '    False for leaves.
     '''
-    nodes = []
+    nodes = {}
     leaves = {}
     for s in streams:
         # Assume for now that names are unique.
@@ -98,13 +98,13 @@ def stream_tree_top(streams):
         spart = s.name.partition('|')
         if spart[2] != '':
             if spart[0] not in nodes:
-                nodes.append(spart[0])
+                nodes[spart[0]] = None
         else:
             leaves[spart[0]] = s.id
 
-    nodes.sort()
-
-    return {'nodes': nodes, 'leaves': OrderedDict(sorted(leaves.items(), key = lambda t: t[0]))}
+    nodes = OrderedDict(sorted(nodes.iteritems(), key = lambda t: t[0]))
+    leaves = OrderedDict(sorted(leaves.iteritems(), key = lambda t: t[0]))
+    return {'nodes': nodes, 'leaves': leaves}
 
 
 
