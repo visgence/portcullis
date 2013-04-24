@@ -2,7 +2,6 @@
 <input type="hidden" id="start">
 <input type="hidden" id="end">
 <input type="hidden" id="custom" checked="checked">
-<input type="hidden" id="zoom-range" data-start="{{zoom_start}}" data-end="{{zoom_end}}">
 <div id="graphs"></div>
 
 
@@ -10,9 +9,12 @@
     $(function() {
     $('#start').val(dateToString(new Date({{start}}*1000))); 
     $('#end').val(dateToString(new Date({{end}}*1000))); 
-
+    var zoom_range = {
+        start: {{zoom_start}},
+        end: {{zoom_end}}
+    };
     var graphs = {{streams}};
     for(i in graphs)
-    get_graph(graphs[i], "{{token}}", {{zoom_start}}, {{zoom_end}}); 
+    get_graph(graphs[i], "{{token}}", zoom_range); 
     }); 
 </script>
