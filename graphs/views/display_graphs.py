@@ -23,7 +23,9 @@ def display_simple_base(request):
             'start': request.GET['start'], 
             'end': request.GET['end'],
             'streams': request.GET['streams'],
-            'token': request.GET.get('token', '')
+            'token': request.GET.get('token', ''),
+            'zoom_start': request.GET.get('zoom_start', None),
+            'zoom_end': request.GET.get('zoom_end', None)
             })
 
     resp = HttpResponse(t.render(c), mimetype='text/html')

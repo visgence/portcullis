@@ -133,7 +133,7 @@ function on_graphs_load()
  *
  * datastream_id - The stream whose data is to be loaded.
  */
-function on_graph_load(datastream_id, perm) 
+function on_graph_load(datastream_id, perm, zoom_range) 
 {
     
     //bind main graph
@@ -150,7 +150,7 @@ function on_graph_load(datastream_id, perm)
     var period = get_period();
     if(!period)
         return;
-    load_graph(datastream_id, period, graph_overview_callback(false, perm));
+    load_graph(datastream_id, period, graph_overview_callback(false, perm), zoom_range);
 }
 
 
@@ -533,12 +533,12 @@ function graph_overview_callback(is_shared, perm) {
         $("#graph_title" + data.datastream_id).text(data.ds_label);
 
         // For saved views, refresh the graph
-        if ( data.zoom_start )
+        if ( data.zoom_start ) 
             refresh_graph(data.datastream_id);
     };
 }
 
-function load_graph(datastream_id, ranges, callback) {
+function load_graph(datastream_id, ranges, callback, zoom_range) {
     var granularity = get_granularity();
     
     var indicator_s = spin(document.getElementById('stream_span_' + datastream_id), 'tiny');
@@ -551,6 +551,11 @@ function load_graph(datastream_id, ranges, callback) {
     getData.granularity =  granularity;
     getData.datastream_id = datastream_id;
     getData.reduction = $('#reduction_select_' + datastream_id).val();
+
+    if (zoom_range) {
+        getData.zoom_start = zoom_range.start;
+        getData.zoom_end = zoom_range.end;
+    }
     $.support.cors = true;
     json_data = JSON.stringify(getData);
     $.get("{{DOMAIN}}{% url 'api-render_graph' %}", {'json_data': json_data}, function(data) {
@@ -902,16 +907,16 @@ function ready_datepickers()
 }
 
 
-function get_graph(ds_id, token)
+function get_graph(ds_id, token, zoom_range)
 {
     var json = JSON.stringify({'datastream_id': ds_id, 'token': token});
     $.support.cors = true;
     // append to widget container
-    $.get('{{DOMAIN}}{% url "graphs-simple_graph" %}', {'json_data': json}, function(data) {
+    var graph_req = $.get('{{DOMAIN}}{% url "graphs-simple_graph" %}', {'json_data': json}, function(data) {
         if (typeof(data) == 'string')
             data = JSON.parse(data);
         $('#graphs').append(data.graph);
-        on_graph_load(ds_id ,data.perm);
+        on_graph_load(ds_id, data.perm, zoom_range);
     });
 }
 
