@@ -1,14 +1,12 @@
 #System Imports
 from django.db import models
 from django.db.models import Q
-from django.contrib.auth.models import User
-from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.utils import timezone
 from base64 import urlsafe_b64encode as b64encode
 import hashlib
 import random
 import string
-from datetime import timedelta, datetime
+from datetime import datetime
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.conf import settings
 
@@ -36,7 +34,7 @@ class PortcullisUserManager(BaseUserManager):
 
         return True
 
-    def get_viewable(self, user):
+    def get_viewable(self, user, filter_args=None):
         '''
         ' Gets all Portcullis Users that can be viewed or assigned by a specified PortcullisUser.
         '
@@ -50,9 +48,9 @@ class PortcullisUserManager(BaseUserManager):
         '''
         #TODO: Wrapper until permissions become more robust
 
-        return self.get_editable(user)
+        return self.get_editable(user, filter_args)
 
-    def get_editable(self, user):
+    def get_editable(self, user, filter_args=None):
         '''
         ' Gets all Portcullis Users that can be edited by a specified PortcullisUser.
         '
@@ -70,15 +68,19 @@ class PortcullisUserManager(BaseUserManager):
             raise TypeError("%s is not a PortcullisUser" % str(user))
 
         if user.is_superuser:
-            return self.all()
+            objs = self.all()
+        else:
+            objs = self.filter(pk=user.pk)
+        if filter_args is not None:
+            objs = objs.filter(**filter_args)
 
-        return self.filter(pk = user.pk)
-    
+        return objs
+
     def get_editable_by_pk(self, user, pk):
         '''
         ' Get's an instance of PortcullisUser specified by a pk if the given user is allowed to edit it.
         '
-        ' Keyword Arguments: 
+        ' Keyword Arguments:
         '   user - PortcullisUser to check if the user can be edited by them.
         '   pk   - Primary key of PortcullisUser to get.
         '
@@ -90,7 +92,7 @@ class PortcullisUserManager(BaseUserManager):
             raise TypeError("%s is not a PortcullisUser" % str(user))
 
         try:
-            u = self.get(id = pk)
+            u = self.get(id=pk)
         except PortcullisUser.DoesNotExist as e:
             raise PortcullisUser.DoesNotExist("A Portcullis User does not exist for the primary key %s." % str(pk))
 
@@ -117,13 +119,13 @@ class PortcullisUser(AbstractBaseUser):
 
     objects = PortcullisUserManager()
 
-    def get_full_name():
+    def get_full_name(self):
         '''
         ' Returns the first and last name.
         '''
         return '%s %s' % (self.first_name, self.last_name)
 
-    def get_short_name():
+    def get_short_name(self):
         '''
         ' Returns only the first name
         '''
@@ -144,7 +146,7 @@ class PortcullisUser(AbstractBaseUser):
         '''
         ' Checks if a PortcullusUser instance is allowed to view/read a user or not.
         '
-        ' Keyword Arguments: 
+        ' Keyword Arguments:
         '   user - PortcullisUser to check if the user can be viewed them.
         '
         ' Return: True if user is allowed to view and False otherwise.
@@ -152,12 +154,12 @@ class PortcullisUser(AbstractBaseUser):
         #TODO: currently just a wrapper until our permissions become more robust.
 
         return self.is_editable_by_user(user)
-            
+
     def is_editable_by_user(self, user):
         '''
         ' Checks if a PortcullusUser instance is allowed to edited by a user or not.
         '
-        ' Keyword Arguments: 
+        ' Keyword Arguments:
         '   user - PortcullisUser to check if the user can be edited by them.
         '
         ' Return: True if user is allowed to edit and False otherwise.
@@ -173,7 +175,7 @@ class PortcullisUser(AbstractBaseUser):
         return False
 
 
-class ScalingFunctionManager(models.Manager):       
+class ScalingFunctionManager(models.Manager):
     def can_edit(self, user):
         '''
         ' Checks if a PortcullisUser is allowed to edit or add instances of this model.
@@ -194,9 +196,9 @@ class ScalingFunctionManager(models.Manager):
         return False
 
     def get_by_natural_key(self, name):
-        return self.get(name = name)
+        return self.get(name=name)
 
-    def get_viewable(self, user):
+    def get_viewable(self, user, filter_args=None):
         '''
         ' Gets all scaling functions that can be viewed or assigned by a specified portcullis user.
         '
@@ -209,10 +211,13 @@ class ScalingFunctionManager(models.Manager):
         #Validate user object
         if not isinstance(user, PortcullisUser):
             raise TypeError("%s is not a PortcullisUser" % str(user))
+        if filter_args is not None:
+            objs = self.filter(**filter_args)
+        else:
+            objs = self.all()
+        return objs
 
-        return self.all()
-    
-    def get_editable(self, user):
+    def get_editable(self, user, filter_args=None):
         '''
         ' Gets all scaling functions that can be edited by a specified portcullis user.
         '
@@ -227,7 +232,11 @@ class ScalingFunctionManager(models.Manager):
             raise TypeError("%s is not a PortcullisUser" % str(user))
 
         if user.is_superuser:
-            return self.all()
+            if filter_args is not None:
+                objs = self.filter(**filter_args)
+            else:
+                objs = self.all()
+            return objs
 
         return self.none()
 
@@ -235,7 +244,7 @@ class ScalingFunctionManager(models.Manager):
         '''
         ' Get's an instance of ScalingFunction specified by a pk if the given user is allowed to edit it.
         '
-        ' Keyword Arguments: 
+        ' Keyword Arguments:
         '   user - PortcullisUser to check if the scaling function can be edited by them.
         '   pk   - Primary key of ScalingFunction to get.
         '
@@ -251,7 +260,7 @@ class ScalingFunctionManager(models.Manager):
             return None
 
         try:
-            sf = self.get(id = pk)
+            sf = self.get(id=pk)
         except ScalingFunction.DoesNotExist as e:
             raise ScalingFunction.DoesNotExist("A scaling function does not exist for the primary key %s." % str(pk))
 
@@ -270,7 +279,7 @@ class ScalingFunction(models.Model):
         '''
         ' Checks if a ScalingFunction instance is allowed to view/read a user or not.
         '
-        ' Keyword Arguments: 
+        ' Keyword Arguments:
         '   user - PortcullisUser to check if the scaling function can be viewed them.
         '
         ' Return: True if user is allowed to view and False otherwise.
@@ -288,7 +297,7 @@ class ScalingFunction(models.Model):
         '''
         ' Checks if a ScalingFunction instance is allowed to edited by a user or not.
         '
-        ' Keyword Arguments: 
+        ' Keyword Arguments:
         '   user - PortcullisUser to check if the scaling function can be edited by them.
         '
         ' Return: True if user is allowed to edit and False otherwise.
@@ -325,7 +334,7 @@ class KeyManager(models.Manager):
         # TODO: decide whether or not to keep this method, or to replace it (within other validation)
         # also whether to return different kinds of errors/etc.
         try:
-            key = Key.objects.get(key = token)
+            key = Key.objects.get(key=token)
         except ObjectDoesNotExist:
             return None
 
@@ -334,7 +343,7 @@ class KeyManager(models.Manager):
             return key
         return None
 
-    def genKeyHash(self, username = ''):
+    def genKeyHash(self, username=''):
         '''
         ' return a hashed string to use for a key
         '
@@ -349,7 +358,7 @@ class KeyManager(models.Manager):
         md5.update(randomStr)
         return b64encode(md5.digest())
 
-    def generateKey(self, user, description = '', expiration = None, uses = None, readL = None, postL = None):
+    def generateKey(self, user, description='', expiration=None, uses=None, readL=None, postL=None):
         '''
         ' Create a new (hopefully) unique key for the specified user, and return it.
         '
@@ -380,7 +389,7 @@ class KeyManager(models.Manager):
 
         return key
 
-    def get_viewable(self, user):
+    def get_viewable(self, user, filter_args=None):
         '''
         ' Gets all keys that can be viewed or assigned by a specified portcullis user.
         '
@@ -391,21 +400,24 @@ class KeyManager(models.Manager):
         '
         ' Return: QuerySet of Keys that are viewable by the specified PortcullisUser.
         '''
-        
+
         #Validate user object
         if not isinstance(user, PortcullisUser):
             raise TypeError("%s is not a PortcullisUser" % str(user))
 
-        '''
-        validKeys = []
-        for key in self.all():
-            if key.isCurrent():
-                validKeys.append(key.key)
-        return self.filter(key__in = validKeys)
-        '''
-        return self.all()
+        # validKeys = []
+        # for key in self.all():
+        #     if key.isCurrent():
+        #         validKeys.append(key.key)
+        # return self.filter(key__in = validKeys)
 
-    def get_editable(self, user):
+        if filter_args is not None:
+            objs = self.filter(**filter_args)
+        else:
+            objs = self.all()
+        return objs
+
+    def get_editable(self, user, filter_args=None):
         '''
         ' Gets all keys that can be edited by a specified portcullis user.
         '
@@ -421,16 +433,21 @@ class KeyManager(models.Manager):
         if not isinstance(user, PortcullisUser):
             raise TypeError("%s is not a PortcullisUser" % str(user))
 
+        if filter_args is not None:
+            objs = self.filter(**filter_args)
+        else:
+            objs = self.all()
+
         if user.is_superuser:
-            return self.all()
-        
-        return self.filter(owner = user)
-        
+            return objs
+
+        return objs.filter(owner=user)
+
     def get_editable_by_pk(self, user, pk):
         '''
         ' Get's an instance of Key specified by a pk if the given user is allowed to edit it.
         '
-        ' Keyword Arguments: 
+        ' Keyword Arguments:
         '   user - PortcullisUser to check if the key can be edited by them.
         '   pk   - Primary key of Key to get.
         '
@@ -442,7 +459,7 @@ class KeyManager(models.Manager):
             raise TypeError("%s is not a PortcullisUser" % str(user))
 
         try:
-            key = self.get(key = pk)
+            key = self.get(key=pk)
         except Key.DoesNotExist as e:
             raise Key.DoesNotExist("A key does not exist for the primary key %s" % str(pk))
 
@@ -453,19 +470,18 @@ class KeyManager(models.Manager):
 
 
 class Key(models.Model):
-    key = models.CharField(primary_key=True, max_length=1024, blank = True)
-    description = models.TextField(blank = True)
+    key = models.CharField(primary_key=True, max_length=1024, blank=True)
+    description = models.TextField(blank=True)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
-    expiration = models.DateTimeField(null = True, blank = True)
-    num_uses = models.IntegerField(null = True, blank = True)
+    expiration = models.DateTimeField(null=True, blank=True)
+    num_uses = models.IntegerField(null=True, blank=True)
     objects = KeyManager()
-
 
     def can_view(self, user):
         '''
         ' Checks if a Key instance is allowed to view/read a key or not.
         '
-        ' Keyword Arguments: 
+        ' Keyword Arguments:
         '   user - PortcullisUser to check if the key can be viewed them.
         '
         ' Return: True if user is allowed to view and False otherwise.
@@ -482,7 +498,7 @@ class Key(models.Model):
         '''
         ' Checks if a Key instance is allowed to edited by a user or not.
         '
-        ' Keyword Arguments: 
+        ' Keyword Arguments:
         '   user - PortcullisUser to check if the key can be edited by them.
         '
         ' Return: True if user is allowed to edit and False otherwise.
@@ -543,7 +559,7 @@ class DeviceManager(models.Manager):
 
         return True
 
-    def get_viewable(self, user):
+    def get_viewable(self, user, filter_args=None):
         '''
         ' Gets all device that can be viewed or assigned by a specified portcullis user.
         '
@@ -557,9 +573,9 @@ class DeviceManager(models.Manager):
 
         #TODO: Wrapper until permissions become more robust
 
-        return self.get_editable(user)
+        return self.get_editable(user, filter_args)
 
-    def get_editable(self, user):
+    def get_editable(self, user, filter_args=None):
         '''
         ' Gets all device that can be edited by a specified portcullis user.
         '
@@ -575,16 +591,21 @@ class DeviceManager(models.Manager):
         if not isinstance(user, PortcullisUser):
             raise TypeError("%s is not a PortcullisUser" % str(user))
 
+        if filter_args is not None:
+            objs = self.filter(**filter_args)
+        else:
+            objs = self.all()
+
         if user.is_superuser:
-            return self.all()
-        
-        return self.filter(owner = user)
+            return objs
+
+        return objs.filter(owner=user)
 
     def get_editable_by_pk(self, user, pk):
         '''
         ' Get's an instance of Device specified by a pk if the given user is allowed to edit it.
         '
-        ' Keyword Arguments: 
+        ' Keyword Arguments:
         '   user - PortcullisUser to check if the device can be edited by them.
         '   pk   - Primary key of Device to get.
         '
@@ -596,7 +617,7 @@ class DeviceManager(models.Manager):
             raise TypeError("%s is not a PortcullisUser" % str(user))
 
         try:
-            d = self.get(id = pk)
+            d = self.get(id=pk)
         except Device.DoesNotExist as e:
             raise Device.DoesNotExist("A device does not exist for the primary key %s." % str(pk))
 
@@ -608,18 +629,17 @@ class DeviceManager(models.Manager):
 
 class Device(models.Model):
     name = models.CharField(max_length=128)
-    description = models.TextField(blank = True)
-    ip_address = models.IPAddressField(blank = True)
-    key = models.ForeignKey(Key, null = True, blank = True, on_delete=models.SET_NULL)
+    description = models.TextField(blank=True)
+    ip_address = models.IPAddressField(blank=True)
+    key = models.ForeignKey(Key, null=True, blank=True, on_delete=models.SET_NULL)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
     objects = DeviceManager()
-
 
     def can_view(self, user):
         '''
         ' Checks if a Device instance is allowed to view/read a user or not.
         '
-        ' Keyword Arguments: 
+        ' Keyword Arguments:
         '   user - PortcullisUser to check if the device can be viewed them.
         '
         ' Return: True if user is allowed to view and False otherwise.
@@ -635,7 +655,7 @@ class Device(models.Model):
         '''
         ' Checks if a Device instance is allowed to edited by a user or not.
         '
-        ' Keyword Arguments: 
+        ' Keyword Arguments:
         '   user - PortcullisUser to check if the device can be edited by them.
         '
         ' Return: True if user is allowed to edit and False otherwise.
@@ -657,7 +677,7 @@ class Device(models.Model):
         return self.name + " Owned by %s" + self.owner.get_username()
 
 
-class DataStreamManager(models.Manager):  
+class DataStreamManager(models.Manager):
     def can_edit(self, user):
         '''
         ' Checks if a PortcullisUser is allowed to edit or add instances of this model.
@@ -673,12 +693,12 @@ class DataStreamManager(models.Manager):
             raise TypeError("%s is not a PortcullisUser" % str(user))
 
         return True
-    
+
     def get_readable_by_key(self, key):
         '''
         ' Gets all DataStreams that can be read by a specified Key.
         '
-        ' Validate Key which means that if the key has a number of uses left 
+        ' Validate Key which means that if the key has a number of uses left
         ' one will be subtracted from it.
         '
         ' Keyword Arguments:
@@ -696,13 +716,13 @@ class DataStreamManager(models.Manager):
         if vKey is None:
             raise Exception("%s is not a valid key." % str(vKey))
 
-        return DataStream.objects.filter(can_read = key)
-   
-    def get_viewable(self, user):
+        return DataStream.objects.filter(can_read=key)
+
+    def get_viewable(self, user, filter_args=None):
         '''
         ' Gets all DataStreams viewable or assignable by a PortcullisUser.
         '
-        ' If user is a superuser (i.e is_superuser == true) then all streams are returned. 
+        ' If user is a superuser (i.e is_superuser == true) then all streams are returned.
         ' Otherwise all valid keys for the user are used to filter DataSreams by.
         '
         ' Keyword Arguements:
@@ -715,19 +735,24 @@ class DataStreamManager(models.Manager):
         if not isinstance(user, PortcullisUser):
             raise TypeError("%s is not a PortcullisUser." % str(user))
 
+        if filter_args is not None:
+            objs = self.filter(**filter_args)
+        else:
+            objs = self.all()
+
         #Superusers get everything they don't own.
         if user.is_superuser:
-            return DataStream.objects.all()
+            return objs
 
-        keys = Key.objects.filter(owner = user)
+        keys = Key.objects.filter(owner=user)
         validKeys = []
         for key in keys:
             if key.isCurrent():
                 validKeys.append(key)
 
-        return DataStream.objects.filter(can_read__in = validKeys).distinct()
-        
-    def get_ds_and_validate(self, ds_id, obj, perm = 'read'):
+        return objs.filter(can_read__in=validKeys).distinct()
+
+    def get_ds_and_validate(self, ds_id, obj, perm='read'):
         '''
         ' Return a DataStream that corresponds to the datastream id given if the obj has
         ' the specified permision.
@@ -740,12 +765,12 @@ class DataStreamManager(models.Manager):
         ' Return: The corresponding datastream for the given permission if the permission permits
         '         or None.
         '''
-        
+
         try:
             # First try to use the datastream_id
-            ds = DataStream.objects.get(id = ds_id)
+            ds = DataStream.objects.get(id=ds_id)
         except DataStream.DoesNotExist:
-            raise DataStream.DoesNotExist("There is no DataStream for the id %s"%str(ds_id))
+            raise DataStream.DoesNotExist("There is no DataStream for the id %s" % str(ds_id))
 
         if perm.lower() == 'read':
             if not ds.can_view(obj):
@@ -755,10 +780,10 @@ class DataStreamManager(models.Manager):
                 return '%s cannot post to DataStream %s!' % (str(obj), str(ds.id))
         else:
             raise ValueError('%s is an invalid permission type.' % str(perm))
-            
+
         return ds
 
-    def get_editable(self, user):
+    def get_editable(self, user, filter_args=None):
         '''
         ' Gets all DataStreams that can be edited for a specified portcullis user.
         '
@@ -774,16 +799,21 @@ class DataStreamManager(models.Manager):
         if not isinstance(user, PortcullisUser):
             raise TypeError("%s is not a PortcullisUser" % str(user))
 
+        if filter_args is not None:
+            objs = self.filter(**filter_args)
+        else:
+            objs = self.all()
+
         if user.is_superuser:
-            return self.all()
-        
-        return self.filter(owner = user)
+            return objs
+
+        return objs.filter(owner=user)
 
     def get_editable_by_pk(self, user, pk):
         '''
         ' Get's an instance of DataStream specified by a pk if the given user is allowed to edit it.
         '
-        ' Keyword Arguments: 
+        ' Keyword Arguments:
         '   user - PortcullisUser to check if the data stream can be edited by them.
         '   pk   - Primary key of DataStream to get.
         '
@@ -795,7 +825,7 @@ class DataStreamManager(models.Manager):
             raise TypeError("%s is not a PortcullisUser" % str(user))
 
         try:
-            ds = self.get(id = pk)
+            ds = self.get(id=pk)
         except DataStream.DoesNotExist as e:
             raise DataStream.DoesNotExist("A Data Stream does not exist for the primary key %s" % str(pk))
 
@@ -811,15 +841,15 @@ class DataStream(models.Model):
     description = models.CharField(max_length=64, blank=True)
     color = models.CharField(max_length=32, blank=True)
     min_value = models.DecimalField(null=True, max_digits=20, decimal_places=6, blank=True)
-    max_value = models.DecimalField(null=True, max_digits=20,decimal_places=6, blank=True)
+    max_value = models.DecimalField(null=True, max_digits=20, decimal_places=6, blank=True)
     scaling_function = models.ForeignKey(ScalingFunction)
     reduction_type = models.CharField(max_length=32, default='mean', choices=reduction_type_choices())
     is_public = models.BooleanField()
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
     # keys that have permission to read to this data stream
-    can_read = models.ManyToManyField(Key, related_name = 'can_read_set', blank=True)
+    can_read = models.ManyToManyField(Key, related_name='can_read_set', blank=True)
     # keys that have permission to post to this data stream
-    can_post = models.ManyToManyField(Key, related_name = 'can_write_set', blank=True)
+    can_post = models.ManyToManyField(Key, related_name='can_write_set', blank=True)
     objects = DataStreamManager()
 
     class Meta:
@@ -833,7 +863,7 @@ class DataStream(models.Model):
         '''
         ' Checks if a DataStream instance is allowed to edited by a user or not.
         '
-        ' Keyword Arguments: 
+        ' Keyword Arguments:
         '   user - PortcullisUser to check if the data stream can be edited by them.
         '
         ' Return: True if user is allowed to edit and False otherwise.
@@ -866,9 +896,9 @@ class DataStream(models.Model):
         if isinstance(obj, PortcullisUser):
             if obj == self.owner or obj.is_superuser:
                 return True
-            elif obj.id in self.can_read.filter( (Q(expiration__gt = timezone.now()) | Q(expiration = None)) &
-                                                (Q(num_uses__gt = 0) | Q(num_uses = None))
-                                                 ).values_list('owner', flat = True):
+            elif obj.id in self.can_read.filter( (Q(expiration__gt=timezone.now()) | Q(expiration=None)) &
+                                                (Q(num_uses__gt=0) | Q(num_uses=None))
+                                                 ).values_list('owner', flat=True):
                 return True
 
         elif isinstance(obj, Key):
@@ -895,27 +925,27 @@ class DataStream(models.Model):
         if isinstance(obj, PortcullisUser):
             if obj == self.owner or obj.is_superuser:
                 return True
-            elif obj.id in self.can_post.filter( (Q(expiration__gt = timezone.now()) | Q(expiration = None)) &
-                                                (Q(num_uses__gt = 0) | Q(num_uses = None) )
-                                                 ).values_list('owner', flat = True):
+            elif obj.id in self.can_post.filter( (Q(expiration__gt=timezone.now()) | Q(expiration=None)) &
+                                                (Q(num_uses__gt=0) | Q(num_uses=None) )
+                                                 ).values_list('owner', flat=True):
                 return True
             else:
                 return False
-        
+
         if isinstance(obj, Key):
             if obj.isCurrent():
                 return obj in self.can_post.all()
             else:
                 return False
-            
+
         return False
 
 
 class SensorReading(models.Model):
-    id = models.CharField(primary_key=True,max_length=32)
-    datastream = models.ForeignKey(DataStream, db_index = True)
+    id = models.CharField(primary_key=True, max_length=32)
+    datastream = models.ForeignKey(DataStream, db_index=True)
     value = models.DecimalField(max_digits=20, decimal_places=6)
-    timestamp = models.IntegerField(db_index = True)
+    timestamp = models.IntegerField(db_index=True)
 
     class Meta:
         unique_together = ('datastream', 'timestamp')
@@ -923,7 +953,6 @@ class SensorReading(models.Model):
     def save(self, *args, **kwargs):
         self.id = str(self.datastream.id) + '_' + str(self.timestamp)
         super(SensorReading, self).save(*args, **kwargs)
-        
 
     def __unicode__(self):
         return self.datastream.name + ", Value: %s," % self.value + " Date Entered: %s" % self.timestamp
@@ -953,5 +982,5 @@ class Organization(models.Model):
 
 
     def __unicode__(self):
-        return self.name 
+        return self.name
 '''
