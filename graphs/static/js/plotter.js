@@ -757,11 +757,22 @@ function setupDownload(datastream_id)
 function toggle_time_periods(radio) 
 {
     if($(radio).val() == "custom") {
+        $.bbq.pushState({'time':  $(radio).attr('id')});
         $('.custom_period').removeAttr('disabled');
-        if($('#start').val() && $('#end').val())
+        if($('#start').val() && $('#end').val()) {
+            $.bbq.pushState({
+                'start': $('#start').val(), 
+                'end':   $('#end').val()
+            });
             load_all_graphs();
+        }
     } 
     else {
+        var frag = $.deparam.fragment();
+        delete(frag['start']);
+        delete(frag['end']);
+        frag['time'] = $(radio).attr('id');
+        $.bbq.pushState(frag, 2);
         $('.custom_period').attr('disabled', 'disabled');
         custom_period_error(true);
         load_all_graphs();
@@ -879,10 +890,11 @@ function ready_datepickers()
         showSecond: true,
         dateFormat: 'mm/dd/yy',
         timeFormat: 'hh:mm:ss',
-        onSelect: function (selectedDateTime)
+        onClose: function (selectedDateTime)
         {
             var start = $(this).datetimepicker('getDate');
             $('#end').datetimepicker('option', 'minDate', new Date(start.getTime()));
+            toggle_time_periods($('#custom'));
         }
     });
 
@@ -891,10 +903,11 @@ function ready_datepickers()
         showSecond: true,
         dateFormat: 'mm/dd/yy',
         timeFormat: 'hh:mm:ss',
-        onSelect: function (selectedDateTime)
+        onClose: function (selectedDateTime)
         {
             var end = $(this).datetimepicker('getDate');
             $('#start').datetimepicker('option', 'maxDate', new Date(end.getTime()));
+            toggle_time_periods($('#custom'));
         }
     });
 }
@@ -988,6 +1001,7 @@ function utc_to_local(timestamp)
 function auto_refresh(chk_ele)
 {
     if($(chk_ele).attr('checked')) {
+        $.bbq.pushState({'auto-refresh': true});
         var refreshBtn = $('#refresh');
         
         setInterval(function() {
@@ -997,4 +1011,6 @@ function auto_refresh(chk_ele)
             }
         }, 30000);
     }
+    else
+        $.bbq.removeState('auto-refresh');
 }
