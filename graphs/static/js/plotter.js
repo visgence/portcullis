@@ -757,10 +757,10 @@ function setupDownload(datastream_id)
 function toggle_time_periods(radio) 
 {
     if($(radio).val() == "custom") {
-        $.bbq.pushState({'time':  $(radio).attr('id')});
         $('.custom_period').removeAttr('disabled');
         if($('#start').val() && $('#end').val()) {
             $.bbq.pushState({
+                'time':  $(radio).attr('id'),
                 'start': $('#start').val(), 
                 'end':   $('#end').val()
             });

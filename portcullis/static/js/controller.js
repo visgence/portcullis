@@ -1,5 +1,7 @@
+
+
+/* Responds to any changes in the url hash for jquery bbq */
 $(window).bind('hashchange', function(event) {
-    console.log(event.getState());
     var state = event.getState();
 
     if('time' in state) {
@@ -13,5 +15,13 @@ $(window).bind('hashchange', function(event) {
         }
 
         $('#'+state['time']).trigger('change');
+    }
+
+    if('auto-refresh' in state) {
+        $('#auto_refresh').attr('checked', 'checked');
+        $('#auto_refresh').trigger('changed');
+    }
+    else {
+        $('#auto_refresh').removeAttr('checked');
     }
 });
