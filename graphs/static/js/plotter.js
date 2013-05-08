@@ -893,7 +893,11 @@ function ready_datepickers()
         onClose: function (selectedDateTime)
         {
             var start = $(this).datetimepicker('getDate');
-            $('#end').datetimepicker('option', 'minDate', new Date(start.getTime()));
+            if(start)
+                $('#end').datetimepicker('option', 'minDate', new Date(start.getTime()));
+            else
+                $('#end').datetimepicker('option', 'minDate', null);
+
             toggle_time_periods($('#custom'));
         }
     });
@@ -906,7 +910,11 @@ function ready_datepickers()
         onClose: function (selectedDateTime)
         {
             var end = $(this).datetimepicker('getDate');
-            $('#start').datetimepicker('option', 'maxDate', new Date(end.getTime()));
+            if(end)
+                $('#start').datetimepicker('option', 'maxDate', new Date(end.getTime()));
+            else
+                $('#start').datetimepicker('option', 'maxDate', null);
+
             toggle_time_periods($('#custom'));
         }
     });
