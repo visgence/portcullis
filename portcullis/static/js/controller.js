@@ -17,9 +17,9 @@ $(window).bind('hashchange', function(event) {
         $('#'+state['time']).trigger('change');
     }
 
-    if('auto-refresh' in state) {
+    if('auto-refresh' in state && state['auto-refresh'] == "true") {
         $('#auto_refresh').attr('checked', 'checked');
-        $('#auto_refresh').trigger('changed');
+        $('#auto_refresh').trigger('change');
     }
     else {
         $('#auto_refresh').removeAttr('checked');

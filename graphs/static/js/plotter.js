@@ -1020,5 +1020,5 @@ function auto_refresh(chk_ele)
         }, 30000);
     }
     else
-        $.bbq.removeState('auto-refresh');
+        $.bbq.pushState({'auto-refresh': false});
 }
