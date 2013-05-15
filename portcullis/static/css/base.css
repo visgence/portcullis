@@ -1,15 +1,14 @@
 #header
 {
-    width: 90%;
     margin: auto;
     margin-bottom: 1em;
-    text-align: center;
+    margin-top: 1em;
 }
 
 #header_image
 {
-    max-width: 100%;
-    min-width: 100%;
+    /*max-width: 100%;
+    min-width: 100%;*/
 }
 
 #base_content
