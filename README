@@ -64,4 +64,14 @@ Installation:
 	        portcullis/$ sudo cp portcullis_apache.conf /etc/apache2/conf.d/
 		portcullis/$ ./manage.py collectstatic
 		portcullis/$ sudo service apache2 restart
-	    
+
+
+Users:
+
+    Loaded users are the following:
+        Username                            password
+        --------                            --------
+
+        superuser@visgence.com              password
+        staffuser@visgence.com              password
+        normaluser@visgence.com             password
