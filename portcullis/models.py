@@ -8,13 +8,14 @@ import random
 import string
 from datetime import datetime
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
+from chucho.models import ChuchoManager
 from django.conf import settings
 
 # Local Imports
 from graphs.data_reduction import reduction_type_choices
 
 
-class PortcullisUserManager(BaseUserManager):
+class PortcullisUserManager(BaseUserManager, ChuchoManager):
     '''
     ' Custom user manager for Portcullis User
     '''
@@ -31,10 +32,13 @@ class PortcullisUserManager(BaseUserManager):
         #Validate user object
         if not isinstance(user, PortcullisUser):
             raise TypeError("%s is not a PortcullisUser" % str(user))
+       
+        if user.is_superuser:
+            return True
 
-        return True
+        return False
 
-    def get_viewable(self, user, filter_args=None):
+    def get_viewable(self, user, filter_args=None, omni=None):
         '''
         ' Gets all Portcullis Users that can be viewed or assigned by a specified PortcullisUser.
         '
@@ -46,11 +50,22 @@ class PortcullisUserManager(BaseUserManager):
         '
         ' Return: QuerySet of PortcullisUsers that are viewable by the specified PortcullisUser.
         '''
-        #TODO: Wrapper until permissions become more robust
+        
+        #Validate user object
+        if not isinstance(user, PortcullisUser):
+            raise TypeError("%s is not a PortcullisUser" % str(user))
 
-        return self.get_editable(user, filter_args)
+        if user.is_superuser:
+            if filter_args is not None and len(filter_args) > 0:
+                return self.filter(**filter_args)
+            elif omni is not None:
+                return self.search(omni)
+            else:
+                return self.all()
 
-    def get_editable(self, user, filter_args=None):
+        return self.filter(pk=user.pk)
+
+    def get_editable(self, user, filter_args=None, omni=None):
         '''
         ' Gets all Portcullis Users that can be edited by a specified PortcullisUser.
         '
@@ -68,13 +83,15 @@ class PortcullisUserManager(BaseUserManager):
             raise TypeError("%s is not a PortcullisUser" % str(user))
 
         if user.is_superuser:
-            objs = self.all()
-        else:
-            objs = self.filter(pk=user.pk)
-        if filter_args is not None:
-            objs = objs.filter(**filter_args)
+            if filter_args is not None and len(filter_args) > 0:
+                return self.filter(**filter_args)
+            elif omni is not None:
+                return self.search(omni)
+            else:
+                return self.all()
 
-        return objs
+        return self.filter(pk=user.pk)
+
 
     def get_editable_by_pk(self, user, pk):
         '''
@@ -92,8 +109,8 @@ class PortcullisUserManager(BaseUserManager):
             raise TypeError("%s is not a PortcullisUser" % str(user))
 
         try:
-            u = self.get(id=pk)
-        except PortcullisUser.DoesNotExist as e:
+            u = self.get(pk=pk)
+        except PortcullisUser.DoesNotExist:
             raise PortcullisUser.DoesNotExist("A Portcullis User does not exist for the primary key %s." % str(pk))
 
         if user.is_superuser or u == user:
@@ -118,6 +135,11 @@ class PortcullisUser(AbstractBaseUser):
     REQUIRED_FIELDS = ['first_name', 'last_name', 'is_superuser', 'is_staff']
 
     objects = PortcullisUserManager()
+
+    column_options = {
+            'id': {'grid_column': False},
+            'password': {'_type': 'password', 'grid_column': False}
+    }
 
     def get_full_name(self):
         '''
@@ -175,30 +197,11 @@ class PortcullisUser(AbstractBaseUser):
         return False
 
 
-class ScalingFunctionManager(models.Manager):
-    def can_edit(self, user):
-        '''
-        ' Checks if a PortcullisUser is allowed to edit or add instances of this model.
-        '
-        ' Keyword Arguments:
-        '   user - PortcullisUser to check permission for.
-        '
-        ' Return: True if user is allowed to edit objects of this model and False otherwise.
-        '''
-
-        #Validate user object
-        if not isinstance(user, PortcullisUser):
-            raise TypeError("%s is not a PortcullisUser" % str(user))
-
-        if user.is_superuser:
-            return True
-
-        return False
-
+class ScalingFunctionManager(ChuchoManager):
     def get_by_natural_key(self, name):
         return self.get(name=name)
 
-    def get_viewable(self, user, filter_args=None):
+    def get_viewable(self, user, filter_args=None, omni=None):
         '''
         ' Gets all scaling functions that can be viewed or assigned by a specified portcullis user.
         '
@@ -211,13 +214,17 @@ class ScalingFunctionManager(models.Manager):
         #Validate user object
         if not isinstance(user, PortcullisUser):
             raise TypeError("%s is not a PortcullisUser" % str(user))
-        if filter_args is not None:
-            objs = self.filter(**filter_args)
-        else:
-            objs = self.all()
-        return objs
 
-    def get_editable(self, user, filter_args=None):
+
+        if filter_args is not None and len(filter_args) > 0:
+            return self.filter(**filter_args)
+        elif omni is not None:
+            return self.search(omni)
+        else:
+            return self.all()
+
+
+    def get_editable(self, user, filter_args=None, omni=None):
         '''
         ' Gets all scaling functions that can be edited by a specified portcullis user.
         '
@@ -232,11 +239,12 @@ class ScalingFunctionManager(models.Manager):
             raise TypeError("%s is not a PortcullisUser" % str(user))
 
         if user.is_superuser:
-            if filter_args is not None:
-                objs = self.filter(**filter_args)
+            if filter_args is not None and len(filter_args) > 0:
+                return self.filter(**filter_args)
+            elif omni is not None:
+                return self.search(omni)
             else:
-                objs = self.all()
-            return objs
+                return self.all()
 
         return self.none()
 
@@ -260,8 +268,8 @@ class ScalingFunctionManager(models.Manager):
             return None
 
         try:
-            sf = self.get(id=pk)
-        except ScalingFunction.DoesNotExist as e:
+            sf = self.get(pk=pk)
+        except ScalingFunction.DoesNotExist:
             raise ScalingFunction.DoesNotExist("A scaling function does not exist for the primary key %s." % str(pk))
 
         return sf
@@ -271,6 +279,11 @@ class ScalingFunction(models.Model):
     name = models.CharField(max_length=32, unique=True)
     definition = models.CharField(max_length=1000)
     objects = ScalingFunctionManager()
+
+
+    column_options = {
+            'id': {'grid_column': False},
+    }
 
     def __unicode__(self):
         return self.name
@@ -313,7 +326,7 @@ class ScalingFunction(models.Model):
         return False
 
 
-class KeyManager(models.Manager):
+class KeyManager(ChuchoManager):
     def can_edit(self, user):
         '''
         ' Checks if a PortcullisUser is allowed to edit or add instances of this model.
@@ -389,7 +402,7 @@ class KeyManager(models.Manager):
 
         return key
 
-    def get_viewable(self, user, filter_args=None):
+    def get_viewable(self, user, filter_args=None, omni=None):
         '''
         ' Gets all keys that can be viewed or assigned by a specified portcullis user.
         '
@@ -411,13 +424,15 @@ class KeyManager(models.Manager):
         #         validKeys.append(key.key)
         # return self.filter(key__in = validKeys)
 
-        if filter_args is not None:
+        if filter_args is not None and len(filter_args) > 0:
             objs = self.filter(**filter_args)
+        elif omni is not None:
+            objs = self.search(omni)
         else:
             objs = self.all()
         return objs
 
-    def get_editable(self, user, filter_args=None):
+    def get_editable(self, user, filter_args=None, omni=None):
         '''
         ' Gets all keys that can be edited by a specified portcullis user.
         '
@@ -433,8 +448,10 @@ class KeyManager(models.Manager):
         if not isinstance(user, PortcullisUser):
             raise TypeError("%s is not a PortcullisUser" % str(user))
 
-        if filter_args is not None:
+        if filter_args is not None and len(filter_args) > 0:
             objs = self.filter(**filter_args)
+        elif omni is not None:
+            objs = self.search(omni)
         else:
             objs = self.all()
 
@@ -677,7 +694,7 @@ class Device(models.Model):
         return self.name + " Owned by %s" + self.owner.get_username()
 
 
-class DataStreamManager(models.Manager):
+class DataStreamManager(ChuchoManager):
     def can_edit(self, user):
         '''
         ' Checks if a PortcullisUser is allowed to edit or add instances of this model.
@@ -718,7 +735,7 @@ class DataStreamManager(models.Manager):
 
         return DataStream.objects.filter(can_read=key)
 
-    def get_viewable(self, user, filter_args=None):
+    def get_viewable(self, user, filter_args=None, omni=None):
         '''
         ' Gets all DataStreams viewable or assignable by a PortcullisUser.
         '
@@ -735,8 +752,10 @@ class DataStreamManager(models.Manager):
         if not isinstance(user, PortcullisUser):
             raise TypeError("%s is not a PortcullisUser." % str(user))
 
-        if filter_args is not None:
+        if filter_args is not None and len(filter_args) > 0:
             objs = self.filter(**filter_args)
+        elif omni is not None:
+            objs = self.search(omni)
         else:
             objs = self.all()
 
@@ -751,6 +770,20 @@ class DataStreamManager(models.Manager):
                 validKeys.append(key)
 
         return objs.filter(can_read__in=validKeys).distinct()
+        
+#        if user.is_superuser:
+#            objs = self.all()
+#        else:
+#            keys = Key.objects.filter(owner=user)
+#            validKeys = [key for key in keys if key.isCurrent()]
+#            objs = self.filter(Q(can_read__in=validKeys) | Q(owner=user)).distinct()
+#
+#        if filter_args is not None and len(filter_args) > 0:
+#            objs = objs.filter(**filter_args)
+#        elif omni is not None:
+#            objs = objs.search(omni)
+#
+#        return objs
 
     def get_ds_and_validate(self, ds_id, obj, perm='read'):
         '''
@@ -783,7 +816,7 @@ class DataStreamManager(models.Manager):
 
         return ds
 
-    def get_editable(self, user, filter_args=None):
+    def get_editable(self, user, filter_args=None, omni=None):
         '''
         ' Gets all DataStreams that can be edited for a specified portcullis user.
         '
@@ -799,8 +832,11 @@ class DataStreamManager(models.Manager):
         if not isinstance(user, PortcullisUser):
             raise TypeError("%s is not a PortcullisUser" % str(user))
 
-        if filter_args is not None:
+
+        if filter_args is not None and len(filter_args) > 0:
             objs = self.filter(**filter_args)
+        elif omni is not None:
+            objs = self.search(omni)
         else:
             objs = self.all()
 
@@ -808,6 +844,21 @@ class DataStreamManager(models.Manager):
             return objs
 
         return objs.filter(owner=user)
+
+        
+#        if filter_args is not None and len(filter_args) > 0:
+#            objs = self.filter(**filter_args)
+#        elif omni is not None:
+#            objs = self.search(omni)
+#
+#        if user.is_superuser:
+#            objs = self.all()
+#        else:
+#            keys = Key.objects.filter(owner=user)
+#            validKeys = [key for key in keys if key.isCurrent()]
+#            objs = self.filter(Q(can_post__in=validKeys) | Q(owner=user)).distinct()
+#
+#        return objs
 
     def get_editable_by_pk(self, user, pk):
         '''
@@ -825,13 +876,15 @@ class DataStreamManager(models.Manager):
             raise TypeError("%s is not a PortcullisUser" % str(user))
 
         try:
-            ds = self.get(id=pk)
-        except DataStream.DoesNotExist as e:
+            ds = self.get(pk=pk)
+        except DataStream.DoesNotExist:
             raise DataStream.DoesNotExist("A Data Stream does not exist for the primary key %s" % str(pk))
 
-        if user.is_superuser or ds.owner == user:
+        keys = Key.objects.filter(owner=user)
+        validKeys = [key for key in keys if key.isCurrent()]
+        if user.is_superuser or ds.owner == user or not set(ds.can_post.all()).disjoint(validKeys):
             return ds
-
+        
         return None
 
 
