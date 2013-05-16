@@ -10,6 +10,7 @@ from datetime import datetime
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from chucho.models import ChuchoManager
 from django.conf import settings
+import re
 
 # Local Imports
 from graphs.data_reduction import reduction_type_choices
@@ -128,6 +129,45 @@ class PortcullisUserManager(BaseUserManager, ChuchoManager):
 
         return None
 
+    def search(self, search_str, operator=None, column=None):
+        ''' Overwrite ChuchoManager to handle our user'''
+        print 'Searching: "%s"' % search_str
+        # Regexes to trigger different kinds of searches.
+        pattern_name1 = r'^\s*(.+)\s+(.+)\s*$'
+        pattern_name2 = r'^\s*(.+),\s*(.+)\s*$'
+        pattern_username = r'^\s*(.+)\s*$'
+        #pattern_email = r'^\s*(\.*@.*)\s*$'
+
+        q_list = []
+        m = re.match(pattern_name1, search_str, re.I)
+        if m is not None:
+            q_list.append(Q(first_name__icontains=m.group(1), last_name__icontains=m.group(2)))
+
+        m = re.match(pattern_name2, search_str, re.I)
+        if m is not None:
+            q_list.append(Q(first_name__icontains=m.group(2), last_name__icontains=m.group(1)))
+
+        m = re.match(pattern_username, search_str, re.I)
+        if m is not None:
+            q_list.append(Q(email__icontains=m.group(1)))
+            q_list.append(Q(first_name__icontains=m.group(1)))
+            q_list.append(Q(last_name__icontains=m.group(1)))
+
+        # m = re.match(pattern_email, search_str, re.I)
+        # if m is not None:
+        #     q_list.append(Q(email__icontains=m.group(1)))
+
+        q_all = None
+        for q in q_list:
+            if q_all is None:
+                q_all = q
+            else:
+                q_all |= q
+        if q_all is None:
+            return self.none()
+        else:
+            return self.filter(q_all)
+
 
 class PortcullisUser(AbstractBaseUser):
     '''
@@ -139,7 +179,7 @@ class PortcullisUser(AbstractBaseUser):
     is_superuser = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
-    date_joined = models.DateTimeField(default=timezone.now())
+    date_joined = models.DateTimeField(default=timezone.now(), editable=False)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['first_name', 'last_name', 'is_superuser', 'is_staff']
@@ -148,7 +188,8 @@ class PortcullisUser(AbstractBaseUser):
 
     column_options = {
             'id': {'grid_column': False},
-            'password': {'_type': 'password', 'grid_column': False}
+            'password': {'_type': 'password', 'grid_column': False},
+            'last_login': {'_editable': False}
     }
 
     def get_full_name(self):
@@ -294,7 +335,8 @@ class ScalingFunction(models.Model):
     column_options = {
             'id': {'grid_column': False},
     }
-
+    # Omni search columns
+    search_fields = ['name']
     def __unicode__(self):
         return self.name
 
@@ -332,7 +374,7 @@ class ScalingFunction(models.Model):
 
         if user.is_superuser:
             return True
-
+       
         return False
 
 
@@ -503,6 +545,10 @@ class Key(models.Model):
     expiration = models.DateTimeField(null=True, blank=True)
     num_uses = models.IntegerField(null=True, blank=True)
     objects = KeyManager()
+
+    column_options = {
+        'key': {'_editable': True}
+        }
 
     def can_view(self, user):
         '''
@@ -922,6 +968,9 @@ class DataStream(models.Model):
         'scaling_function': {'grid_column': False},
         'reduction_type': {'grid_column': False},
         }
+
+    # For omni search
+    search_fields = ['id', 'name', 'owner']
 
     class Meta:
         ordering = ['id']
