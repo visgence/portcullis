@@ -19,6 +19,16 @@ class PortcullisUserManager(BaseUserManager, ChuchoManager):
     '''
     ' Custom user manager for Portcullis User
     '''
+    def create_user(self, email, first_name, last_name, password=None):
+        user = PortcullisUser(email=email, first_name=first_name, last_name=last_name)
+        user.set_password(password)
+        user.save()
+
+    def create_superuser(self, email, first_name, last_name, password):
+        user = PortcullisUser(email=email, first_name=first_name, last_name=last_name, is_superuser=True)
+        user.set_password(password)
+        user.save()
+
     def can_edit(self, user):
         '''
         ' Checks if a PortcullisUser is allowed to edit or add instances of this model.
@@ -904,6 +914,14 @@ class DataStream(models.Model):
     # keys that have permission to post to this data stream
     can_post = models.ManyToManyField(Key, related_name='can_write_set', blank=True)
     objects = DataStreamManager()
+
+    column_options = {
+        'units': {'grid_column': False},
+        'description': {'grid_column': False},
+        'color': {'grid_column': False},
+        'scaling_function': {'grid_column': False},
+        'reduction_type': {'grid_column': False},
+        }
 
     class Meta:
         ordering = ['id']
