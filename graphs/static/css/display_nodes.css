@@ -84,7 +84,7 @@
 
 .portcullis-graph
 {
-    margin-left: 3em;
+    margin-left: 1.5em;
 }
 
 #graph_container
@@ -130,8 +130,9 @@
 
 .graph_container
 {
-    border: solid 3px gray;
+    border: solid 1px #aaaaaa;
     margin-top: 3em;
+    margin-left: 1em;
     width: 95%;
     padding-top: 2em;
     position: relative;
@@ -166,7 +167,10 @@
     margin-bottom: 0.5em;
 }
 
-.portcullis_graph { height:400px }
+.portcullis_graph 
+{ 
+	height:400px 
+}
 
 .sensor_graph
 {
