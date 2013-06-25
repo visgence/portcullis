@@ -1,4 +1,6 @@
 {% load dajaxice_templatetags %}
+
+<!DOCTYPE html>
 <html>
     <head>
         {% dajaxice_js_import %}
@@ -8,6 +10,9 @@
         <script type="text/javascript" src="{{STATIC_URL}}js/jquery-ui-timepicker-addon.js"></script>
         <script type="text/javascript" src="{{STATIC_URL}}js/jquery.ba-bbq.js"></script>
         <script type="text/javascript" src="{{STATIC_URL}}js/controller.js"></script>
+        
+        <script type="text/javascript" src="{{STATIC_URL}}js/jquery.tmpl.js"></script>
+        <script type="text/javascript" src="{{STATIC_URL}}js/knockout-2.2.1.js"></script>
 
         <script type="text/javascript" src="{{STATIC_URL}}js/spin.js"></script>
         <script type="text/javascript" src="{{STATIC_URL}}js/portcullis_helper.js"></script>
@@ -31,14 +36,15 @@
 
         <script type="text/javascript" src="{{STATIC_URL}}plugins/mini-colors/jquery.minicolors.js"></script>
 
-            
+        <!--    
         <script type="text/javascript" src="{{STATIC_URL}}plugins/slickGrid/lib/jquery.event.drag-2.2.js"></script>    
         <script type="text/javascript" src="{{STATIC_URL}}plugins/slickGrid/slick.core.js"></script>
         <script type="text/javascript" src="{{STATIC_URL}}plugins/slickGrid/plugins/slick.rowselectionmodel.js"></script>
         <script type="text/javascript" src="{{STATIC_URL}}plugins/slickGrid/slick.formatters.js"></script>
         <script type="text/javascript" src="{{STATIC_URL}}plugins/slickGrid/slick.editors.js"></script>
         <script type="text/javascript" src="{{STATIC_URL}}plugins/slickGrid/slick.grid.js"></script>
-
+        -->
+        <script type="text/javascript" src="{{STATIC_URL}}js/chucho.grid.js"></script>
         <script type="text/javascript" src="{{STATIC_URL}}js/chucho.js"></script>
                 
         <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}plugins/mini-colors/jquery.minicolors.css">
@@ -49,6 +55,9 @@
         <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}css/forms.css">
         <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}css/display_nodes.css">
         <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}css/grid.css">
+        
+        <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}css/bootstrap.css">
+        <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}css/bootstrap-responsive.css">
 
     </head>
     <body>

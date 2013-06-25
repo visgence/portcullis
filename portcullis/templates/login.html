@@ -1,7 +1,7 @@
 {% csrf_token %}
 
-<label for="username">Username:</label> <input type="text" id="username" name="username" maxlength="30" /> 
-<label for="password">Password:</label> <input type="password" id="password" name="password"/> 
+<span for="username">Username:</span> <input type="text" id="username" name="username" maxlength="30" /> 
+<span for="password">Password:</span> <input type="password" id="password" name="password"/> 
 <input type="hidden" name="next" value="{{redirect_to}}"/>
-<label>&nbsp;</label><input type="button" value="Log in" onclick="login();"/> 
+<input type="button" value="Log in" onclick="login();"/> 
 <span style="color:red" id="login_error" class="error">{{error}}</span>

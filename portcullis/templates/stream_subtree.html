@@ -14,10 +14,12 @@
     {% for name, id in leaves.iteritems %}
         <li>
             <div id="stream_span_{{id}}">
-                <input type="checkbox" class="stream" id="stream_{{id}}"
-                       value="{{id}}" onChange="load_unload_stream(this);
-                       reset_check_all(this, 'owned_checkall');">
-                       <label for="stream_{{id}}">{{name}}</label>
+                <label for="stream_{{id}}">
+                    <input type="checkbox" class="stream" id="stream_{{id}}"
+                           value="{{id}}" onChange="load_unload_stream(this);
+                           reset_check_all(this, 'owned_checkall');">
+                    {{name}}
+                </label>
             </div>
         </li>
     {% endfor %}
