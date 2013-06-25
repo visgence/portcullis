@@ -2,6 +2,7 @@
 ###################
 .project
 .ropeproject
+.pydevproject
 
 # Static directory from ./manage collectstatic #
 ################################################
