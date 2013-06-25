@@ -846,7 +846,7 @@ function ready_minicolors(datastream_id)
         control: 'wheel',
         defaultValue: default_color,
         hide: function() {
-            var hex = this.minicolors('value');
+            var hex = $(this).minicolors('value');
             var graph = plots[datastream_id];
             var overview = overviewPlots[datastream_id];
            
