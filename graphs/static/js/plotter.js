@@ -626,7 +626,6 @@ function renderOverview(data, ranges)
             lines: { show: true, lineWidth: 1 },
             shadowSize: 0   
         },
-        grid: { color: "#999" },
         xaxis: 
         {     
             mode: "time", 
