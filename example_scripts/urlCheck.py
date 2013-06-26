@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 '''
 ' example_scripts/urlCheck.py
 ' Contributing Authors:
@@ -5,7 +6,8 @@
 '
 ' (c) 2013 Visgence, Inc.
 '
-' This script will send an http response to a given url
+' This script will send an http request to a given url, and then send the status code to
+' a portcullis server.
 '''
 
 import argparse
@@ -20,26 +22,60 @@ def main(args, parser=None):
     if ds_id is None or portcullisUrl is None or auth_token is None:
         parser.print_help()
         sys.exit(1)
-    raise NotImplemented
+
+    print 'Sending request to http://%s' % (url,)
+    try:
+        resp = requests.get('http://' + url)
+        status = resp.status_code
+    except requests.exceptions.ConnectionError as e:
+        print 'Error connecting to http://%s' % (url,)
+        status = 0
+    print 'Sending status %d to portcullis' % (status,)
+    payload = {'auth_token': auth_token
+               ,'datastream_id': ds_id
+               ,'value': status
+               }
+    try:
+        resp = requests.post('http://' + portcullisUrl + '/api/add_reading/', payload)
+    except requests.exceptions.ConnectionError as e:
+        print 'Error connecting to portcullis http://%s' % (portcullisUrl,)
+        print 'ConnectionError: %s' % e
+        sys.exit(1)
+    try:
+        resp.raise_for_status()
+        print resp.text
+    except Exception as e:
+        print 'Error connecting to portcullis: %s' % (e,)
+        sys.exit(1)
+
+    print '\nDone\n'
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('url', help='url The url to check the http status code.')
-    parser.add_argument('-d'
+    group = parser.add_argument_group('Required arguments')
+    group.add_argument('url', help='The url of which to check the http status code.')
+    group.add_argument('-d'
                         ,'--datastream_id'
                         ,type=int
                         ,default=None
-                        ,help='datastream_id Destination portcullis datastream for the http status code.'
+                        ,help='Destination portcullis datastream for the http status code.'
                         )
-    parser.add_argument('-u'
+    group.add_argument('-u'
                         ,'--portcullisUrl'
-                        ,help='portcullisUrl Url for the portcullis data server.'
+                        ,help='Url for the portcullis data server.'
                         ,default=''
                         )
-    parser.add_argument('-k'
+    group.add_argument('-k'
                         ,'--auth_token'
                         ,default=''
-                        ,help='auth_token Key to allow writing to portcullis datastream.'
+                        ,help='Key to allow writing to portcullis datastream.'
                         )
+    # parser.add_argument('t',
+    #                     ,'--requestType'
+    #                     ,default='GET'
+    #                     ,choices=['GET', 'POST']
+    #                     ,help='Web request type, `GET\' or `POST\'.'
+    #                     )
     args = parser.parse_args()
     main(args, parser)
