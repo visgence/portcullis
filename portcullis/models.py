@@ -470,19 +470,22 @@ class KeyManager(ChuchoManager):
         if not isinstance(user, PortcullisUser):
             raise TypeError("%s is not a PortcullisUser" % str(user))
 
-        # validKeys = []
-        # for key in self.all():
-        #     if key.isCurrent():
-        #         validKeys.append(key.key)
-        # return self.filter(key__in = validKeys)
-
         if filter_args is not None and len(filter_args) > 0:
             objs = self.filter(**filter_args)
         elif omni is not None:
             objs = self.search(omni)
         else:
             objs = self.all()
-        return objs
+       
+        if not user.is_superuser:
+            objs = objs.filter(owner=user)
+            
+        validKeys = []
+        for key in objs:
+            if key.isCurrent():
+                validKeys.append(key.key)
+
+        return self.filter(key__in=validKeys)
 
     def get_editable(self, user, filter_args=None, omni=None):
         '''
@@ -565,7 +568,16 @@ class Key(models.Model):
         if not isinstance(user, PortcullisUser):
             raise TypeError("%s is not a PortcullisUser" % str(user))
 
-        return True
+        if not self.isCurrent():
+            return False
+        
+        if user.is_superuser:
+            return True
+       
+        if user == self.owner:
+            return True
+
+        return False
 
     def is_editable_by_user(self, user):
         '''
