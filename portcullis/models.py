@@ -400,7 +400,7 @@ class KeyManager(ChuchoManager):
         # also whether to return different kinds of errors/etc.
         try:
             key = Key.objects.get(key=token)
-        except ObjectDoesNotExist:
+        except Key.DoesNotExist:
             return None
 
         if key.isCurrent():
