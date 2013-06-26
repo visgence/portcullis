@@ -45,7 +45,12 @@ def add_reading(request):
         return cors_http_response('Cannot identify datastream, please give datastream_id.')
 
     # get and validate datastream permission
-    datastream = DataStream.objects.get_ds_and_validate(datastream_id, key, 'post')
+    try:
+        datastream = DataStream.objects.get_ds_and_validate(datastream_id, key, 'post')
+    except DataStream.DoesNotExist as e:
+        datastream = 'Error: %s' % (e,)
+    except ValueError as e:
+        datastream = 'Error: Internal validation error.'
     # Assume if we don't get a DS object we get an error string.
     if not isinstance(datastream, DataStream):
         return cors_http_response(datastream)
