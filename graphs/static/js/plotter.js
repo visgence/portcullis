@@ -167,14 +167,18 @@ function on_graph_load(datastream_id, perm)
 function get_granularity() 
 {
     //Try and make default width of first graph otherwise default to 300
-    var first_graph = $('.graph_container:first .sensor_graph');
-    var default_granularity = first_graph.width();
-    if(!default_granularity)
-        default_granularity = 300;
-  
-    if($('#granularity').val() === null || $('#granularity').val() === undefined || $("#granularity").val() === '') {
-        $("#granularity").val(default_granularity);
+    var default_granularity = null;
+    if(checkedGraphs.length > 0) {
+        var first_graph = $('#graph_container_'+checkedGraphs[0]+' .sensor_graph');
+        default_granularity = first_graph.width();
     }
+   
+    if(default_granularity === null)
+        default_granularity = 300;
+
+    if($('#granularity').val() === null || $('#granularity').val() === undefined || $("#granularity").val() === '')
+        $("#granularity").val(default_granularity);
+
     return $("#granularity").val();
 }
 
@@ -961,7 +965,7 @@ function load_unload_stream(checkbox)
         var json = JSON.stringify({'stream': datastream_id});
 
         //If we're already loading this graph
-        if($('#graph_container_'+datastream_id).length)
+        if($.inArray(datastream_id, checkedGraphs) > -1)
             return;
         
         //Just to be safe make sure the stream isn't in the list yet.
@@ -979,8 +983,7 @@ function load_unload_stream(checkbox)
         });
     }
     else {
-        var widget_container = $('#widget_container');
-        $(widget_container).children('#graph_container_'+datastream_id).remove();
+        $('#graph_container_'+datastream_id).remove();
         
         if(index <= -1) {
             console.log('The stream id %s does not exist in the list! But it should!!', datastream_id);
