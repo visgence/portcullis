@@ -22,9 +22,9 @@
     {% if token %}
     <script>
         //On load function will search for any 'portcullis-graph' divs on the page.
-        $("document").ready(on_graphs_load);
-        collapse_all('graph_toggle');
-        ready_checkboxes();
+        $(function() {
+            on_graphs_load({{graphIds|safe}});
+        });
     </script>
     {% endif %}
 </div><!--End widget_container -->

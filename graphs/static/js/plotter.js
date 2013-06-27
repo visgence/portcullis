@@ -14,6 +14,7 @@ var timezone_date = new Date();
 var timezone_offset = timezone_date.getTimezoneOffset()*60*1000;//milliseconds
 var overviewPlots = {};
 var plots = {};
+var checkedGraphs = [];
 
 function create_plot_select_handler(datastream_id) 
 { 
@@ -101,21 +102,26 @@ function show_data_container(datastream_id)
 * Sets up all graph bindings and loads all on screen graphs including a shared view if a auth token
 * is available within the template.
 */
-function on_graphs_load() 
+function on_graphs_load(graphIds) 
 {
+    if(!$.isArray(graphIds)) {
+        console.log("Did not recieve a list of graph ids while loading graphs!!");
+        return;
+    }
+    
+    checkedGraphs = graphIds;
+    collapse_all('graph_toggle');
 
     //Find all portcullis graph divs
-    $(".portcullis-graph").each(function(i) {
-
-        var datastream_id = this.id;
+    $(checkedGraphs).each(function(i, id) {
         
         //bind main graphs
-        $("#sensor" + datastream_id).bind("plotselected",create_plot_select_handler(datastream_id));
-        $("#sensor" + datastream_id).bind("plothover",create_plot_click_handler(datastream_id));
-        $("#sensor" + datastream_id).bind("mouseleave", function(){ reset_graph_selection(datastream_id); });
+        $("#sensor" + id).bind("plotselected",create_plot_select_handler(id));
+        $("#sensor" + id).bind("plothover",create_plot_click_handler(id));
+        $("#sensor" + id).bind("mouseleave", function(){ reset_graph_selection(id); });
          
         //bind  overview graph 
-        $("#overview" + datastream_id).bind("plotselected",create_plot_select_handler(datastream_id));
+        $("#overview" + id).bind("plotselected",create_plot_select_handler(id));
 
         // setup the download link.
         setupDownload(this.id);
@@ -827,9 +833,11 @@ function saveView()
 */
 function ready_checkboxes() 
 {
-    //If any pre-loaded graphs are on page then check their stream checkbox
-     var loaded_graphs = $('.portcullis-graph');
-     loaded_graphs.each(function() { $('#stream_'+$(this).attr('id')).attr('checked', 'checked'); });
+    $(checkedGraphs).each(function(i, id) {
+        var checkbox = $('.streams input#stream_'+id);
+        if(checkbox !== undefined)
+            $(checkbox).prop('checked', true);
+    });
 }
 
 /** Creates the minicolor pickers inside each graphs advanced options space.
@@ -940,31 +948,48 @@ function get_graph(ds_id, token)
 function load_unload_stream(checkbox) 
 {
     var datastream_id = $(checkbox).val();     
-    if($(checkbox).attr('checked')) {
-        if(!get_period()) {
-            $(checkbox).removeAttr('checked');
+    var index = $.inArray(datastream_id, checkedGraphs)
+    
+    if($(checkbox).prop('checked')) {
+        if(get_period() === null) {
+            $(checkbox).prop('checked', false);
+            if(index > -1)
+                checkedGraphs.splice(index, 1);            
             return;
         }
-        var stream = {};
-        stream.stream = datastream_id;
-        var json = JSON.stringify(stream);
+        
+        var json = JSON.stringify({'stream': datastream_id});
 
         //If we're already loading this graph
         if($('#graph_container_'+datastream_id).length)
             return;
         
+        //Just to be safe make sure the stream isn't in the list yet.
+        if(index > -1) {
+            console.log('The stream id %s already exists in the list!', datastream_id);
+            return;
+        }
+
         // append to widget container
         $.get('/graphs/', {'json_data': json}, function(data) {
             $('#widget_container').append(data);
             on_graph_load(datastream_id, true);
             $('#share_link').removeClass('display_none');
+            checkedGraphs.push(datastream_id);
         });
     }
     else {
         var widget_container = $('#widget_container');
         $(widget_container).children('#graph_container_'+datastream_id).remove();
         
-        if(!$('.graph_container').length)
+        if(index <= -1) {
+            console.log('The stream id %s does not exist in the list! But it should!!', datastream_id);
+            return;
+        } else {
+            checkedGraphs.splice(index, 1);
+        }
+
+        if(checkedGraphs.length <= 0)
             $('#share_link').addClass('display_none');
     }
 }

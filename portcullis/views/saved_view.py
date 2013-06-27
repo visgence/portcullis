@@ -32,18 +32,21 @@ def saved_view(request, token):
 
     reductions = reductFunc.keys()
     graphs = []
+    graphIds = []
     t_graph = loader.get_template('graph.html')
     for w in view.widget.all():
         c_graph = Context({
-                'id': w.saveddsgraph.datastream.id,
-                'reductions': reductions,
-                'widget_id': w.id
-                })
+            'id': w.saveddsgraph.datastream.id,
+            'reductions': reductions,
+            'widget_id': w.id
+        })
         graphs.append(t_graph.render(c_graph))
+        graphIds.append(str(w.saveddsgraph.datastream.id))
 
     t = loader.get_template('content_container.html')
     c = RequestContext(request, {
                                     'widgets': graphs,
+                                    'graphIds': graphIds,
                                     'token': token,
                                  })
 

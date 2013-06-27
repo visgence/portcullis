@@ -43,5 +43,9 @@
         {% elif viewable_streams %}
         collapse('public_clickable');
         {% endif %}
+
+        $(function() {
+            ready_checkboxes();
+        });
     </script>
 </div>

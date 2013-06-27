@@ -122,6 +122,11 @@ function toggle_subtree(event)
                     return false;
                 }
                 $(div).html(resp.html);
+                $(div).find('input.stream').each(function(i, input) {
+                    if($.inArray($(input).val(), checkedGraphs) > -1)
+                        $(input).prop('checked', true);
+                });
+
                 div.toggle(toggle_options);
                 toggle_symbol.html('-');
             }, {'name': $(element).attr('id'), group: $(element).attr('group')});
