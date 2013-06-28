@@ -278,16 +278,25 @@ function get_period()
  *            }
  *         }
  */
-function get_graph_range (g_id) 
+function get_graph_range (g_id, toUtc) 
 {
     "use strict";
 
     var graph = plots[g_id];
     var axes = graph.getAxes();
+
+    if(toUtc === true) {
+        var from = new Date(axes.xaxis.min + timezone_offset);
+        var to = new Date(axes.xaxis.max + timezone_offset);
+    } else {
+        var from = new Date(axes.xaxis.min);
+        var to = new Date(axes.xaxis.max);
+    }
+
     var ranges = {
         xaxis: {
-            'from': new Date(axes.xaxis.min + timezone_offset),
-            'to'  : new Date(axes.xaxis.max + timezone_offset)
+            'from': from,
+            'to'  : to
         },
         yaxis: {
             'from': axes.yaxis.min,
@@ -440,7 +449,7 @@ function load_all_graphs() {
      */
     divs = $(".portcullis-graph");
     var period = get_period();
-    if(!period)
+    if(period === null)
         return;
 
     //Cycle though all graphs and fetch data from server
@@ -494,19 +503,19 @@ function graph_overview_callback(is_shared, perm) {
      * Returns: Function that will be used as the callback function and takes the data recieved from server.
      */
 
-    var ranges = get_period();
-
     return function (data) {
         
         if (is_shared) {
-            var start = data.xmin*1000;
-            var end = data.xmax*1000;
+            var start = data.xmin*1000 - timezone_offset;
+            var end = data.xmax*1000 - timezone_offset;
             $('#custom').attr('checked', 'checked');
             $('.custom_period').removeAttr('disabled');
             $('#start').val(dateToString(new Date(start)));
             $('#end').val(dateToString(new Date(end)));
             $('#granularity').val(data.granularity);
         }
+
+        var ranges = get_period();
 
         var msg = '';
         if(data.data.length === 0) {
@@ -669,7 +678,7 @@ function refresh_graph(g_id)
 {
     //Only refresh graphs that actually contain data
     if(g_id in plots) {
-        var ranges = get_graph_range(g_id);
+        var ranges = get_graph_range(g_id, true);
         load_graph(g_id, ranges, zoom_graph_callback(ranges, false));
     }
 }
@@ -697,9 +706,18 @@ function resetZoom(streamId)
         var datastream_id = divs[i].id;
         overviewPlots[datastream_id].clearSelection(true);
         overviewData = overviewPlots[datastream_id].getData();
+        
+        if (  $('#auth_token').val() ) {
+            var from = new Date(overviewData[0].xaxis.min);
+            var to = new Date(overviewData[0].xaxis.max);
+        } else {
+            var from = new Date(overviewData[0].xaxis.min + timezone_offset);
+            var to = new Date(overviewData[0].xaxis.max + timezone_offset);
+        }
+
         ranges = { xaxis: {
-            from: new Date(overviewData[0].xaxis.min + timezone_offset),
-            to:   new Date(overviewData[0].xaxis.max + timezone_offset)
+            from: from,
+            to:   to
         }};
         load_graph(datastream_id, ranges, zoom_graph_callback(ranges, false)); 
     }
@@ -819,7 +837,6 @@ function saveView()
     view.start = Math.round(ranges.xaxis.from/1000 + timezone_offset/1000);
     view.end = Math.round(ranges.xaxis.to/1000 + timezone_offset/1000);
     view.granularity = get_granularity();
-
     csrf = $('input[name="csrfmiddlewaretoken"]').val();
     $.post('/api/create_saved_view/', {'jsonData': JSON.stringify(view), 'csrfmiddlewaretoken': csrf},
            function (data) {
