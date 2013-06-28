@@ -33,15 +33,16 @@ $ sudo easy_install django
 $ sudo easy_install django-dajaxice
 ```
 
+From the root directory execute the following to initialize some necessary submodules.  
+`portcullis/$ git submodule update --init --recursive`
+
 Make sure to edit the database connection info in the settings.py
 
-Run the setup script to create the database tables needed by Portcullis and pre-populate it with some demo data.
+Run the setup script to create the database tables needed by Portcullis and pre-populate it with some demo data.  
 `portcullis/$ ./manage.py setup`
 
 Run the dev server, which attaches to port 8000 by default.  
-`portcullis/$ ./manage.py runserver`
-or  
-`portcullis/$ ./manage.py runserver ip:port`
+`portcullis/$ ./manage.py runserver` or `portcullis/$ ./manage.py runserver ip:port`
 
 
 ##Setup in Apache
@@ -60,8 +61,8 @@ portcullis/$ sudo service apache2 restart
 
 There are a few Users that get loaded into the system once installation is complete for demonstration purposes.
 
-- auth@example.com
-- normal@example.com
+- auth@example\.com
+- normal@example\.com
 
 The password for both are 'password'
 
