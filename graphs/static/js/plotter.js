@@ -39,19 +39,22 @@ function create_plot_click_handler(datastream_id, latestPos)
 
 
         var pos1 = pos2 = null;
+        var pos1Index = pos2Index = null;
         var i, j, dataset = plot.getData();
         for (i = 0; i < dataset.length; ++i) {
             var series = dataset[i];
-        
             for (j = 0; j < series.data.length; ++j) {
                 if(series.data[j] === null)
                     continue;
                 if (series.data[j][0] > pos.x) {
                     pos2 = series.data[j];
+                    pos2Index = j;
                     break;
                 }
-                else
+                else {
                     pos1 = series.data[j];
+                    pos1Index = j;
+                }
             }
             break;
         } 
@@ -65,24 +68,31 @@ function create_plot_click_handler(datastream_id, latestPos)
         //automatically gets selected.  Otherwise we compare the difference between the pos1/pos2 and 
         //the position of the mouse and see which ones smaller.
         var selected = null;
+        var selectedIndex = null;
         if(pos1 === null && pos2 !== null) {
             plot.lockCrosshair({'x': pos2[0]});
             selected = pos2;
+            selectedIndex = pos2Index;
         }
         else if(pos1 !== null && pos2 === null) {
             plot.lockCrosshair({'x': pos1[0]});
             selected = pos1;
+            selectedIndex = pos1Index;
         }
         else if(Math.abs(pos1[0] - pos.x) <= Math.abs(pos2[0] - pos.x)) {
             plot.lockCrosshair({'x': pos1[0]});
             selected = pos1;
+            selectedIndex = pos1Index;
         }
         else {
             plot.lockCrosshair({'x': pos2[0]});
             selected = pos2;
+            selectedIndex = pos2Index;
         }
 
         var time = new Date(selected[0] + timezone_offset);
+        plots[datastream_id].unhighlight();
+        plots[datastream_id].highlight(0, selectedIndex);
         $('#graph_selection_'+datastream_id).removeAttr('style');
         $('#selected_value_'+datastream_id).text(selected[1]);
         $('#selected_time_'+datastream_id).text(dateToString(time));
@@ -101,6 +111,7 @@ function reset_graph_selection(datastream_id)
     $('#selected_value_'+datastream_id).text("");
     $('#selected_time_'+datastream_id).text("");
     plots[datastream_id].clearCrosshair();
+    plots[datastream_id].unhighlight();
 }
 
 
