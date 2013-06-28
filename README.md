@@ -26,7 +26,7 @@ Webserver:
 
 ##Installation
 
-Ubuntu or Debian users can usually install the prerequisites by:
+Ubuntu or Debian users can usually install the prerequisites by executing the following.
 ```
 $ sudo apt-get install python2.7 postgresql python-psycopg2 apache2 libapache-mod-wsgi python-setuptools git
 $ sudo easy_install django
@@ -34,26 +34,22 @@ $ sudo easy_install django-dajaxice
 $ sudo easy_install gitpython
 ```
 
-To get the most recent version of portcullis, use our github repository:
-`$ git clone git://github.com/visgence/portcullis.git`
+Make sure to edit the database connection info in the settings.py
 
-Edit the database connection info in settings.py
-
-Run the setup script to sync the db and download other necessary resources.
+Run the setup script to create the database tables needed by Portcullis and pre-populate it with some demo data.
 `portcullis/$ ./manage.py setup`
 
 Run the dev server, which attaches to port 8000 by default
-```
-portcullis/$ ./manage.py runserver
+`portcullis/$ ./manage.py runserver`
 
 or
 
-portcullis/$ ./manage.py runserver ip:port
-```
+`portcullis/$ ./manage.py runserver ip:port`
+
 
 ##Optional Setup in Apache
 
-For Debian/Ubuntu:
+*For Debian/Ubuntu users.*
 
 Make sure to edit portcullis_apache.conf to reflect your install location.
 ```
@@ -65,15 +61,14 @@ portcullis/$ sudo service apache2 restart
 
 ##Users
 
-There are a few Users already loaded into the system once installation is complete.
+There are a few Users that get loaded into the system once installation is complete for demonstration purposes.
 
-The usernames are:
-- auth@example.com
-- normal@example.com
+- "auth@example.com"
+- "normal@example.com"
 
 The password for both are 'password'
 
-auth@example.com is a super user and has privileges for everything in the web application while normal@example.com is not.
+"auth@example.com" is a super user and has privileges for everything in the web application while "normal@example.com" is not.
 The normal user is restricted to its own data in the system.
 
 
