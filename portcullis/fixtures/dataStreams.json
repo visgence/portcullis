@@ -24,7 +24,7 @@
             "color": "yellow",
             "max_value": null,
             "min_value": null,
-            "owner": 3,
+            "owner": 2,
             "scaling_function": 3,
             "units": "MPH",
             "is_public": true,
