@@ -9,10 +9,10 @@ Portcullis is an application designed to centralize all kinds of data that can b
 ##Software Prerequisites
 
 - Python 2.7
-- Django 1.4
+- Django 1.5
 - Dajaxice 0.5.5
+- South
 - git
-- gitPython
 
 Database (one of the following):
 
@@ -31,7 +31,6 @@ Ubuntu or Debian users can usually install the prerequisites by executing the fo
 $ sudo apt-get install python2.7 postgresql python-psycopg2 apache2 libapache-mod-wsgi python-setuptools git
 $ sudo easy_install django
 $ sudo easy_install django-dajaxice
-$ sudo easy_install gitpython
 ```
 
 Make sure to edit the database connection info in the settings.py
@@ -39,17 +38,15 @@ Make sure to edit the database connection info in the settings.py
 Run the setup script to create the database tables needed by Portcullis and pre-populate it with some demo data.
 `portcullis/$ ./manage.py setup`
 
-Run the dev server, which attaches to port 8000 by default
+Run the dev server, which attaches to port 8000 by default.  
 `portcullis/$ ./manage.py runserver`
-
-or
-
+or  
 `portcullis/$ ./manage.py runserver ip:port`
 
 
-##Optional Setup in Apache
+##Setup in Apache
 
-*For Debian/Ubuntu users.*
+**For Debian/Ubuntu users.**
 
 Make sure to edit portcullis_apache.conf to reflect your install location.
 ```
@@ -63,12 +60,12 @@ portcullis/$ sudo service apache2 restart
 
 There are a few Users that get loaded into the system once installation is complete for demonstration purposes.
 
-- "auth@example.com"
-- "normal@example.com"
+- <pre>auth@example.com</pre>
+- <pre>normal@example.com</pre>
 
 The password for both are 'password'
 
-"auth@example.com" is a super user and has privileges for everything in the web application while "normal@example.com" is not.
+<pre>auth@example.com</pre> is a super user and has privileges for everything in the web application while <pre>normal@example.com</pre> is not.
 The normal user is restricted to its own data in the system.
 
 
