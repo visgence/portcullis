@@ -3,9 +3,9 @@
 	"pk": 1,
     	"model": "portcullis.PortcullisUser",
         "fields": {
-            "first_name": "super",
+            "first_name": "auth",
             "last_name": "user",
-            "email": "superuser@visgence.com",
+            "email": "auth@example.com",
             "password": "pbkdf2_sha256$10000$gwTfNcIAzabR$gUAEJu84LwzegTXl1gCNAr/ls6YVwUD5xXJlbRBQB4o=",
             "is_staff": true,
             "is_active": true,
@@ -18,7 +18,7 @@
         "fields": {
             "first_name": "staff",
             "last_name": "user",
-            "email": "staffuser@visgence.com",
+            "email": "staff@example.com",
             "password": "pbkdf2_sha256$10000$gwTfNcIAzabR$gUAEJu84LwzegTXl1gCNAr/ls6YVwUD5xXJlbRBQB4o=",
             "is_staff": true,
             "is_active": true,
@@ -31,7 +31,7 @@
         "fields": {
             "first_name": "normal",
             "last_name": "user",
-            "email": "normaluser@visgence.com",
+            "email": "normal@example.com",
             "password": "pbkdf2_sha256$10000$gwTfNcIAzabR$gUAEJu84LwzegTXl1gCNAr/ls6YVwUD5xXJlbRBQB4o=",
             "is_staff": false,
             "is_active": true,
