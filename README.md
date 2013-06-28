@@ -60,12 +60,12 @@ portcullis/$ sudo service apache2 restart
 
 There are a few Users that get loaded into the system once installation is complete for demonstration purposes.
 
-- <pre>auth@example.com</pre>
-- <pre>normal@example.com</pre>
+- auth@example.com
+- normal@example.com
 
 The password for both are 'password'
 
-<pre>auth@example.com</pre> is a super user and has privileges for everything in the web application while <pre>normal@example.com</pre> is not.
+The auth user is a super user and has privileges for everything in the web application while the normal user is not.
 The normal user is restricted to its own data in the system.
 
 
