@@ -12,12 +12,5 @@
         "fields": {
             "owner": 2
         }
-    },
-    {
-        "pk": "batterystaple",
-        "model": "portcullis.Key",
-        "fields": {
-            "owner": 3
-        }
     }
 ]

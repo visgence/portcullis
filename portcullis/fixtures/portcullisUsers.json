@@ -12,21 +12,8 @@
             "is_superuser": true
         }
     },
-    {
-	"pk": 2,
-    	"model": "portcullis.PortcullisUser",
-        "fields": {
-            "first_name": "staff",
-            "last_name": "user",
-            "email": "staff@example.com",
-            "password": "pbkdf2_sha256$10000$gwTfNcIAzabR$gUAEJu84LwzegTXl1gCNAr/ls6YVwUD5xXJlbRBQB4o=",
-            "is_staff": true,
-            "is_active": true,
-            "is_superuser": false
-        }
-    },
     {	    
-        "pk": 3,
+        "pk": 2,
     	"model": "portcullis.PortcullisUser",
         "fields": {
             "first_name": "normal",

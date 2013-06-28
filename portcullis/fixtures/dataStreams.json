@@ -20,38 +20,6 @@
         "model": "portcullis.datastream",
         "fields": {
             "reduction_type": "mean",
-            "name": "Bits Out",
-            "color": "red",
-            "max_value": null,
-            "min_value": null,
-            "owner": 2,
-            "scaling_function": 1,
-            "units": "Kbps",
-            "is_public": true,
-            "description": ""
-        }
-    },
-    {
-        "pk": 3,
-        "model": "portcullis.datastream",
-        "fields": {
-            "reduction_type": "mean",
-            "name": "Bandwidth",
-            "color": "black",
-            "max_value": null,
-            "min_value": null,
-            "owner": 2,
-            "scaling_function": 2,
-            "units": "Kbps",
-            "is_public": true,
-            "description": ""
-        }
-    },
-    {
-        "pk": 4,
-        "model": "portcullis.datastream",
-        "fields": {
-            "reduction_type": "mean",
             "name": "Wind Speed",
             "color": "yellow",
             "max_value": null,
