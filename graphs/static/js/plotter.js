@@ -31,36 +31,61 @@ function create_plot_click_handler(datastream_id, latestPos)
     return function(event, pos, item) {
         var plot = plots[datastream_id];
         var axes = plot.getAxes();
+        //Make sure we're not out of bounds of the graph itself
         if (pos.x < axes.xaxis.min || pos.x > axes.xaxis.max ||
             pos.y < axes.yaxis.min || pos.y > axes.yaxis.max) {
             return;
         }
 
+
+        var pos1 = pos2 = null;
         var i, j, dataset = plot.getData();
         for (i = 0; i < dataset.length; ++i) {
             var series = dataset[i];
-            // Find the nearest points, x-wise
+        
             for (j = 0; j < series.data.length; ++j) {
                 if(series.data[j] === null)
                     continue;
-                if (series.data[j][0] > pos.x)
+                if (series.data[j][0] > pos.x) {
+                    pos2 = series.data[j];
                     break;
+                }
+                else
+                    pos1 = series.data[j];
             }
-
-            // Now Interpolate
-            var y;
-            var p1 = series.data[j - 1];
-            var p2 = series.data[j];
-            if ((p1 !== null && p1 !== undefined) && (p2 !== null && p2 !== undefined) ) {
-                y = p1[1] + (p2[1] - p1[1]) * (pos.x - p1[0]) / (p2[0] - p1[0]);
-                var time = new Date(pos.x + timezone_offset);
-                $('#graph_selection_'+datastream_id).removeAttr('style');
-                $('#selected_value_'+datastream_id).text(y.toFixed(2));
-                $('#selected_time_'+datastream_id).text(dateToString(time));
-            }
-            else
-                reset_graph_selection(datastream_id);
+            break;
         } 
+
+        //Don't care if theres no data
+        if(pos1 === null && pos2 === null) {
+            return;
+        }
+
+        //Base cases of either pos1 or pos2 being null in which case the other non null value
+        //automatically gets selected.  Otherwise we compare the difference between the pos1/pos2 and 
+        //the position of the mouse and see which ones smaller.
+        var selected = null;
+        if(pos1 === null && pos2 !== null) {
+            plot.lockCrosshair({'x': pos2[0]});
+            selected = pos2;
+        }
+        else if(pos1 !== null && pos2 === null) {
+            plot.lockCrosshair({'x': pos1[0]});
+            selected = pos1;
+        }
+        else if(Math.abs(pos1[0] - pos.x) <= Math.abs(pos2[0] - pos.x)) {
+            plot.lockCrosshair({'x': pos1[0]});
+            selected = pos1;
+        }
+        else {
+            plot.lockCrosshair({'x': pos2[0]});
+            selected = pos2;
+        }
+
+        var time = new Date(selected[0] + timezone_offset);
+        $('#graph_selection_'+datastream_id).removeAttr('style');
+        $('#selected_value_'+datastream_id).text(selected[1]);
+        $('#selected_time_'+datastream_id).text(dateToString(time));
     };
 }
 
@@ -75,6 +100,7 @@ function reset_graph_selection(datastream_id)
     $('#graph_selection_'+datastream_id).attr('style', 'visibility: hidden;');
     $('#selected_value_'+datastream_id).text("");
     $('#selected_time_'+datastream_id).text("");
+    plots[datastream_id].clearCrosshair();
 }
 
 
@@ -620,7 +646,7 @@ function renderGraph(data, ranges, shouldScale)
             autoHighlight: false
         }
     };
-    
+
     options.yaxis = {min:data.min_value, max:data.max_value, axisLabel: data.units};
     var plot;
     if(shouldScale)
