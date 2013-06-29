@@ -19,11 +19,17 @@
     {{widget|safe}}
     {% endfor %}
     
-    {% if token %}
+    {% if token or defaultStreams %}
     <script>
         //On load function will search for any 'portcullis-graph' divs on the page.
         $(function() {
-            on_graphs_load({{graphIds|safe}});
+            if($('#granularity').length)
+                on_graphs_load({{graphIds|safe}});
+            else {
+                $(window).one('graphControlsRendered', function() {
+                    on_graphs_load({{graphIds|safe}});
+                });
+            }
         });
     </script>
     {% endif %}

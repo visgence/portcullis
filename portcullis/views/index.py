@@ -8,12 +8,19 @@
 
 # System imports
 from django.http import HttpResponse
-from django.template import RequestContext, loader
+from django.template import RequestContext, loader, Context
 from django.core.context_processors import csrf
 
 # Local imports
 from portcullis.views.side_pane import skeleton
 from portcullis.views.saved_view import saved_view
+from graphs.data_reduction import reductFunc
+
+try:
+    from default_graphs import DEFAULT_GRAPHS
+except:
+    DEFAULT_GRAPHS = []
+
 
 def index(request, content = None, content_id = None):
     '''
@@ -29,8 +36,23 @@ def index(request, content = None, content_id = None):
         side_pane = skeleton(request)
         content_pane = saved_view(request, content_id).content
     else:
+
+        graphs = []
+        t_graph = loader.get_template('graph.html')
+        reductions = reductFunc.keys()
+        for graphId in DEFAULT_GRAPHS:
+            c_graph = Context({
+                 'id': graphId
+                ,'reductions': reductions
+            })
+            graphs.append(t_graph.render(c_graph))
+
         content_t = loader.get_template('content_container.html')
-        content_c = RequestContext(request, {}) 
+        content_c = RequestContext(request, {
+             'widgets': graphs
+            ,'graphIds': DEFAULT_GRAPHS
+            ,'defaultStreams': True
+        }) 
         side_pane = skeleton(request)
         content_pane = content_t.render(content_c)
 

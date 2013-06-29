@@ -145,7 +145,6 @@ function on_graphs_load(graphIds)
         console.log("Did not recieve a list of graph ids while loading graphs!!");
         return;
     }
-    
     checkedGraphs = graphIds;
     collapse_all('graph_toggle');
 
@@ -178,7 +177,6 @@ function on_graphs_load(graphIds)
  */
 function on_graph_load(datastream_id, perm) 
 {
-    
     //bind main graph
     $("#sensor" + datastream_id).bind("plotselected",create_plot_select_handler(datastream_id));
     $("#sensor" + datastream_id).bind("plothover",create_plot_click_handler(datastream_id));
