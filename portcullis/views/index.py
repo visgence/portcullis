@@ -7,13 +7,14 @@
 """
 
 # System imports
-from django.http import HttpResponse
+from django.http import HttpResponse, Http404
 from django.template import RequestContext, loader, Context
 from django.core.context_processors import csrf
 
 # Local imports
 from portcullis.views.side_pane import skeleton
 from portcullis.views.saved_view import saved_view
+from portcullis.models import DataStream
 from graphs.data_reduction import reductFunc
 
 try:
@@ -41,8 +42,15 @@ def index(request, content = None, content_id = None):
         t_graph = loader.get_template('graph.html')
         reductions = reductFunc.keys()
         for graphId in DEFAULT_GRAPHS:
+
+            try:
+                stream = DataStream.objects.get(id=graphId)
+            except DataStream.DoesNotExist:
+                return Http404('Invalid stream id given for default!') 
+
             c_graph = Context({
                  'id': graphId
+                ,'reduction': stream.reduction_type
                 ,'reductions': reductions
             })
             graphs.append(t_graph.render(c_graph))
