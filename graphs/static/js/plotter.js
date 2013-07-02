@@ -584,6 +584,7 @@ function graph_overview_callback(is_shared, perm) {
 
         //set the graphs title
         $("#graph_title" + data.datastream_id).text(data.ds_label);
+        $("#share_link").removeClass('display_none');
 
         // For saved views, refresh the graph
         if ( data.zoom_start )
