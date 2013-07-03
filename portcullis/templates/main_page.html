@@ -12,14 +12,6 @@
 
     <script type="text/javascript">
         ready_tabs();
-
-        var state = $.bbq.getState();
-        if(!('time' in state))
-            state['time'] = 'hour';
-        if(!('auto-refresh' in state))
-            state['auto-refresh'] = false;
-        $.bbq.pushState(state);
-            
     </script>
 
     <div id="content">

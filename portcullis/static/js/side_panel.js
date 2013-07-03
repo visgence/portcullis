@@ -26,13 +26,17 @@ function toggle_side_pane()
     $('#side_pane_content').toggle('slide', {direction: 'left'}, 'fast');
 }
 
+var tabContent = {};
+
 /** Readies the side panes tabs jquery ui */
 function ready_tabs() 
 {
     var tabs = $('#tabs').tabs({
-        cache: true,
         beforeActivate: function(event, ui) {
             $('#widget_container').html('');
+        },
+        activate: function(event, ui) {
+            $.bbq.pushState({'tab': ui.newTab.text().toLowerCase()});
         }
     });
 }

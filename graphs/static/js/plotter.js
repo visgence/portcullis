@@ -135,10 +135,27 @@ function show_data_container(datastream_id)
     $("#stream_data_container_"+datastream_id).removeAttr('style'); 
 }
 
+
+function on_graphs_load(graphIds) 
+{
+    var streams = $.bbq.getState('streams');
+    if(streams === undefined || streams === null)
+        streams = [];
+
+    $.each(graphIds, function(i, stream) {
+        var index = $.inArray(stream, streams);
+        if(index <= -1)
+            streams.push(stream);
+    });
+    $.bbq.pushState({'streams': streams});
+}
+
+
 /*
 * Sets up all graph bindings and loads all on screen graphs including a shared view if a auth token
 * is available within the template.
 */
+/*
 function on_graphs_load(graphIds) 
 {
     if(!$.isArray(graphIds)) {
@@ -167,7 +184,7 @@ function on_graphs_load(graphIds)
         load_all_shared_graphs();
     else 
         load_all_graphs();
-}
+}*/
 
 //TODO: delete perm parameter when we get embeded graphs for sniffer working better
 /*
@@ -997,11 +1014,34 @@ function get_graph(ds_id, token)
     });
 }
 
+
+function load_unload_stream(checkbox) 
+{
+    var stream = $(checkbox).val();
+    var streams = $.bbq.getState('streams');
+    if(streams === undefined || streams === null)
+        streams = [];
+
+    var index = $.inArray(stream, streams);
+
+    if($(checkbox).prop('checked')) {
+        if(index <= -1)
+            streams.push(stream);
+    }
+    else {
+        if(index > -1)
+            streams.splice(index, 1);
+    }
+    $.bbq.pushState({'streams': streams});
+}
+
+
 /** Loads a stream to the page if it's checkbox was checked and unloads or stops the loading 
  * of the stream if it's checkbox is unchecked.
  *
  * checkbox - The streams checkbox input.
  */
+/*
 function load_unload_stream(checkbox) 
 {
     var datastream_id = $(checkbox).val();     
@@ -1048,7 +1088,7 @@ function load_unload_stream(checkbox)
         if(checkedGraphs.length <= 0)
             $('#share_link').addClass('display_none');
     }
-}
+}*/
 
 
 /** Take a Date object and return a string formatted as:
