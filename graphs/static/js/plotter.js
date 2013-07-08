@@ -1056,8 +1056,7 @@ function load_unload_stream(checkbox)
  */
 function dateToString(date)
 {
-    dStr = String(date.getMonth() + 1) + '/' + String(date.getDate()) + '/' + String(date.getFullYear()) + 
-        ' ' + String(date.getHours()) + ':' + String(date.getMinutes()) + ':' + String(date.getSeconds());
+    dStr = date.toLocaleDateString() + " " + date.toLocaleTimeString();
     return dStr;
 }
 
