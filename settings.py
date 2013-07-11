@@ -31,8 +31,8 @@ D_FORMAT = "%m/%d/%Y"
 #under different dev environments without impacting production.
 
 try:
-    from local_database_settings import *
-except:
+    from local_database_settings import DATABASES
+except ImportError:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
