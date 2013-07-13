@@ -2,6 +2,12 @@
 from django.http import HttpResponse
 from django.template import Context, RequestContext, loader
 from collections import OrderedDict
+from django.contrib.auth import get_user_model
+AuthUser = get_user_model()
+try:
+    import simplejson as json
+except ImportError:
+    import json
 
 #Local Imports
 from portcullis.models import DataStream
@@ -105,6 +111,88 @@ def stream_tree_top(streams):
     nodes = OrderedDict(sorted(nodes.iteritems(), key = lambda t: t[0]))
     leaves = OrderedDict(sorted(leaves.iteritems(), key = lambda t: t[0]))
     return {'nodes': nodes, 'leaves': leaves}
+
+
+
+def stream_subtree(request):
+    '''
+    ' This function will take a partial datastream name, delimited
+    ' with '|' and return the next level of the subtree
+    ' that matches.
+    '''
+
+    portcullisUser = check_access(request)
+    if isinstance(portcullisUser, HttpResponse):
+        dump = json.dumps({'access_error': 'Sorry, but you are not logged in.'})
+        return HttpResponse(dump, content_type="application/json")
+
+    try:
+        jsonData = json.loads(request.GET.get('jsonData'))
+    except:
+        dump = json.dumps({'errors': 'Error getting json data'})
+        return HttpResponse(dump, content_type="application/json")
+
+    name = jsonData['name']
+    group = jsonData['group']
+
+    # Check that we are logged in before trying to filter the streams
+    if isinstance(portcullisUser, AuthUser):
+        if group == 'owned':
+            streams = DataStream.objects.filter(name__startswith=name)
+            streams = streams.filter(owner=portcullisUser)
+        elif group == 'viewable':
+            streams = DataStream.objects.get_viewable(portcullisUser)
+            streams = streams.filter(name__startswith=name)
+            streams = streams.exclude(owner=portcullisUser)
+        elif group == 'public':
+            streams = DataStream.objects.filter(name__startswith=name)
+            viewableStreams = DataStream.objects.get_viewable(portcullisUser)
+            streams = streams.filter(is_public=True).exclude(owner=portcullisUser)
+            streams = streams.exclude(id__in=viewableStreams)
+        else:
+            dump = json.dumps({'errors': 'Error: %s is not a valid datastream type.' % group})
+            return HttpResponse(dump, content_type="application/json")
+
+    elif group == 'public':
+        streams = DataStream.objects.filter(name__startswith=name)
+        streams = streams.filter(is_public=True)
+    else:
+        dump = json.dumps({'errors': 'Error: You must be logged in to see the %s datastream type.' % group})
+        return HttpResponse(dump, content_type="application/json")
+
+    level = name.count('|')
+    nodes = {}
+    leaves = {}
+
+    for s in streams:
+        split_name = s.name.split('|')
+        n_name = split_name[level]
+
+        # Is this a node or leaf?
+        if len(split_name) > level + 1:
+            if (n_name) not in nodes:
+                nodes[n_name] = None
+        elif n_name not in leaves:
+            leaves[n_name] = s.id
+        else:
+            dump = json.dumps({'errors': 'Duplicate name in Database!'})
+            return HttpResponse(dump, content_type="application/json")
+
+    t = loader.get_template('stream_subtree.html')
+    nodes = OrderedDict(sorted(nodes.iteritems(), key=lambda t: t[0]))
+    leaves = OrderedDict(sorted(leaves.iteritems(), key=lambda t: t[0]))
+    c = Context({
+            'nodes':  nodes,
+            'leaves': leaves,
+            'path':   name,
+            'group':  group
+            })
+    return HttpResponse(json.dumps({'html': t.render(c)}), content_type="application/json")
+
+
+
+
+
 
 
 

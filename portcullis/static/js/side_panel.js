@@ -41,7 +41,7 @@ function ready_tabs()
 /** Gets the html for managing a users streams and puts it in the content of the page */
 function load_model_grid(app, model) 
 {
-    var url = "/utilities/model_editor/"+app+"/"+model+"/";
+    var url = "/chucho/model_editor/"+app+"/"+model+"/";
     $.get(url, {}, function(data) {
         $('#widget_container').html(data);  
     });
@@ -66,7 +66,10 @@ function toggle_subtree(event)
     var toggle_symbol = $(element).children('.collapse_state');
     if(toggle_symbol.html() == '+'){
         if (div.text() == '') {
-            Dajaxice.portcullis.stream_subtree(function(resp) {
+
+            $.get('/portcullis/side_pane/get_subtree/', {
+                  'jsonData': JSON.stringify({'name': $(element).attr('id'), group: $(element).attr('group')})
+            }, function(resp) {
                 if ( 'errors' in resp ) {
                     console.log('Error getting subtree: ' + resp.errors);
                     return false;
@@ -79,7 +82,7 @@ function toggle_subtree(event)
 
                 div.toggle(toggle_options);
                 toggle_symbol.html('-');
-            }, {'name': $(element).attr('id'), group: $(element).attr('group')});
+            });
         }
         else {
             div.toggle(toggle_options);
