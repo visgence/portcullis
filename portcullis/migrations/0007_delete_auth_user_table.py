@@ -11,10 +11,18 @@ class Migration(SchemaMigration):
         try:
             # Delete auth User Table, but might not have ever existed.
             db.delete_table(u'auth_user_groups')
+        except DatabaseError:
+            db.rollback_transaction()
+            db.start_transaction()
+        try:
             db.delete_table(u'auth_user_user_permissions')
+        except DatabaseError:
+            db.rollback_transaction()
+            db.start_transaction()
+        try:
             db.delete_table(u'auth_user')
         except DatabaseError:
-            pass
+            db.rollback_transaction()
 
     def backwards(self, orm):
         #  Create auth User table
