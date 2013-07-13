@@ -10,7 +10,6 @@ Portcullis is an application designed to centralize all kinds of data that can b
 
 - Python 2.7
 - Django 1.5
-- Dajaxice 0.5.5
 - South
 - git
 
@@ -30,7 +29,6 @@ Ubuntu or Debian users can usually install the prerequisites by executing the fo
 ```
 $ sudo apt-get install python2.7 postgresql python-psycopg2 apache2 libapache-mod-wsgi python-setuptools git
 $ sudo easy_install django
-$ sudo easy_install django-dajaxice
 ```
 
 From the root directory execute the following to initialize some necessary submodules.  
