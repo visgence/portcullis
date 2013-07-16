@@ -68,7 +68,7 @@ class PortcullisUserManager(BaseUserManager, ChuchoManager):
 
         if user.is_superuser:
             if filter_args is not None and len(filter_args) > 0:
-                return self.filter(**filter_args)
+                return self.advanced_search(**filter_args)
             elif omni is not None:
                 return self.search(omni)
             else:
@@ -95,7 +95,7 @@ class PortcullisUserManager(BaseUserManager, ChuchoManager):
 
         if user.is_superuser:
             if filter_args is not None and len(filter_args) > 0:
-                return self.filter(**filter_args)
+                return self.advanced_search(**filter_args)
             elif omni is not None:
                 return self.search(omni)
             else:
@@ -191,6 +191,8 @@ class PortcullisUser(AbstractBaseUser):
             'password': {'_type': 'password', 'grid_column': False},
             'last_login': {'_editable': False}
     }
+    
+    search_fields = ['email', 'first_name', 'last_name', 'date_joined']
 
     def get_full_name(self):
         '''
@@ -268,7 +270,7 @@ class ScalingFunctionManager(ChuchoManager):
 
 
         if filter_args is not None and len(filter_args) > 0:
-            return self.filter(**filter_args)
+            return self.advanced_search(**filter_args)
         elif omni is not None:
             return self.search(omni)
         else:
@@ -291,7 +293,7 @@ class ScalingFunctionManager(ChuchoManager):
 
         if user.is_superuser:
             if filter_args is not None and len(filter_args) > 0:
-                return self.filter(**filter_args)
+                return self.advanced_search(**filter_args)
             elif omni is not None:
                 return self.search(omni)
             else:
@@ -471,7 +473,7 @@ class KeyManager(ChuchoManager):
             raise TypeError("%s is not a PortcullisUser" % str(user))
 
         if filter_args is not None and len(filter_args) > 0:
-            objs = self.filter(**filter_args)
+            objs = self.advanced_search(**filter_args)
         elif omni is not None:
             objs = self.search(omni)
         else:
@@ -504,7 +506,7 @@ class KeyManager(ChuchoManager):
             raise TypeError("%s is not a PortcullisUser" % str(user))
 
         if filter_args is not None and len(filter_args) > 0:
-            objs = self.filter(**filter_args)
+            objs = self.advanced_search(**filter_args)
         elif omni is not None:
             objs = self.search(omni)
         else:
@@ -677,7 +679,7 @@ class DeviceManager(models.Manager):
             raise TypeError("%s is not a PortcullisUser" % str(user))
 
         if filter_args is not None:
-            objs = self.filter(**filter_args)
+            objs = self.advanced_search(**filter_args)
         else:
             objs = self.all()
 
@@ -821,7 +823,7 @@ class DataStreamManager(ChuchoManager):
             raise TypeError("%s is not a PortcullisUser." % str(user))
 
         if filter_args is not None and len(filter_args) > 0:
-            objs = self.filter(**filter_args)
+            objs = self.advanced_search(**filter_args)
         elif omni is not None:
             objs = self.search(omni)
         else:
@@ -902,7 +904,7 @@ class DataStreamManager(ChuchoManager):
 
 
         if filter_args is not None and len(filter_args) > 0:
-            objs = self.filter(**filter_args)
+            objs = self.advanced_search(**filter_args)
         elif omni is not None:
             objs = self.search(omni)
         else:
@@ -974,7 +976,6 @@ class DataStream(models.Model):
     objects = DataStreamManager()
 
     column_options = {
-        'units': {'grid_column': False},
         'description': {'grid_column': False},
         'color': {'grid_column': False},
         'scaling_function': {'grid_column': False},
@@ -982,7 +983,7 @@ class DataStream(models.Model):
         }
 
     # For omni search
-    search_fields = ['id', 'name', 'owner']
+    search_fields = ['id', 'name', 'owner', 'units']
 
     class Meta:
         ordering = ['id']
