@@ -9,6 +9,7 @@
 
 from django.db import models
 from portcullis.models import DataStream
+from chucho.models import ChuchoManager
 
 
 class Host(models.Model):
@@ -17,6 +18,13 @@ class Host(models.Model):
     community = models.CharField(max_length=64,blank=False)
     def __unicode__(self):
         return "Host: hostname=%s version=%s community=%s" % (self.hostname,self.version,self.community)
+
+    objects = ChuchoManager()
+
+    def can_view(self, user):
+        if user.is_superuser:
+            return True
+        return False
 
 
 class SnmpStream(models.Model):
@@ -32,3 +40,10 @@ class SnmpStream(models.Model):
     
     def __unicode__(self):
         return "SnmpStream: dataStreamID=%s hostname=%s oid=%s lastTime=%s lastValue=%s" % (self.dataStream.id,self.host.hostname,self.oid,self.lastTime,self.lastValue)
+
+    objects = ChuchoManager()
+
+    def can_view(self, user):
+        if user.is_superuser:
+            return True
+        return False
