@@ -42,19 +42,6 @@
         "pk": 4
         ,"model": "portcullis.datastream"
         ,"fields": {
-            "device": "device2"
-            ,"timestamp": 1377574156
-            ,"sensor_id": 3
-            ,"value": 1
-            ,"scaling_function": 1
-            ,"units": "bps"
-            ,"name": "Datastream Four"
-        }
-    }
-    ,{
-        "pk": 5
-        ,"model": "portcullis.datastream"
-        ,"fields": {
             "device": "device3"
             ,"timestamp": 1377574156
             ,"sensor_id": 3
