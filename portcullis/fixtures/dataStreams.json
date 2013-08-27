@@ -1,34 +1,67 @@
 [
     {
-        "pk": 1,
-        "model": "portcullis.datastream",
-        "fields": {
-            "reduction_type": "mean",
-            "name": "Bits In",
-            "color": "blue",
-            "max_value": null,
-            "min_value": null,
-            "owner": 1,
-            "scaling_function": 3,
-            "units": "Kbps",
-            "is_public": true,
-            "description": ""
+        "pk": 1
+        ,"model": "portcullis.datastream"
+        ,"fields": {
+            "device": "device1"
+            ,"timestamp": 1377574156
+            ,"sensor_id": 1
+            ,"value": 1
+            ,"scaling_function": 1
+            ,"units": "pps"
+            ,"name": "Datastream One"
         }
-    },
-    {
-        "pk": 2,
-        "model": "portcullis.datastream",
-        "fields": {
-            "reduction_type": "mean",
-            "name": "Wind Speed",
-            "color": "yellow",
-            "max_value": null,
-            "min_value": null,
-            "owner": 2,
-            "scaling_function": 3,
-            "units": "MPH",
-            "is_public": true,
-            "description": ""
+    }
+    ,{
+        "pk": 2
+        ,"model": "portcullis.datastream"
+        ,"fields": {
+            "device": "device1"
+            ,"timestamp": 1377574156
+            ,"sensor_id": 2
+            ,"value": 1
+            ,"scaling_function": 1
+            ,"units": "bps"
+            ,"name": "Datastream Two"
+        }
+    }
+    ,{
+        "pk": 3
+        ,"model": "portcullis.datastream"
+        ,"fields": {
+            "device": "device2"
+            ,"timestamp": 1377574156
+            ,"sensor_id": 2
+            ,"value": 1
+            ,"scaling_function": 1
+            ,"units": "pps"
+            ,"name": "Datastream Three"
+        }
+    }
+    ,{
+        "pk": 4
+        ,"model": "portcullis.datastream"
+        ,"fields": {
+            "device": "device2"
+            ,"timestamp": 1377574156
+            ,"sensor_id": 3
+            ,"value": 1
+            ,"scaling_function": 1
+            ,"units": "bps"
+            ,"name": "Datastream Four"
+        }
+    }
+    ,{
+        "pk": 5
+        ,"model": "portcullis.datastream"
+        ,"fields": {
+            "device": "device3"
+            ,"timestamp": 1377574156
+            ,"sensor_id": 3
+            ,"value": 1
+            ,"scaling_function": 1
+            ,"units": "bps"
+            ,"name": "Datastream Five"
         }
     }
 ]
