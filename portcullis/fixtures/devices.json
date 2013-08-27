@@ -1,6 +1,6 @@
 [
     {
-        "pk": "device1"
+        "pk": 1
         ,"model": "portcullis.device"
         ,"fields": {
             "uuid": "device1"
@@ -9,7 +9,7 @@
         }
     }
     ,{
-        "pk": "device2"
+        "pk": 2
         ,"model": "portcullis.device"
         ,"fields": {
             "uuid": "device2"
@@ -18,7 +18,7 @@
         }
     }
     ,{
-        "pk": "device3"
+        "pk": 3
         ,"model": "portcullis.device"
         ,"fields": {
             "uuid": "device3"
@@ -27,7 +27,7 @@
         }
     }
     ,{
-        "pk": "device4"
+        "pk": 4
         ,"model": "portcullis.device"
         ,"fields": {
             "uuid": "device4"

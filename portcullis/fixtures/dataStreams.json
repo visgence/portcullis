@@ -3,9 +3,9 @@
         "pk": 1
         ,"model": "portcullis.datastream"
         ,"fields": {
-            "device": "device1"
+            "device": 1
             ,"timestamp": 1377574156
-            ,"sensor_id": 1
+            ,"sensor_id": "sensor-id-one"
             ,"value": 1
             ,"scaling_function": 1
             ,"units": "pps"
@@ -16,9 +16,9 @@
         "pk": 2
         ,"model": "portcullis.datastream"
         ,"fields": {
-            "device": "device1"
+            "device": 1
             ,"timestamp": 1377574156
-            ,"sensor_id": 2
+            ,"sensor_id": "sensor-id-two"
             ,"value": 1
             ,"scaling_function": 1
             ,"units": "bps"
@@ -29,9 +29,9 @@
         "pk": 3
         ,"model": "portcullis.datastream"
         ,"fields": {
-            "device": "device2"
+            "device": 2
             ,"timestamp": 1377574156
-            ,"sensor_id": 2
+            ,"sensor_id": "sensor-id-two"
             ,"value": 1
             ,"scaling_function": 1
             ,"units": "pps"
@@ -42,9 +42,9 @@
         "pk": 4
         ,"model": "portcullis.datastream"
         ,"fields": {
-            "device": "device3"
+            "device": 3
             ,"timestamp": 1377574156
-            ,"sensor_id": 3
+            ,"sensor_id": "sensor-id-three"
             ,"value": 1
             ,"scaling_function": 1
             ,"units": "bps"
