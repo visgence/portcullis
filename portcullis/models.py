@@ -215,6 +215,10 @@ class PortcullisUser(AbstractBaseUser):
             self.last_login = datetime(1900, 1, 1).replace(tzinfo=timezone.utc)
         if self.date_joined is None:
             self.date_joined = timezone.now()
+        
+        self.first_name = self.first_name.strip()
+        self.last_name = self.last_name.strip()
+        self.email = self.email.strip()
         super(PortcullisUser, self).save(*args, **kwargs)
 
     def can_view(self, user):
