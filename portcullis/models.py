@@ -720,7 +720,7 @@ class DeviceManager(models.Manager):
 
 class Device(models.Model):
     # TODO - Actual uuid?
-    uuid = models.TextField(primary_key=True)
+    uuid = models.TextField()
     name = models.TextField()
     description = models.TextField(blank=True)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
@@ -933,7 +933,7 @@ class DataStreamManager(ChuchoManager):
 
 class DataStream(models.Model):
     device = models.ForeignKey(Device)
-    sensor_id = models.PositiveIntegerField()
+    sensor_id = models.TextField()
     timestamp = models.BigIntegerField() # TODO: ????
     value = models.IntegerField()  # TODO: ????
     scaling_function = models.ForeignKey(ScalingFunction)
