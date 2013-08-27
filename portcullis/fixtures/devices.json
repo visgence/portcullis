@@ -1,0 +1,38 @@
+[
+    {
+        "pk": "device1"
+        ,"model": "portcullis.device"
+        ,"fields": {
+            "uuid": "device1"
+            ,"name": "Device Number One"
+            ,"owner": 1
+        }
+    }
+    ,{
+        "pk": "device2"
+        ,"model": "portcullis.device"
+        ,"fields": {
+            "uuid": "device2"
+            ,"name": "Device Number Two"
+            ,"owner": 1
+        }
+    }
+    ,{
+        "pk": "device3"
+        ,"model": "portcullis.device"
+        ,"fields": {
+            "uuid": "device3"
+            ,"name": "Device Number Three"
+            ,"owner": 1
+        }
+    }
+    ,{
+        "pk": "device4"
+        ,"model": "portcullis.device"
+        ,"fields": {
+            "uuid": "device4"
+            ,"name": "Device Number Four"
+            ,"owner": 1
+        }
+    }
+]

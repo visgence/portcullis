@@ -38,7 +38,7 @@ class Command(BaseCommand):
             [
                 'portcullis/fixtures/portcullisUsers.json',
                 'portcullis/fixtures/scalingFunctions.json',
-                'portcullis/fixtures/keys.json',
+                'portcullis/fixtures/devices.json',
                 'portcullis/fixtures/dataStreams.json'
             ]
         ]
