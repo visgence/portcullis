@@ -633,7 +633,7 @@ class Key(models.Model):
         return self.key + " Owned by " + self.owner.get_username()
 
 
-class DeviceManager(models.Manager):
+class DeviceManager(ChuchoManager):
     def can_edit(self, user):
         '''
         ' Checks if a PortcullisUser is allowed to edit or add instances of this model.
@@ -650,7 +650,7 @@ class DeviceManager(models.Manager):
 
         return True
 
-    def get_viewable(self, user, filter_args=None):
+    def get_viewable(self, user, filter_args=None, omni=None):
         '''
         ' Gets all device that can be viewed or assigned by a specified portcullis user.
         '
@@ -664,9 +664,9 @@ class DeviceManager(models.Manager):
 
         #TODO: Wrapper until permissions become more robust
 
-        return self.get_editable(user, filter_args)
+        return self.get_editable(user, filter_args, omni)
 
-    def get_editable(self, user, filter_args=None):
+    def get_editable(self, user, filter_args=None, omni=None):
         '''
         ' Gets all device that can be edited by a specified portcullis user.
         '
@@ -682,8 +682,10 @@ class DeviceManager(models.Manager):
         if not isinstance(user, PortcullisUser):
             raise TypeError("%s is not a PortcullisUser" % str(user))
 
-        if filter_args is not None:
+        if filter_args is not None and len(filter_args) > 0:
             objs = self.advanced_search(**filter_args)
+        elif omni is not None:
+            objs = self.search(omni)
         else:
             objs = self.all()
 
