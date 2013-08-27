@@ -715,11 +715,12 @@ class DeviceManager(models.Manager):
 
 
 class Device(models.Model):
-    name = models.CharField(max_length=128)
+    # TODO - Actual uuid?
+    uuid = models.TextField(primary_key=True)
+    name = models.TextField()
     description = models.TextField(blank=True)
-    ip_address = models.IPAddressField(blank=True)
-    key = models.ForeignKey(Key, null=True, blank=True, on_delete=models.SET_NULL)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
+
     objects = DeviceManager()
 
     def can_view(self, user):
@@ -781,30 +782,6 @@ class DataStreamManager(ChuchoManager):
 
         return True
 
-    def get_readable_by_key(self, key):
-        '''
-        ' Gets all DataStreams that can be read by a specified Key.
-        '
-        ' Validate Key which means that if the key has a number of uses left
-        ' one will be subtracted from it.
-        '
-        ' Keyword Arguments:
-        '   key - Key object to filter readable DataStreams by.
-        '
-        ' Return: QuerySet of DataStreams that are readable by the specified Key.
-        '''
-
-        #Validate object is a Key
-        if not isinstance(key, Key):
-            raise TypeError("%s is not a Key object." % str(key))
-
-        #Make sure key is valid
-        vKey = Key.objects.validate(key.key)
-        if vKey is None:
-            raise Exception("%s is not a valid key." % str(vKey))
-
-        return DataStream.objects.filter(can_read=key)
-
     def get_viewable(self, user, filter_args=None, omni=None):
         '''
         ' Gets all DataStreams viewable or assignable by a PortcullisUser.
@@ -833,13 +810,7 @@ class DataStreamManager(ChuchoManager):
         if user.is_superuser:
             return objs
 
-        keys = Key.objects.filter(owner=user)
-        validKeys = []
-        for key in keys:
-            if key.isCurrent():
-                validKeys.append(key)
-
-        return objs.filter(can_read__in=validKeys).distinct()
+        return objs.filter(device__owner=user)
         
 #        if user.is_superuser:
 #            objs = self.all()
@@ -913,7 +884,7 @@ class DataStreamManager(ChuchoManager):
         if user.is_superuser:
             return objs
 
-        return objs.filter(owner=user)
+        return objs.filter(device__owner=user)
 
         
 #        if filter_args is not None and len(filter_args) > 0:
@@ -950,36 +921,25 @@ class DataStreamManager(ChuchoManager):
         except DataStream.DoesNotExist:
             raise DataStream.DoesNotExist("A Data Stream does not exist for the primary key %s" % str(pk))
 
-        keys = Key.objects.filter(owner=user)
-        validKeys = [key for key in keys if key.isCurrent()]
-        if user.is_superuser or ds.owner == user or not set(ds.can_post.all()).disjoint(validKeys):
+        if user.is_superuser or ds.device.owner == user:
             return ds
         
         return None
 
 
 class DataStream(models.Model):
-    units = models.CharField(max_length=32, blank=True)
-    name = models.CharField(max_length=128, db_index=True)
-    description = models.CharField(max_length=64, blank=True)
-    color = models.CharField(max_length=32, blank=True)
-    min_value = models.DecimalField(null=True, max_digits=20, decimal_places=6, blank=True)
-    max_value = models.DecimalField(null=True, max_digits=20, decimal_places=6, blank=True)
+    device = models.ForeignKey(Device)
+    sensor_id = models.PositiveIntegerField()
+    timestamp = models.BigIntegerField() # TODO: ????
+    value = models.IntegerField()  # TODO: ????
     scaling_function = models.ForeignKey(ScalingFunction)
-    reduction_type = models.CharField(max_length=32, default='mean', choices=reduction_type_choices())
-    is_public = models.BooleanField()
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL)
-    # keys that have permission to read to this data stream
-    can_read = models.ManyToManyField(Key, related_name='can_read_set', blank=True)
-    # keys that have permission to post to this data stream
-    can_post = models.ManyToManyField(Key, related_name='can_write_set', blank=True)
+    name = models.TextField(db_index=True)
+    units = models.CharField(max_length=32, blank=True)
+
     objects = DataStreamManager()
 
     column_options = {
-        'description': {'grid_column': False},
-        'color': {'grid_column': False},
         'scaling_function': {'grid_column': False},
-        'reduction_type': {'grid_column': False},
         }
 
     # For omni search
@@ -987,7 +947,7 @@ class DataStream(models.Model):
 
     class Meta:
         ordering = ['id']
-        unique_together = (('owner', 'name'),)
+        unique_together = (('device', 'sensor_id'),)
 
     def __unicode__(self):
         return "Stream_ID: %s" % self.id  + " Name: " + self.name
@@ -1006,7 +966,7 @@ class DataStream(models.Model):
         if not isinstance(user, PortcullisUser):
             raise TypeError("%s is not a PortcullisUser" % str(user))
 
-        if user.is_superuser or user == self.owner:
+        if user.is_superuser or user == self.device.owner:
             return True
 
         return False
@@ -1023,24 +983,9 @@ class DataStream(models.Model):
         '           owns a key that is in the can_read M2M field will return true.
         '          Returns false otherwise.
         '''
-        if self.is_public == True:
-            return True
-
         if isinstance(obj, PortcullisUser):
-            if obj == self.owner or obj.is_superuser:
+            if obj == self.device.owner or obj.is_superuser:
                 return True
-            elif obj.id in self.can_read.filter( (Q(expiration__gt=timezone.now()) | Q(expiration=None)) &
-                                                (Q(num_uses__gt=0) | Q(num_uses=None))
-                                                 ).values_list('owner', flat=True):
-                return True
-
-        elif isinstance(obj, Key):
-            if obj.isCurrent():
-                return obj in self.can_read.all()
-            else:
-                return False
-        else:
-            raise TypeError("%s is not a PortcullisUser or a Key" % str(obj))
 
         return False
 
@@ -1056,20 +1001,10 @@ class DataStream(models.Model):
         '          Returns false otherwise.
         '''
         if isinstance(obj, PortcullisUser):
-            if obj == self.owner or obj.is_superuser:
+            if obj == self.device.owner or obj.is_superuser:
                 return True
-            elif obj.id in self.can_post.filter( (Q(expiration__gt=timezone.now()) | Q(expiration=None)) &
-                                                (Q(num_uses__gt=0) | Q(num_uses=None) )
-                                                 ).values_list('owner', flat=True):
-                return True
-            else:
-                return False
-
-        if isinstance(obj, Key):
-            if obj.isCurrent():
-                return obj in self.can_post.all()
-            else:
-                return False
+        if obj == self.device:
+            return True
 
         return False
 
