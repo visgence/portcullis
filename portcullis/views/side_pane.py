@@ -10,7 +10,7 @@ except ImportError:
     import json
 
 #Local Imports
-from portcullis.models import DataStream
+from portcullis.models import DataStream, Device
 from check_access import check_access
 
 def skeleton(request):
@@ -51,7 +51,8 @@ def streams(request):
     viewable_subtree = None
     if user is not None:
         #Pull streams that are owned by this user.
-        owned_streams = DataStream.objects.filter(owner = user)
+        owned_devices = Device.objects.filter(owner=user)
+        owned_streams = DataStream.objects.filter(device__in=owned_devices)
         c_dict = stream_tree_top(owned_streams)
         c_dict.update({'group':'owned'})
         owned_subtree = t_subtree.render(Context(c_dict))
@@ -63,19 +64,19 @@ def streams(request):
         viewable_subtree = t_subtree.render(Context(c_dict))
 
     #Pull any public streams as well
-    public_streams = DataStream.objects.filter(is_public = True).exclude(id__in=viewable_streams).exclude(id__in=owned_streams).distinct()
-    c_dict = stream_tree_top(public_streams)
-    c_dict.update({'group':'public'})
-    public_subtree = t_subtree.render(Context(c_dict))
+    #public_streams = DataStream.objects.filter(is_public = True).exclude(id__in=viewable_streams).exclude(id__in=owned_streams).distinct()
+    #c_dict = stream_tree_top(public_streams)
+    #c_dict.update({'group':'public'})
+    #public_subtree = t_subtree.render(Context(c_dict))
 
     t_streams = loader.get_template('user_streams.html')
     c_streams = RequestContext(request, {
             'user':request.user,
             'owned_streams': owned_streams,
             'viewable_streams': viewable_streams,
-            'public_streams': public_streams,
+            #'public_streams': public_streams,
             'owned_subtree': owned_subtree,
-            'public_subtree': public_subtree,
+            #'public_subtree': public_subtree,
             'viewable_subtree': viewable_subtree
             })
     t_controls = loader.get_template('graph_controls.html')
@@ -144,18 +145,18 @@ def stream_subtree(request):
             streams = DataStream.objects.get_viewable(portcullisUser)
             streams = streams.filter(name__startswith=name)
             streams = streams.exclude(owner=portcullisUser)
-        elif group == 'public':
-            streams = DataStream.objects.filter(name__startswith=name)
-            viewableStreams = DataStream.objects.get_viewable(portcullisUser)
-            streams = streams.filter(is_public=True).exclude(owner=portcullisUser)
-            streams = streams.exclude(id__in=viewableStreams)
+        #elif group == 'public':
+        #    streams = DataStream.objects.filter(name__startswith=name)
+        #    viewableStreams = DataStream.objects.get_viewable(portcullisUser)
+        #    streams = streams.filter(is_public=True).exclude(owner=portcullisUser)
+        #    streams = streams.exclude(id__in=viewableStreams)
         else:
             dump = json.dumps({'errors': 'Error: %s is not a valid datastream type.' % group})
             return HttpResponse(dump, content_type="application/json")
 
-    elif group == 'public':
-        streams = DataStream.objects.filter(name__startswith=name)
-        streams = streams.filter(is_public=True)
+    #elif group == 'public':
+    #    streams = DataStream.objects.filter(name__startswith=name)
+    #    streams = streams.filter(is_public=True)
     else:
         dump = json.dumps({'errors': 'Error: You must be logged in to see the %s datastream type.' % group})
         return HttpResponse(dump, content_type="application/json")
