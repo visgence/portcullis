@@ -16,8 +16,7 @@ except ImportError:
 
 
 # Local imports
-from portcullis.models import DataStream, SensorReading, Key
-from graphs.models import SavedDSGraph
+from graphs.models import DataStream, SensorReading
 from portcullis.utils import DecimalEncoder
 from graphs.data_reduction import reduceData
 from api.utilites import cors_http_response_json

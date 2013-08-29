@@ -1,0 +1,30 @@
+[
+    {
+        "pk": "sensor_one_id"
+        ,"model": "graphs.sensor"
+        ,"fields": {
+            "uuid": "sensor_one_id"
+        }
+    }
+    ,{
+        "pk": "sensor_two_id"
+        ,"model": "graphs.sensor"
+        ,"fields": {
+            "uuid": "sensor_two_id"
+        }
+    }
+    ,{
+        "pk": "sensor_three_id"
+        ,"model": "graphs.sensor"
+        ,"fields": {
+            "uuid": "sensor_three_id"
+        }
+    }
+    ,{
+        "pk": "sensor_four_id"
+        ,"model": "graphs.sensor"
+        ,"fields": {
+            "uuid": "sensor_four_id"
+        }
+    }
+]

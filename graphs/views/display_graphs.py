@@ -10,7 +10,7 @@ except ImportError:
     import json
 
 #Local Imports
-from portcullis.models import DataStream, Key
+from graphs.models import DataStream
 from check_access import check_access
 from graphs.data_reduction import reductFunc
 from settings import DOMAIN

@@ -13,8 +13,7 @@ from django.core.context_processors import csrf
 
 # Local imports
 from portcullis.views.side_pane import skeleton
-from portcullis.views.saved_view import saved_view
-from portcullis.models import DataStream
+from graphs.models import DataStream
 from graphs.data_reduction import reductFunc
 
 try:

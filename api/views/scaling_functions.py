@@ -1,5 +1,5 @@
 from django.http import HttpResponse
-from portcullis.models import ScalingFunction 
+from graphs.models import ScalingFunction 
 
 def scaling_functions(request):
     if(request.method == 'GET'):

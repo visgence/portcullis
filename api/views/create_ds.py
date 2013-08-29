@@ -21,7 +21,7 @@ from django.db import transaction
 import time
 
 #Local Imports
-from portcullis.models import DataStream, Key, ScalingFunction
+from graphs.models import DataStream, ScalingFunction
 from api.utilites import cors_http_response_json
 
 

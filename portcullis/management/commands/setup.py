@@ -36,10 +36,13 @@ class Command(BaseCommand):
         print "Loading fixtures..."
         fixtures = [
             [
-                'portcullis/fixtures/portcullisUsers.json',
-                'portcullis/fixtures/scalingFunctions.json',
-                'portcullis/fixtures/devices.json',
-                'portcullis/fixtures/dataStreams.json'
+                'portcullis/fixtures/portcullisUsers.json'
+            ],
+            [
+                'graphs/fixtures/scalingFunctions.json',
+                'graphs/fixtures/sensors.json',
+                'graphs/fixtures/claimedSensors.json',
+                'graphs/fixtures/dataStreams.json'
             ]
         ]
 

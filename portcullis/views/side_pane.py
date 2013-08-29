@@ -10,7 +10,7 @@ except ImportError:
     import json
 
 #Local Imports
-from portcullis.models import DataStream, Device
+from graphs.models import DataStream, ClaimedSensor
 from check_access import check_access
 
 def skeleton(request):
@@ -51,8 +51,8 @@ def streams(request):
     viewable_subtree = None
     if user is not None:
         #Pull streams that are owned by this user.
-        owned_devices = Device.objects.filter(owner=user)
-        owned_streams = DataStream.objects.filter(device__in=owned_devices)
+        owned_sensors = ClaimedSensor.objects.filter(owner=user)
+        owned_streams = DataStream.objects.filter(claimed_sensor__in=owned_sensors)
         c_dict = stream_tree_top(owned_streams)
         c_dict.update({'group':'owned'})
         owned_subtree = t_subtree.render(Context(c_dict))

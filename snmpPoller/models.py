@@ -8,7 +8,7 @@
 # into your database.
 
 from django.db import models
-from portcullis.models import DataStream
+from graphs.models import DataStream
 from chucho.models import ChuchoManager
 
 
