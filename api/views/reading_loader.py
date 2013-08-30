@@ -6,10 +6,13 @@
 " (c) 2012 Visgence, Inc.
 """
 
+#Django Imports
+from django.core.exceptions import ValidationError
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
+from django.core.exceptions import ObjectDoesNotExist
 
 #System Imports
-from django.views.decorators.csrf import csrf_exempt
-from django.core.exceptions import ObjectDoesNotExist
 try:
     import simplejson as json
 except ImportError:
@@ -18,50 +21,53 @@ import time
 import urllib
 
 #Local Imports
-from graphs.models import DataStream, SensorReading
+from graphs.models import DataStream, SensorReading, Sensor, ClaimedSensor
 from portcullis.customExceptions import SensorReadingCollision
 from api.utilites import cors_http_response
 
 
 @csrf_exempt
+@require_POST
 def add_reading(request):
     '''
-    Adds a single reading to the database. In order to insert a reading we either need a stream id.
+    ' Adds a single reading to the database. To insert a reading we need a uuid from a sensor and its value
+    ' that it wants to post.
     '''
+    timestamp = int(time.time())
 
-    datastream_id = request.REQUEST.get('datastream_id')
-    auth_token = request.REQUEST.get('auth_token')
-    raw_sensor_value = request.REQUEST.get('value')
-
-    key = Key.objects.validate(auth_token)
-    if key is None:
-        return cors_http_response('Incorrect Authentication!')
-
-    #Is there even any data?
-    if(raw_sensor_value is None or raw_sensor_value == ""):
-        return cors_http_response("No data was passed for insertion! Please be sure to pass some data. Example: value=233")
-
-    if datastream_id is None or datastream_id == '':
-        return cors_http_response('Cannot identify datastream, please give datastream_id.')
-
-    # get and validate datastream permission
     try:
-        datastream = DataStream.objects.get_ds_and_validate(datastream_id, key, 'post')
-    except DataStream.DoesNotExist as e:
-        datastream = 'Error: %s' % (e,)
-    except ValueError as e:
-        datastream = 'Error: Internal validation error.'
-    # Assume if we don't get a DS object we get an error string.
-    if not isinstance(datastream, DataStream):
-        return cors_http_response(datastream)
+        uuid = request.POST['uuid']
+    except KeyError:
+        return cors_http_response("A uuid is required", 404)
 
+    try:
+        value = request.POST['value']
+        if(value is None or value == ""):
+            return cors_http_response("No data was passed for insertion!", 404)
+    except KeyError:
+        return cors_http_response("A value is required", 404)
+
+    try:
+        sensor = Sensor.objects.get(uuid=uuid)
+        claimedSensor = ClaimedSensor.objects.get(sensor=sensor)
+        datastream = DataStream.objects.get(claimed_sensor=claimedSensor)
+    except Sensor.DoesNotExist:
+        return cors_http_response("There is no sensor for the uuid \'%s\'" % str(uuid), 404)
+    except ClaimedSensor.DoesNotExist:
+        return cors_http_response("Sensor with uuid \'%s\' is not claimed!"%str(uuid), 404)
+    except DataStream.DoesNotExist:
+        return cors_http_response("There is no datastream for the sensor with uuid %s"%str(uuid), 404)
+     
     #Insert
     try:
-        insert_reading(datastream, raw_sensor_value)
-
+        insert_reading(datastream, sensor, value, timestamp)
     except SensorReadingCollision as e:
-        return cors_http_response(e)
-    
+        return cors_http_response(e, 500)
+    except ValidationError as e:
+        msg = "There was one or more errors while saving a sensor reading: "
+        msg += ", ".join([field+": "+error for field, error in e.message_dict.iteritems()])
+        return cors_http_response(msg, 500)
+
     return cors_http_response('Successfully inserted record')
 
 
@@ -176,4 +182,7 @@ def insert_reading(ds, sensor, value, timestamp=None):
         pass
 
     reading = SensorReading(datastream=ds, sensor=sensor, value=value, timestamp=timestamp)
+    reading.full_clean()
     reading.save()
+    return reading
+

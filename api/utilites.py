@@ -29,16 +29,17 @@ def cors_http_response_json(content):
     resp['Access-Control-Allow-Origin'] = '*'
     return resp
 
-def cors_http_response(content):
+def cors_http_response(content, status=200):
     '''
     ' Creates and returns a HttpRespone object that allows cross site access through Cors.
     '
     ' Keyword Arguements:
     '   content - String that will become the content of the HttpResponse
+    '   status  - Optional status code to give the response object. Default is 200
     '
     ' Return: HttpResponse that allows cross site access with string content
     '''
 
-    resp = HttpResponse(content, mimetype = "text/html")
+    resp = HttpResponse(content, content_type="text/html", status=status)
     resp['Access-Control-Allow-Origin'] = '*'
     return resp

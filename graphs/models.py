@@ -585,8 +585,8 @@ class DataStream(models.Model):
 
 
 class SensorReading(models.Model):
-    datastream = models.ForeignKey(DataStream, blank=True, db_index=True)
-    sensor = models.ForeignKey(Sensor, blank=True, db_index=True)
+    datastream = models.ForeignKey(DataStream, blank=True, null=True, db_index=True)
+    sensor = models.ForeignKey(Sensor, blank=True, null=True, db_index=True)
     value = models.DecimalField(max_digits=20, decimal_places=6)
     timestamp = models.BigIntegerField(db_index=True)
 

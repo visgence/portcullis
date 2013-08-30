@@ -1,5 +1,5 @@
 """"
-" datastreams/tests.py
+" api/tests.py
 "
 " Contributing Authors:
 "    Bretton Murphy (Visgence, Inc)
@@ -7,19 +7,23 @@
 " (c) 2013 Visgence, Inc.
 """
 
-#System Imports
+#Django Imports
 from django.test import TestCase
 from django.test.client import Client
-from urllib import urlencode, urlopen
 from django.contrib.auth import get_user_model
 AuthUser = get_user_model()
+
+#System Imports
+#from urllib import urlencode, urlopen
+import time
 try:
     import simplejson as json
 except ImportError:
     import json
 
 #Local Imports
-from portcullis.models import DataStream
+from graphs.models import DataStream, SensorReading, Sensor
+from api.views.reading_loader import insert_reading
 
 class CreateTest(TestCase):
     '''
@@ -129,3 +133,53 @@ class CreateTest(TestCase):
         self.assertEqual(response_json['error'], "From createDs: There were one or more problems setting DataStream attributes.")
 
 
+class ReadingLoaderTest(TestCase):
+    '''
+    ' Tests for the view file reading_loader.py
+    '''
+   
+    fixtures = ['portcullisUsers.json', 'sensors.json', 'claimedSensors.json', 'scalingFunctions.json',  'dataStreams.json']
+
+    def setUp(self):
+        self.c = Client()
+
+
+    ################# insert_reading ################
+
+    def test_insert_reading_no_ds(self):
+        '''
+            Test that we get a new sensor reading even with no datastream
+        '''
+
+        sensor = Sensor.objects.get(uuid="sensor_one_id")
+        timestamp = int(time.time())
+        reading = insert_reading(None, sensor, 10.5, timestamp) 
+        self.assertEqual(reading, SensorReading.objects.get(datastream=None, timestamp=timestamp))
+
+    def test_insert_reading_ds(self):
+        '''
+            Test that we get a new sensor reading with a datastream
+        '''
+        
+        sensor = Sensor.objects.get(uuid="sensor_one_id")
+        ds = DataStream.objects.get(pk=1)
+        timestamp = int(time.time())
+        reading = insert_reading(ds, sensor, 10.5, timestamp) 
+        self.assertEqual(reading, SensorReading.objects.get(datastream=ds, timestamp=timestamp))
+
+    def test_insert_reading_no_timestamp(self):
+        '''
+            Test that a sensor reading get's creating without an explicit timestamp
+        '''
+        
+        sensor = Sensor.objects.get(uuid="sensor_one_id")
+        ds = DataStream.objects.get(pk=1)
+        reading = insert_reading(ds, sensor, 10.5) 
+        self.assertTrue(isinstance(reading, SensorReading))
+
+    def test_insert_reading_collision(self):
+        '''
+            Test that if we insert two readings with the same timestamp and datastream we get a collision
+        '''
+        pass
+    ################# add_reading ###################
