@@ -2,6 +2,7 @@
 #Django Imports
 from django.db import models
 from django.conf import settings
+from django.utils import timezone
 
 # System Imports
 from base64 import urlsafe_b64encode as b64encode
@@ -162,22 +163,10 @@ class SensorManager(ChuchoManager):
 
         return True
 
-    def validate(self, token):
-        # TODO: decide whether or not to keep this method, or to replace it (within other validation)
-        # also whether to return different kinds of errors/etc.
-        try:
-            key = Key.objects.get(key=token)
-        except Key.DoesNotExist:
-            return None
 
-        if key.isCurrent():
-            key.use()
-            return key
-        return None
-
-    def genKeyHash(self, username=''):
+    def genSensorHash(self, username=''):
         '''
-        ' return a hashed string to use for a key
+        ' return a hashed string to use for a sensor
         '
         ' Keyword arg:
         '   username - The user, if available, this string is for.  Does not have to be a
@@ -190,47 +179,17 @@ class SensorManager(ChuchoManager):
         md5.update(randomStr)
         return b64encode(md5.digest())
 
-    def generateKey(self, user, description='', expiration=None, uses=None, readL=None, postL=None):
-        '''
-        ' Create a new (hopefully) unique key for the specified user, and return it.
-        '
-        ' Keyword Arguments:
-        '  user - The PortcullisUser to create this key for.
-        '  description - Short description of the purpose of this key.
-        '  expiration - Datetime object that determines when this key is no longer valid.
-        '               the default is None, which means it does not have an expiration date.
-        '  uses - The number of times this key can be used before it expires.  0 means this key has no
-        '         more uses.  None means it has infinite uses.  The default is None.
-        '  readL - The list of DataStream (or possibly other) objects that can be read with this key.
-        '          The default is None.
-        '  postL - The list of DataStream (or other) objects that can be posted to with this key.
-        '          The default is None.
-        '''
-
-        token = self.genKeyHash(user.get_username())
-        key = Key.objects.create(key=token, owner=user, description=description,
-                                 expiration=expiration, num_uses=uses)
-
-        if readL is not None:
-            for ds in readL:
-                ds.can_read.add(key)
-
-        if postL is not None:
-            for ds in postL:
-                ds.can_post.add(key)
-
-        return key
 
     def get_viewable(self, user, filter_args=None, omni=None):
         '''
-        ' Gets all keys that can be viewed or assigned by a specified portcullis user.
+        ' Gets all sensors that can be viewed or assigned by a specified portcullis user.
         '
-        ' Super users will have access to all keys. (users with is_superuser = true)
+        ' Super users will have access to all sensorss. (users with is_superuser = true)
         '
         ' Keyword Arguements:
-        '   user - PortcullisUser to filter keys by.
+        '   user - PortcullisUser to filter sensors by.
         '
-        ' Return: QuerySet of Keys that are viewable by the specified PortcullisUser.
+        ' Return: QuerySet of sensors that are viewable by the specified PortcullisUser.
         '''
 
         #Validate user object
@@ -244,26 +203,19 @@ class SensorManager(ChuchoManager):
         else:
             objs = self.all()
        
-        if not user.is_superuser:
-            objs = objs.filter(owner=user)
-            
-        validKeys = []
-        for key in objs:
-            if key.isCurrent():
-                validKeys.append(key.key)
+        return objs 
 
-        return self.filter(key__in=validKeys)
 
     def get_editable(self, user, filter_args=None, omni=None):
         '''
-        ' Gets all keys that can be edited by a specified portcullis user.
+        ' Gets all sensors that can be edited by a specified portcullis user.
         '
-        ' Super users will have access to all keys for editing. (users with is_superuser = true)
+        ' Super users will have access to all sensors for editing. (users with is_superuser = true)
         '
         ' Keyword Arguements:
-        '   user - PortcullisUser to filter editable keys by.
+        '   user - PortcullisUser to filter editable sensors by.
         '
-        ' Return: QuerySet of Keys that are editable by the specified PortcullisUser.
+        ' Return: QuerySet of sensors that are editable by the specified PortcullisUser.
         '''
 
         #Validate user object
@@ -277,35 +229,7 @@ class SensorManager(ChuchoManager):
         else:
             objs = self.all()
 
-        if user.is_superuser:
-            return objs
-
-        return objs.filter(owner=user)
-
-    def get_editable_by_pk(self, user, pk):
-        '''
-        ' Get's an instance of Key specified by a pk if the given user is allowed to edit it.
-        '
-        ' Keyword Arguments:
-        '   user - PortcullisUser to check if the key can be edited by them.
-        '   pk   - Primary key of Key to get.
-        '
-        ' Return: Key that user is allowed to edit or None if not.
-        '''
-
-        #Validate user object
-        if not isinstance(user, PortcullisUser):
-            raise TypeError("%s is not a PortcullisUser" % str(user))
-
-        try:
-            key = self.get(key=pk)
-        except Key.DoesNotExist as e:
-            raise Key.DoesNotExist("A key does not exist for the primary key %s" % str(pk))
-
-        if user.is_superuser or key.owner == user:
-            return key
-
-        return None
+        return objs
 
 
 class Sensor(models.Model):
@@ -316,7 +240,7 @@ class Sensor(models.Model):
     objects = SensorManager()
 
     column_options = {
-        'key': {'_editable': True}
+        'uuid': {'_editable': True}
         }
 
     def can_view(self, user):
@@ -333,71 +257,115 @@ class Sensor(models.Model):
         #Validate user object
         if not isinstance(user, PortcullisUser):
             raise TypeError("%s is not a PortcullisUser" % str(user))
+ 
+        return True
 
-        if not self.isCurrent():
-            return False
-        
-        if user.is_superuser:
-            return True
-       
-        if user == self.owner:
-            return True
-
-        return False
-
-    def is_editable_by_user(self, user):
+    def get_editable_by_pk(self, user, pk):
         '''
-        ' Checks if a Key instance is allowed to edited by a user or not.
+        ' Get's an instance of Sensor specified by a pk if the given user is allowed to edit it.
         '
         ' Keyword Arguments:
-        '   user - PortcullisUser to check if the key can be edited by them.
+        '   user - PortcullisUser to check if the sensor can be edited by them.
+        '   pk   - Primary key of sensor to get.
         '
-        ' Return: True if user is allowed to edit and False otherwise.
+        ' Return: sensor that user is allowed to edit or None if not.
         '''
 
         #Validate user object
         if not isinstance(user, PortcullisUser):
             raise TypeError("%s is not a PortcullisUser" % str(user))
 
-        if user.is_superuser or user == self.owner:
-            return True
+        try:
+            sensor = self.get(pk=pk)
+        except Sensor.DoesNotExist:
+            raise Sensor.DoesNotExist("A Sensor does not exist for the primary key %s" % str(pk))
 
-        return False
+        return sensor
 
-    def isCurrent(self):
-        '''
-        ' Check expiration, return True if this key is current, false if expired.
-        ' There are 2 types of expiration.  The first is date.  The current date must be earlier than
-        ' the expiration date.  The other is the number of uses.  The number of uses must be nonzero.
-        ' A null expiration does not expire by date.
-        '''
-        if ((self.expiration is None or timezone.now() < self.expiration) and
-            (self.num_uses is None or self.num_uses > 0)):
-            return True
-        return False
-
-    def use(self):
-        '''
-        ' When a key is used, decrement its num_uses by 1.
-        '''
-        if self.num_uses >= 0:
-            self.num_uses -= 1
-            self.save()
 
     def save(self, *args, **kwargs):
-        if self.key is None or self.key == '':
-            self.key = Key.objects.genKeyHash('generic_user')
-        super(Key, self).save(*args, **kwargs)
+        super(Sensor, self).save(*args, **kwargs)
 
     def __unicode__(self):
-        return self.key + " Owned by " + self.owner.get_username()
+        return self.uuid
+
+
+class ClaimedSensorManager(ChuchoManager):
+    def can_edit(self, user):
+        '''
+        ' Checks if a PortcullisUser is allowed to edit or add instances of this model.
+        '
+        ' Keyword Arguments:
+        '   user - PortcullisUser to check permission for.
+        '
+        ' Return: True if user is allowed to edit objects of this model and False otherwise.
+        '''
+
+        #Validate user object
+        if not isinstance(user, PortcullisUser):
+            raise TypeError("%s is not a PortcullisUser" % str(user))
+
+        return True
+
+
+    def get_viewable(self, user, filter_args=None, omni=None):
+        '''
+        ' Gets all sensors that can be viewed or assigned by a specified portcullis user.
+        '
+        ' Super users will have access to all sensorss. (users with is_superuser = true)
+        '
+        ' Keyword Arguements:
+        '   user - PortcullisUser to filter sensors by.
+        '
+        ' Return: QuerySet of sensors that are viewable by the specified PortcullisUser.
+        '''
+
+        #Validate user object
+        if not isinstance(user, PortcullisUser):
+            raise TypeError("%s is not a PortcullisUser" % str(user))
+
+        if filter_args is not None and len(filter_args) > 0:
+            objs = self.advanced_search(**filter_args)
+        elif omni is not None:
+            objs = self.search(omni)
+        else:
+            objs = self.all()
+       
+        return objs 
+
+
+    def get_editable(self, user, filter_args=None, omni=None):
+        '''
+        ' Gets all sensors that can be edited by a specified portcullis user.
+        '
+        ' Super users will have access to all sensors for editing. (users with is_superuser = true)
+        '
+        ' Keyword Arguements:
+        '   user - PortcullisUser to filter editable sensors by.
+        '
+        ' Return: QuerySet of sensors that are editable by the specified PortcullisUser.
+        '''
+
+        #Validate user object
+        if not isinstance(user, PortcullisUser):
+            raise TypeError("%s is not a PortcullisUser" % str(user))
+
+        if filter_args is not None and len(filter_args) > 0:
+            objs = self.advanced_search(**filter_args)
+        elif omni is not None:
+            objs = self.search(omni)
+        else:
+            objs = self.all()
+
+        return objs
 
 
 class ClaimedSensor(models.Model):
-    sensor = models.ForeignKey(Sensor, unique=True)
+    sensor = models.ForeignKey(Sensor, unique=True, null=True)
     name = models.TextField()
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
 
+    objects = ClaimedSensorManager()
 
     class Meta():
         unique_together = (('owner', 'name'),)
