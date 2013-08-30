@@ -418,20 +418,6 @@ class DataStreamManager(ChuchoManager):
 
         return objs.filter(device__owner=user)
         
-#        if user.is_superuser:
-#            objs = self.all()
-#        else:
-#            keys = Key.objects.filter(owner=user)
-#            validKeys = [key for key in keys if key.isCurrent()]
-#            objs = self.filter(Q(can_read__in=validKeys) | Q(owner=user)).distinct()
-#
-#        if filter_args is not None and len(filter_args) > 0:
-#            objs = objs.filter(**filter_args)
-#        elif omni is not None:
-#            objs = objs.search(omni)
-#
-#        return objs
-
     def get_ds_and_validate(self, ds_id, obj, perm='read'):
         '''
         ' Return a DataStream that corresponds to the datastream id given if the obj has
@@ -492,21 +478,6 @@ class DataStreamManager(ChuchoManager):
 
         return objs.filter(device__owner=user)
 
-        
-#        if filter_args is not None and len(filter_args) > 0:
-#            objs = self.filter(**filter_args)
-#        elif omni is not None:
-#            objs = self.search(omni)
-#
-#        if user.is_superuser:
-#            objs = self.all()
-#        else:
-#            keys = Key.objects.filter(owner=user)
-#            validKeys = [key for key in keys if key.isCurrent()]
-#            objs = self.filter(Q(can_post__in=validKeys) | Q(owner=user)).distinct()
-#
-#        return objs
-
     def get_editable_by_pk(self, user, pk):
         '''
         ' Get's an instance of DataStream specified by a pk if the given user is allowed to edit it.
@@ -538,7 +509,7 @@ class DataStream(models.Model):
     min_value = models.DecimalField(null=True, max_digits=20, decimal_places=6, blank=True)
     max_value = models.DecimalField(null=True, max_digits=20, decimal_places=6, blank=True)
     reduction_type = models.CharField(max_length=32, default='sample', choices=reduction_type_choices())
-    is_public = models.BooleanField()
+    is_public = models.BooleanField(default=False)
     scaling_function = models.ForeignKey(ScalingFunction)
     name = models.TextField()
     description = models.TextField(blank=True)
@@ -579,21 +550,17 @@ class DataStream(models.Model):
 
         return False
 
-    def can_view(self, obj):
+    def can_view(self, user):
         '''
-        ' Return True if the obj has permission to read this DataStream, False otherwise.
+        ' Return True if the user has permission to read this DataStream, False otherwise.
         '
         ' Keyword args:
-        '    obj - The object to check for permission to read for.
-        '          Any object can read a public datastream.
-        '          Providing a key in the can_read M2M field will return true.
-        '          Providing a PortcullisUser that either owns the datastream or
-        '           owns a key that is in the can_read M2M field will return true.
-        '          Returns false otherwise.
+        '    user - Returns True if the user is allowed to view the datastream. Returns false otherwise.
         '''
-        if isinstance(obj, PortcullisUser):
-            if obj == self.device.owner or obj.is_superuser:
-                return True
+        assert isinstance(user, PortcullisUser), "Did not get a PortcullisUser instance"
+
+        if user == self.claimed_sensor.owner or user.is_superuser:
+            return True
 
         return False
 
@@ -627,7 +594,6 @@ class SensorReading(models.Model):
         unique_together = ('datastream', 'timestamp')
 
     def save(self, *args, **kwargs):
-        #self.id = str(self.datastream.id) + '_' + str(self.timestamp)
         super(SensorReading, self).save(*args, **kwargs)
 
     def __unicode__(self):

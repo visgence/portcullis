@@ -151,15 +151,16 @@ def add_list(request, auth_token=None):
         return cors_http_response('Unexpected error occured! Exception: %s: %s' % (type(e), e.message))
 
 
-def insert_reading(datastream, raw_sensor_value, timestamp=None):
-    ''' Insert a sensor reading into the database.
-    ' This method will insert the given values into the given datastream.
-    ' If there is already an entry for the given timestamp, it will throw
+def insert_reading(ds, sensor, value, timestamp=None):
+    ''' 
+    ' Insert a sensor reading into the database.
+    ' If there is already an entry for the given timestamp and datastream, it will throw
     ' an exception.
     '
     ' Keyword Args:
-    '   datastream - The DataStream object this reading cooresponds to, or the id.
-    '   raw_sensor_value - The data value for this sensor reading.
+    '   ds        - The DataStream instance this reading cooresponds to, or the id.
+    '   sensor    - The Sensor instanct this reading cooresponds to, or the id.
+    '   value     - The data value for this sensor reading.
     '   timestamp - The time of the sensor reading.  Deault None.  If no time is
     '               given, this method will stamp it with the current time.
     '''
@@ -169,10 +170,10 @@ def insert_reading(datastream, raw_sensor_value, timestamp=None):
 
     # Make sure that we are not causing a collision in the table.
     try:
-        sr = SensorReading.objects.get(timestamp=timestamp, datastream=datastream)
+        sr = SensorReading.objects.get(timestamp=timestamp, datastream=ds)
         raise SensorReadingCollision('Sensor Reading with id \'%s\' already exists.' % str(sr.id))
     except ObjectDoesNotExist:
         pass
 
-    reading = SensorReading(datastream=datastream, value=raw_sensor_value, timestamp=timestamp)
+    reading = SensorReading(datastream=ds, sensor=sensor, value=value, timestamp=timestamp)
     reading.save()
