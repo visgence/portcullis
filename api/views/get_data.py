@@ -19,7 +19,7 @@ except ImportError:
 from graphs.models import DataStream, SensorReading
 from portcullis.utils import DecimalEncoder
 from graphs.data_reduction import reduceData
-from api.utilites import cors_http_response_json
+from api.utilities import cors_http_response_json
 
 
 def get_data_by_ds_column(request):

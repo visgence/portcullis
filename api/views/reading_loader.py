@@ -23,7 +23,7 @@ import urllib
 #Local Imports
 from graphs.models import DataStream, SensorReading, Sensor, ClaimedSensor
 from portcullis.customExceptions import SensorReadingCollision
-from api.utilites import cors_http_response
+from api.utilities import cors_http_response
 
 
 @csrf_exempt

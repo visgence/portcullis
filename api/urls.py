@@ -4,7 +4,7 @@ urlpatterns = patterns('api.views',
     url(r'^add_reading/$','reading_loader.add_reading'),
     url(r'^addList/$', 'reading_loader.add_reading_list'),
 
-    url(r'^create/$', 'create_ds.create_datastreams', name='api-create-datastreams'),
+    url(r'^create/$', 'datastream.create_datastreams', name='api-create-datastreams'),
     url(r'^join_column/$', 'get_data.get_data_by_ds_column', name='api-join-column'),
     url(r'^render_graph/$', 'get_data.render_graph', name='api-render_graph'),
     url(r'^sharedGraph/(?P<token>.+)/(?P<id>\d{1,4})/$', 'get_data.shared_graph', name='api-sharedGraph'),

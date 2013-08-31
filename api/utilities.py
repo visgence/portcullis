@@ -1,5 +1,5 @@
 """
-" api/utilites.py
+" api/utilities.py
 " Contributing Authors:
 "    Bretton Murphy (Visgence, Inc)
 "
