@@ -62,7 +62,7 @@ def create(data, owner):
             name = data['name']
         except KeyError:
             transaction.rollback()
-            return "A sensor name is required"
+            return str(uuid)+": A sensor name is required"
 
         #Get sensor or create one
         try:
@@ -78,6 +78,12 @@ def create(data, owner):
         if not isinstance(claimedSensor, ClaimedSensor):
             transaction.rollback()
             return claimedSensor
+
+        dsName = owner.email
+        if owner.first_name != '':
+            dsName = owner.first_name
+        dsName += "|"+claimedSensor.name
+        data['name'] = dsName 
 
         ds = claimDs(claimedSensor, data)
         if not isinstance(ds, DataStream):
