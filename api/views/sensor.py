@@ -20,7 +20,6 @@ from api.views.datastream import claimDs
 
 
 def createObject(cls, data):
-
     obj = cls()
     for field, fieldData in data.iteritems():
         #No manual setting of ids
@@ -41,13 +40,8 @@ def createObject(cls, data):
 
 
 def claimSensor(sensor, name, owner):
-
     try:
         claimedSensor = ClaimedSensor.objects.get(name=name, owner=owner)
-        if claimedSensor.sensor is not None:
-            error = "You already have a Sensor that is claimed with the name %s. Please re-register that " % str(name)
-            error += "Sensor if you wish to do so."
-            return error
     except ClaimedSensor.DoesNotExist:
         data = {'name': name, 'owner': owner, 'sensor': sensor}
         claimedSensor = createObject(ClaimedSensor, data)
@@ -55,10 +49,8 @@ def claimSensor(sensor, name, owner):
     return claimedSensor
 
 
-
 @transaction.commit_manually
 def create(data, owner):
-    
     try:
         try:
             uuid = data['uuid']
