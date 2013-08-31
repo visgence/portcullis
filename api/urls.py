@@ -13,4 +13,6 @@ urlpatterns = patterns('api.views',
     url(r'^logout/$', 'login.logout', name='api-logout'),
     url(r'^passwordForm/$', 'login.password_form', name='api-password_form'),
     url(r'^changePassword/$', 'login.change_password', name='api-change_password'),
+    
+    url(r'^createSensors/$', 'sensor.createSensors', name='api-create-sensors'),
 )

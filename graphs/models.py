@@ -282,6 +282,13 @@ class Sensor(models.Model):
 
         return sensor
 
+    def toDict(self):
+        return {
+            'uuid': self.uuid
+            ,'sensor_type': self.sensor_type
+            ,'units': self.units
+            ,'description': self.description
+        }
 
     def save(self, *args, **kwargs):
         super(Sensor, self).save(*args, **kwargs)

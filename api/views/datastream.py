@@ -152,3 +152,37 @@ def create_ds(owner, data):
     return ds
 
 
+def createObject(cls, data):
+    obj = cls()
+    for field, fieldData in data.iteritems():
+        #No manual setting of ids
+        if field in ['id', 'pk']:
+            continue
+
+        setattr(obj, field, fieldData)
+
+    try:
+        obj.full_clean()
+        obj.save()
+    except ValidationError as e:
+        return [{field: error} for field, error in e.message_dict.iteritems()]
+    except Exception as e:
+        return ["There was an unexpected error while saving a %s: %s" % (obj.__class__.__name__, str(e))]
+
+    return obj
+
+
+def claimDs(claimedSensor, data):
+    
+    try:
+        ds = DataStream.objects.get(claimed_sensor=claimedSensor)
+        return ds
+    except DataStream.DoesNotExist:
+        pass
+    
+    scaling_function = ScalingFunction.objects.get(name="Identity")
+    data.update({'claimed_sensor': claimedSensor, 'scaling_function': scaling_function})
+    ds = createObject(DataStream, data)
+    return ds 
+
+
