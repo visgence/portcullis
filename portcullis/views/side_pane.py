@@ -58,10 +58,10 @@ def streams(request):
         owned_subtree = t_subtree.render(Context(c_dict))
 
         #Pull streams that are viewable by this user.
-        viewable_streams = DataStream.objects.get_viewable(user).exclude(id__in=owned_streams).distinct()
-        c_dict = stream_tree_top(viewable_streams)
-        c_dict.update({'group':'viewable'})
-        viewable_subtree = t_subtree.render(Context(c_dict))
+        #viewable_streams = DataStream.objects.get_viewable(user).exclude(id__in=owned_streams).distinct()
+        #c_dict = stream_tree_top(viewable_streams)
+        #c_dict.update({'group':'viewable'})
+        #viewable_subtree = t_subtree.render(Context(c_dict))
 
     #Pull any public streams as well
     #public_streams = DataStream.objects.filter(is_public = True).exclude(id__in=viewable_streams).exclude(id__in=owned_streams).distinct()
@@ -113,8 +113,6 @@ def stream_tree_top(streams):
     leaves = OrderedDict(sorted(leaves.iteritems(), key = lambda t: t[0]))
     return {'nodes': nodes, 'leaves': leaves}
 
-
-
 def stream_subtree(request):
     '''
     ' This function will take a partial datastream name, delimited
@@ -140,11 +138,11 @@ def stream_subtree(request):
     if isinstance(portcullisUser, AuthUser):
         if group == 'owned':
             streams = DataStream.objects.filter(name__startswith=name)
-            streams = streams.filter(owner=portcullisUser)
-        elif group == 'viewable':
-            streams = DataStream.objects.get_viewable(portcullisUser)
-            streams = streams.filter(name__startswith=name)
-            streams = streams.exclude(owner=portcullisUser)
+            streams = streams.filter(claimed_sensor__owner=portcullisUser)
+        #elif group == 'viewable':
+        #    streams = DataStream.objects.get_viewable(portcullisUser)
+        #    streams = streams.filter(name__startswith=name)
+        #    streams = streams.exclude(owner=portcullisUser)
         #elif group == 'public':
         #    streams = DataStream.objects.filter(name__startswith=name)
         #    viewableStreams = DataStream.objects.get_viewable(portcullisUser)

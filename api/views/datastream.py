@@ -22,7 +22,7 @@ import time
 
 #Local Imports
 from graphs.models import DataStream, ScalingFunction
-from api.utilites import cors_http_response_json
+from api.utilities import cors_http_response_json
 
 
 @require_POST

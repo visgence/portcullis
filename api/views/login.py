@@ -24,7 +24,7 @@ except ImportError:
 
 # Local Imports
 from check_access import check_access
-from api.utilites import cors_http_response_json
+from api.utilities import cors_http_response_json
 
 
 def user_login(request):

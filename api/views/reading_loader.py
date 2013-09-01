@@ -23,7 +23,7 @@ import urllib
 #Local Imports
 from graphs.models import DataStream, SensorReading, Sensor, ClaimedSensor
 from portcullis.customExceptions import SensorReadingCollision
-from api.utilites import cors_http_response
+from api.utilities import cors_http_response
 
 
 @csrf_exempt
@@ -72,33 +72,23 @@ def add_reading(request):
 
 
 @csrf_exempt
-def add_list(request, auth_token=None):
+def add_reading_list(request):
     '''
     Adds multiple readings to the database from a list of lists.  Might it be better to use a list of
     dictionaries?  This has been renamed from add_bulk_readings so that the old add_bulk_readings can be
     add back for backwards compatability.
     '''
+
     try:
-        if auth_token is None:
-            auth_token = request.REQUEST.get('auth_token')
-
         try:
-            json_text = urllib.unquote(request.REQUEST.get('json'))
-        except:
-            try:
-                json_text = urllib.unquote(request.REQUEST.get('d'))
-            except:
-                msg = "No json received. Please send a serialized array of arrays in the form [[datastream_id,value1,time1],[datastream_id,value2,time2]].  time is optional."
-                return cors_http_response(msg)
-
-        key = Key.objects.validate(auth_token)
-        if key is None:
-            return cors_http_response('Incorrect Authentication!')
-
-        try:
-            readings = json.loads(json_text)
-        except Exception as e:
-            return cors_http_response('Error: Invalid JSON: %s: %s' % (type(e), e.message))
+            print request.body
+            readings = json.loads(request.body)
+        except KeyError:
+            msg = "No json received. Please send a serialized array of arrays in the form "
+            msg += "[[sensor_uuid,value1,time1],[sensor_uuid,value2,time2]].  time is optional."
+            return cors_http_response(msg)
+        except (TypeError, ValueError):
+            return cors_http_response("Bad Json", 404)
 
         insertion_attempts = 0
         insertion_successes = 0
@@ -106,14 +96,14 @@ def add_list(request, auth_token=None):
 
         #Grab all reading from the json
         for reading in readings:
-            ds_id = None
+            uuid = None
             raw_sensor_value = None
             timestamp = None
 
             insertion_attempts += 1
 
             try:
-                ds_id = reading[0]
+                uuid = reading[0]
                 raw_sensor_value = reading[1]
                 timestamp = reading[2]
             except:
@@ -126,7 +116,7 @@ def add_list(request, auth_token=None):
 
             # Get the datastream, if possible
             try:
-                ds = DataStream.objects.get_ds_and_validate(ds_id, key, 'post')
+                ds = DataStream.objects.get(claimed_sensor__sensor__uuid=uuid)
             except DataStream.DoesNotExist as e:
                 ds = str(e)
             except ValueError as e:
@@ -135,7 +125,7 @@ def add_list(request, auth_token=None):
                 error_string += '\n' + ds + '\n'
             else:
                 try:
-                    insert_reading(ds, raw_sensor_value, timestamp)
+                    insert_reading(ds, ds.claimed_sensor.sensor, raw_sensor_value, timestamp)
                     insertion_successes += 1
                 except SensorReadingCollision as e:
                     error_string += '\n' + str(e) + '\n'
