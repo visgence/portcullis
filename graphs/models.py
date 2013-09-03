@@ -9,6 +9,7 @@ from base64 import urlsafe_b64encode as b64encode
 import hashlib
 import random
 import string
+import time
 
 # Local Imports
 from graphs.data_reduction import reduction_type_choices
@@ -377,6 +378,8 @@ class ClaimedSensor(models.Model):
     class Meta():
         unique_together = (('owner', 'name'),)
 
+    def __unicode__(self):
+        return self.name
 
 class DataStreamManager(ChuchoManager):
     def can_edit(self, user):
@@ -522,6 +525,7 @@ class DataStream(models.Model):
     description = models.TextField(blank=True)
     units = models.CharField(max_length=32, blank=True)
     claimed_sensor = models.ForeignKey(ClaimedSensor, unique=True)
+    created = models.BigIntegerField(default=time.time(), editable=False)
 
     objects = DataStreamManager()
 
