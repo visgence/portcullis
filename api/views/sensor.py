@@ -25,7 +25,10 @@ def updateObject(obj, data):
         if field in ['id', 'pk']:
             continue
 
-        setattr(obj, field, fieldData)
+        try:
+            setattr(obj, field, fieldData)
+        except ValueError as e:
+            return ["There was a problem assigning a value to a %s: %s" % (obj.__class__.__name__, str(e))]
 
     try:
         obj.full_clean()
@@ -39,7 +42,6 @@ def updateObject(obj, data):
 
 
 def claimSensor(sensor, name, owner):
-    
     data = {'name': name, 'owner': owner, 'sensor': sensor}
     try:
         claimedSensor = updateObject(ClaimedSensor.objects.get(name=name, owner=owner), data)
