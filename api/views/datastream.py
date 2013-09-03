@@ -152,8 +152,7 @@ def create_ds(owner, data):
     return ds
 
 
-def createObject(cls, data):
-    obj = cls()
+def updateObject(obj, data):
     for field, fieldData in data.iteritems():
         #No manual setting of ids
         if field in ['id', 'pk']:
@@ -173,16 +172,23 @@ def createObject(cls, data):
 
 
 def claimDs(claimedSensor, data):
-    
+    print "printing data"
+    print data 
+    print
     try:
-        ds = DataStream.objects.get(claimed_sensor=claimedSensor)
+        print "getting ds"
+        print DataStream.objects.get(claimed_sensor=claimedSensor)
+        ds = updateObject(DataStream.objects.get(claimed_sensor=claimedSensor), data)
         return ds
     except DataStream.DoesNotExist:
         pass
-    
-    scaling_function = ScalingFunction.objects.get(name="Identity")
-    data.update({'claimed_sensor': claimedSensor, 'scaling_function': scaling_function})
-    ds = createObject(DataStream, data)
+   
+    sf = data.get('scaling_function', '')
+    if not isinstance(sf, ScalingFunction):
+        sf = ScalingFunction.objects.get(name="Identity")
+
+    data.update({'claimed_sensor': claimedSensor, 'scaling_function': sf})
+    ds = updateObject(DataStream(), data)
     return ds 
 
 

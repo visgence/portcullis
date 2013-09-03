@@ -13,14 +13,13 @@ except ImportError:
     import json
 
 #Local Imports
-from graphs.models import Sensor, ClaimedSensor, DataStream
+from graphs.models import Sensor, ClaimedSensor, DataStream, ScalingFunction
 from portcullis.models import PortcullisUser as User
 from api.utilities import cors_http_response_json
 from api.views.datastream import claimDs
 
 
-def createObject(cls, data):
-    obj = cls()
+def updateObject(obj, data):
     for field, fieldData in data.iteritems():
         #No manual setting of ids
         if field in ['id', 'pk']:
@@ -40,11 +39,12 @@ def createObject(cls, data):
 
 
 def claimSensor(sensor, name, owner):
+    
+    data = {'name': name, 'owner': owner, 'sensor': sensor}
     try:
-        claimedSensor = ClaimedSensor.objects.get(name=name, owner=owner)
+        claimedSensor = updateObject(ClaimedSensor.objects.get(name=name, owner=owner), data)
     except ClaimedSensor.DoesNotExist:
-        data = {'name': name, 'owner': owner, 'sensor': sensor}
-        claimedSensor = createObject(ClaimedSensor, data)
+        claimedSensor = updateObject(ClaimedSensor(), data)
 
     return claimedSensor
 
@@ -66,12 +66,13 @@ def create(data, owner):
 
         #Get sensor or create one
         try:
-            sensor = Sensor.objects.get(uuid=uuid)
+            sensor = updateObject(Sensor.objects.get(uuid=uuid), data)
         except Sensor.DoesNotExist:
-            sensor = createObject(Sensor, data)
-            if not isinstance(sensor, Sensor):
-                transaction.rollback()
-                return sensor
+            sensor = updateObject(Sensor(), data)
+        
+        if not isinstance(sensor, Sensor):
+            transaction.rollback()
+            return sensor
 
         #Get/create a claimed sensor and if we dont get one back error
         claimedSensor = claimSensor(sensor, name, owner)
@@ -84,6 +85,16 @@ def create(data, owner):
             dsName = owner.first_name
         dsName += "|"+claimedSensor.name
         data['name'] = dsName 
+
+        if 'scaling_function' in data:
+            sfName = data['scaling_function']
+            
+            try:
+                sf = ScalingFunction.objects.get(name=sfName)
+                data['scaling_function'] = sf
+            except ScalingFunction.DoesNotExist:
+                transaction.rollback()
+                return "There is no Scaling Function with the name \'%s\'"%str(sfName) 
 
         ds = claimDs(claimedSensor, data)
         if not isinstance(ds, DataStream):
