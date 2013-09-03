@@ -2,7 +2,21 @@
 
 /* Responds to any changes in the url hash for jquery bbq */
 $(window).bind('hashchange', function(event) {
+    console.log('hashchanged');
     var state = event.getState();
+    if('tab' in state) {
+        var newTab = $('.navbar-nav li[data-target="'+state['tab']+'"]');
+        if(newTab.length <= 0)
+            return;
+
+        $('#widget_container').html('');
+        var current = $('.navbar-nav li.active');
+        $('#'+$(current).data('target')).hide();
+        $(current).removeClass('active');
+
+        $('.navbar-nav li[data-target="'+state['tab']+'"]').addClass('active');
+        $('#'+state['tab']).show();
+    }
 
     if('time' in state) {
         $('#'+state['time']).attr('checked', 'checked');

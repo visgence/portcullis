@@ -41,9 +41,13 @@ def user_login(request):
 
                 greeting_page = loader.get_template('greeting.html')
                 greeting_c = RequestContext(request, {})
+    
+                nav_t = loader.get_template('nav_bar.html')
+                nav_c = RequestContext(request, {})
 
                 data = {
                     'greeting': greeting_page.render(greeting_c),
+                    'nav': nav_t.render(nav_c)
                 }
 
                 return cors_http_response_json(data)

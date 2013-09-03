@@ -63,9 +63,13 @@ def index(request, content = None, content_id = None):
         side_pane = skeleton(request)
         content_pane = content_t.render(content_c)
 
+    nav_t = loader.get_template('nav_bar.html')
+    nav_c = RequestContext(request, {})
+
     t = loader.get_template('main_page.html')
     c = RequestContext(request, { 'greeting': greeting(request),
                                   'side_pane': side_pane.content,
+                                  'nav': nav_t.render(nav_c),
                                   'content_pane':content_pane
                                   })
     return HttpResponse(t.render(c), mimetype="text/html")

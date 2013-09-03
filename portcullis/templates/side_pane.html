@@ -1,5 +1,59 @@
 {% load url from future %}
 
+
+<div class="side-nav" role="complementary">
+
+    <div id="graphs" style="display: none"></div>
+    
+    <div id="utilities" style="display: none">
+        <ul>
+            <li>
+                <span id="manage_streams" class="clickable_text"
+                      onclick="load_model_grid('graphs', 'datastream');">
+                    Manage Streams
+                </span>
+            </li>
+            <li>
+                <span id="manage_devices" class="clickable_text"
+                      onclick="load_model_grid('graphs', 'sensor');">
+                    Manage Sensors
+                </span>
+            </li>
+            <li>
+                <span id="manage_devices" class="clickable_text"
+                      onclick="load_model_grid('graphs', 'claimedsensor');">
+                    Manage Claimed Sensors
+                </span>
+            </li>
+            <li>
+                <span id="manage_users" class="clickable_text"
+                      onclick="load_model_grid('portcullis', 'portcullisuser');">
+                    Manage Users
+                </span>
+            </li>
+            <li>
+                <span id="manage_scaline_functions" class="clickable_text"
+                      onclick="load_model_grid('graphs', 'scalingfunction');">
+                      Manage Scaling Functions
+                </span>
+            </li>
+            <li>
+                <span id="manage_snmp_host" class="clickable_text"
+                      onclick="load_model_grid('snmpPoller', 'host');">
+                      Manage SNMP Hosts
+                </span>
+            </li>
+            <li>
+                <span id="manage_snmp_host" class="clickable_text"
+                      onclick="load_model_grid('snmpPoller', 'snmpstream');">
+                      Manage SNMP Streams
+                </span>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<!--
 <div id="tabs">
     <ul>
         <li><a href="{% url 'side_pane-streams' %}">Graphs</a></li>
@@ -7,8 +61,7 @@
             <li><a href="#utilites">Utilities</a></li>
         {% endif %}
     </ul>
-    <div id="graphs"></div>
-    
+   
     {% if logged_in %}
         <div id="utilites">
             <ul>
@@ -57,5 +110,5 @@
             </ul>
         </div>
     {% endif %}
-    
 </div> {# End tabs div #}
+--> 

@@ -3,6 +3,11 @@
     position: relative;
     width: 100%;
 }
+#side_pane div.side-nav {
+    background-color: #f7f5fa;
+    margin-left: 1em;
+}
+
 
 #side_pane_content
 {

@@ -29,12 +29,17 @@ function toggle_side_pane()
 /** Readies the side panes tabs jquery ui */
 function ready_tabs() 
 {
+    $.get('/portcullis/streams/', function(resp) {
+        $('div.side-nav div#graphs').html(resp);
+    });
+
+    /*
     var tabs = $('#tabs').tabs({
         cache: true,
         beforeActivate: function(event, ui) {
             $('#widget_container').html('');
         }
-    });
+    });*/
 }
 
 

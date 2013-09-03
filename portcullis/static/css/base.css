@@ -5,13 +5,33 @@
     margin-top: 1em;
 }
 
-#header_image
-{
-    /*max-width: 100%;
-    min-width: 100%;*/
-}
-
 #base_content
 {
     width: 100%;
+}
+
+#greeting {
+    margin-right: 2em;
+}
+
+nav.navbar {
+    background-color: #363d97;
+}
+.navbar-default .navbar-nav > .active > a, 
+.navbar-default .navbar-nav > .active > a:hover, 
+.navbar-default .navbar-nav > .active > a:focus {
+    background-color: #121762;
+    color: white;
+}
+
+.navbar-default .navbar-nav > li > a {
+    color: #8389CB;
+}
+
+.navbar-default .navbar-nav > li > a:hover {
+    color: white;
+}
+
+.navbar-default .navbar-brand, .navbar-default .navbar-brand:hover {
+    color: white;
 }
