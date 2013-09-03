@@ -1,7 +1,29 @@
 {% csrf_token %}
 
-<span for="username">Username:</span> <input type="text" id="username" name="username" maxlength="30" /> 
-<span for="password">Password:</span> <input type="password" id="password" name="password"/> 
-<input type="hidden" name="next" value="{{redirect_to}}"/>
-<input type="button" value="Log in" onclick="login();"/> 
-<span style="color:red" id="login_error" class="error">{{error}}</span>
+<form id="login-form" class="form-inline" role="form" action="#">
+    <div class="form-group">
+        <input type="text" id="username" name="username" placeholder="Enter Username" maxlength="30"/> 
+    </div>
+    <div class="form-group">
+        <input type="password" id="password" name="password" placeholder="Password"/> 
+    </div>
+    <input type="hidden" name="next" value="{{redirect_to}}"/>
+    <button class="btn btn-default" type="submit"/>Log In</button>
+    <br/>
+    <div class="form-group has-error pull-right">
+        <span id="login_error" class="error has-error help-block">{{error}}</span>
+    </div>
+</form>
+
+<script>
+
+    $(function() {
+        $('#login-form').on('submit', function() {
+            console.log('logging in');
+            login();
+            return false;
+        }); 
+    });
+
+</script>
+ 

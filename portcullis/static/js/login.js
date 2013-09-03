@@ -25,6 +25,8 @@ function post_login(data)
         $('#login_error').text(data.error);
     else {
         $('#greeting').html(data.greeting);
+        $('#nav').html(data.nav);
+
         $('#login_error').text('');
         $.get('/portcullis/side_pane/', function(data) {
             $('#side_pane').html(data);
