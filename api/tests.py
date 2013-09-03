@@ -22,8 +22,12 @@ except ImportError:
     import json
 
 #Local Imports
-from graphs.models import DataStream, SensorReading, Sensor
+from graphs.models import DataStream, SensorReading, Sensor, ClaimedSensor
+from portcullis.models import PortcullisUser
+from portcullis.customExceptions import SensorReadingCollision
 from api.views.reading_loader import insert_reading
+from api.views.sensor import claimSensor
+
 
 class CreateTest(TestCase):
     '''
@@ -181,5 +185,112 @@ class ReadingLoaderTest(TestCase):
         '''
             Test that if we insert two readings with the same timestamp and datastream we get a collision
         '''
-        pass
-    ################# add_reading ###################
+        
+        sensor = Sensor.objects.get(uuid="sensor_one_id")
+        ds = DataStream.objects.get(pk=1)
+        timestamp = int(time.time())
+        insert_reading(ds, sensor, 10.5, timestamp) 
+        self.assertRaises(SensorReadingCollision, insert_reading, *(ds, sensor, 10.5, timestamp) )
+
+
+class SensorTest(TestCase):
+    '''
+    '  Tests for the view file sensor.py
+    '''
+
+    fixtures = ['portcullisUsers.json', 'sensors.json', 'claimedSensors.json', 'scalingFunctions.json',  'dataStreams.json']
+
+    def setUp(self):
+        self.c = Client()
+
+    def createSensor(self):
+        '''
+            Helper to create a new dummy sensor
+        '''
+
+        ns = Sensor(uuid="foo")
+        ns.save()
+        return ns
+
+
+    def test_claimSensor_no_sensor(self):
+        '''
+            Test that we get an error message if given no sensor instance
+        '''
+
+        owner = PortcullisUser.objects.get(email="admin@visgence.com")
+        name = "Claimed Sensor One"
+        cs = claimSensor(None, name, owner)
+        self.assertTrue(isinstance(cs, list))
+
+
+    def test_claimSensor_no_name(self):
+        '''
+            Test that we get an error message if given no name
+        '''
+
+        owner = PortcullisUser.objects.get(email="admin@visgence.com")
+        sensor = Sensor.objects.get(uuid="sensor_one_id")
+        cs = claimSensor(sensor, None, owner)
+        self.assertTrue(isinstance(cs, list))
+
+
+    def test_claimSensor_no_owner(self):
+        '''
+            Test that we get an error message if given no owner
+        '''
+
+        sensor = Sensor.objects.get(uuid="sensor_one_id")
+        name = "Claimed Sensor One"
+        cs = claimSensor(sensor, name, None)
+        self.assertTrue(isinstance(cs, list))
+    
+    def test_claimSensor_update_sensor(self):
+        '''
+            Test that we get back the same ClaimedSensor we are updating the sensor on.
+        '''
+
+        name = "Claimed Sensor One"
+        owner = PortcullisUser.objects.get(email="admin@visgence.com")
+        newSensor = self.createSensor()
+        
+        csOne = ClaimedSensor.objects.get(owner=owner, name=name)
+        csTwo = claimSensor(newSensor, name, owner)
+        self.assertTrue(isinstance(csTwo, ClaimedSensor))
+        self.assertEqual(csOne.pk, csTwo.pk)
+        self.assertNotEqual(csOne.sensor, csTwo.sensor)
+
+    def test_claimSensor_create(self):
+        '''
+            Test that a new claimed sensor get's created when given owner/name combo that does exist yet.
+        '''
+
+        name = "New Sensor Name"
+        owner = PortcullisUser.objects.get(email="admin@visgence.com")
+        newSensor = self.createSensor()
+        self.assertRaises(ClaimedSensor.DoesNotExist, ClaimedSensor.objects.get, **{'name': name, 'owner': owner})
+
+        cs = claimSensor(newSensor, name, owner)
+        newCs = None
+        try:
+            newCs = ClaimedSensor.objects.get(owner=owner, name=name)
+        except ClaimedSensor.DoesNotExist:
+            pass
+
+        self.assertNotEqual(newCs, None)
+        self.assertTrue(isinstance(cs, ClaimedSensor))
+        self.assertEqual(cs.pk, newCs.pk)
+
+    def test_claimSensor_unique_sensor_violation(self):
+        '''
+            Test that a error occurs when creating a new ClaimedSensor with a sensor that is already claimed elsewhere.
+        '''
+
+        name = "New Sensor Name"
+        owner = PortcullisUser.objects.get(email="admin@visgence.com")
+        sensor = Sensor.objects.get(uuid="sensor_one_id")
+        cs = claimSensor(sensor, name, owner)
+        self.assertTrue(isinstance(cs, list))
+        self.assertRaises(ClaimedSensor.DoesNotExist, ClaimedSensor.objects.get, **{'name': name, 'owner': owner})
+
+
