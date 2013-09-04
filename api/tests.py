@@ -281,16 +281,5 @@ class SensorTest(TestCase):
         self.assertTrue(isinstance(cs, ClaimedSensor))
         self.assertEqual(cs.pk, newCs.pk)
 
-    def test_claimSensor_unique_sensor_violation(self):
-        '''
-            Test that a error occurs when creating a new ClaimedSensor with a sensor that is already claimed elsewhere.
-        '''
-
-        name = "New Sensor Name"
-        owner = PortcullisUser.objects.get(email="admin@visgence.com")
-        sensor = Sensor.objects.get(uuid="sensor_one_id")
-        cs = claimSensor(sensor, name, owner)
-        self.assertTrue(isinstance(cs, list))
-        self.assertRaises(ClaimedSensor.DoesNotExist, ClaimedSensor.objects.get, **{'name': name, 'owner': owner})
 
 
