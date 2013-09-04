@@ -516,6 +516,7 @@ class DataStreamManager(ChuchoManager):
 
 
 class DataStream(models.Model):
+    color = models.CharField(max_length=32, blank=True)
     min_value = models.DecimalField(null=True, max_digits=20, decimal_places=6, blank=True)
     max_value = models.DecimalField(null=True, max_digits=20, decimal_places=6, blank=True)
     reduction_type = models.CharField(max_length=32, default='sample', choices=reduction_type_choices())
@@ -525,7 +526,6 @@ class DataStream(models.Model):
     description = models.TextField(blank=True)
     units = models.CharField(max_length=32, blank=True)
     claimed_sensor = models.ForeignKey(ClaimedSensor, unique=True)
-    color = models.CharField(max_length=32, blank=True)
     created = models.BigIntegerField(default=time.time(), editable=False)
 
     objects = DataStreamManager()
