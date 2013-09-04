@@ -29,22 +29,31 @@ class Command(BaseCommand):
         #repo.submodule_update(to_latest_revision=False)
         #print "Done"
 
-        call_command('syncdb', interactive=False)
-        call_command('migrate')
+        call_command('syncdb', migrate_all=True, interactive=False)
+        call_command('migrate', fake=True)
 
-        # ORDER OF FIXTURES MATTERS!! Some have dependencies on others.
         print "Loading fixtures..."
         fixtures = [
             [
                 'portcullis/fixtures/portcullisUsers.json'
-            ],
-            [
-                'graphs/fixtures/scalingFunctions.json',
-                'graphs/fixtures/sensors.json',
-                'graphs/fixtures/claimedSensors.json',
-                'graphs/fixtures/dataStreams.json'
             ]
         ]
+
+        print 'Do you wish to load sample data?'
+        user_resp = None
+        user_resp = raw_input('(y/n) ')
+        while user_resp not in ['y', 'Y', 'n', 'N']:
+            print 'Sorry, I did not understand your response.  Please enter \'y\' or \'n\'.'
+            print 'Do you wish to load sample data?'
+            user_resp = raw_input('(y/n) ')
+
+        if user_resp in ['y', 'Y']:
+            fixtures.append([
+                    'graphs/fixtures/scalingFunctions.json',
+                    'graphs/fixtures/sensors.json',
+                    'graphs/fixtures/claimedSensors.json',
+                    'graphs/fixtures/dataStreams.json'
+            ])
 
         # Load fixtures
         for apps in fixtures:
