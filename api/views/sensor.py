@@ -42,11 +42,19 @@ def updateObject(obj, data):
 
 
 def claimSensor(sensor, name, owner):
+    
+    #First try to update sensor by owner/name combo.  This allows us to update the which sensor is claimed.
+    #If that doesn't work try to locate the claimed sensor by it's sensor which will allow the sensors 
+    #name and/or owner to be updated. Otherwise just create one.
     data = {'name': name, 'owner': owner, 'sensor': sensor}
     try:
         claimedSensor = updateObject(ClaimedSensor.objects.get(name=name, owner=owner), data)
     except ClaimedSensor.DoesNotExist:
-        claimedSensor = updateObject(ClaimedSensor(), data)
+
+        try:
+            claimedSensor = updateObject(ClaimedSensor.objects.get(sensor=sensor), data)
+        except ClaimedSensor.DoesNotExist:
+            claimedSensor = updateObject(ClaimedSensor(), data)
 
     return claimedSensor
 

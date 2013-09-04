@@ -1,17 +1,6 @@
 {% csrf_token %}
 
 <div id="widget_container_heading">
-    
-    {% if token %}
-    <input type="hidden" id="auth_token" value="{{token}}" />
-    {% else %}
-        {% if user.username == "" %}
-        <a id="share_link" class="logged_out_hide display_none" onclick="saveView();" href="#" >Share this view</a>
-        {% else %}
-        <a id="share_link" class="display_none" onclick="saveView();" href="#" >Share this view</a>
-        {% endif %}
-    {% endif %}
-    <div id="savedViewLink"></div>
 </div>
 
 <div id="widget_container">

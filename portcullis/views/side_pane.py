@@ -64,20 +64,20 @@ def streams(request):
         #viewable_subtree = t_subtree.render(Context(c_dict))
 
     #Pull any public streams as well
-    #public_streams = DataStream.objects.filter(is_public = True).exclude(id__in=viewable_streams).exclude(id__in=owned_streams).distinct()
-    #c_dict = stream_tree_top(public_streams)
-    #c_dict.update({'group':'public'})
-    #public_subtree = t_subtree.render(Context(c_dict))
+    public_streams = DataStream.objects.filter(is_public = True).exclude(id__in=owned_streams).distinct()
+    c_dict = stream_tree_top(public_streams)
+    c_dict.update({'group':'public'})
+    public_subtree = t_subtree.render(Context(c_dict))
 
     t_streams = loader.get_template('user_streams.html')
     c_streams = RequestContext(request, {
             'user':request.user,
             'owned_streams': owned_streams,
-            'viewable_streams': viewable_streams,
-            #'public_streams': public_streams,
+            #'viewable_streams': viewable_streams,
+            'public_streams': public_streams,
             'owned_subtree': owned_subtree,
-            #'public_subtree': public_subtree,
-            'viewable_subtree': viewable_subtree
+            'public_subtree': public_subtree,
+            #'viewable_subtree': viewable_subtree
             })
     t_controls = loader.get_template('graph_controls.html')
     c_controls = RequestContext(request)
@@ -143,11 +143,11 @@ def stream_subtree(request):
         #    streams = DataStream.objects.get_viewable(portcullisUser)
         #    streams = streams.filter(name__startswith=name)
         #    streams = streams.exclude(owner=portcullisUser)
-        #elif group == 'public':
-        #    streams = DataStream.objects.filter(name__startswith=name)
-        #    viewableStreams = DataStream.objects.get_viewable(portcullisUser)
-        #    streams = streams.filter(is_public=True).exclude(owner=portcullisUser)
-        #    streams = streams.exclude(id__in=viewableStreams)
+        elif group == 'public':
+            streams = DataStream.objects.filter(name__startswith=name)
+            #viewableStreams = DataStream.objects.get_viewable(portcullisUser)
+            streams = streams.filter(is_public=True).exclude(claimed_sensor__owner=portcullisUser)
+            #streams = streams.exclude(id__in=viewableStreams)
         else:
             dump = json.dumps({'errors': 'Error: %s is not a valid datastream type.' % group})
             return HttpResponse(dump, content_type="application/json")

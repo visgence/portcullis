@@ -381,6 +381,7 @@ class ClaimedSensor(models.Model):
     def __unicode__(self):
         return self.name
 
+
 class DataStreamManager(ChuchoManager):
     def can_edit(self, user):
         '''
@@ -568,9 +569,11 @@ class DataStream(models.Model):
         ' Keyword args:
         '    user - Returns True if the user is allowed to view the datastream. Returns false otherwise.
         '''
-        assert isinstance(user, PortcullisUser), "Did not get a PortcullisUser instance"
+        
+        if self.is_public:
+            return True
 
-        if user == self.claimed_sensor.owner or user.is_superuser:
+        if isinstance(user, PortcullisUser) and (user == self.claimed_sensor.owner or user.is_superuser):
             return True
 
         return False
