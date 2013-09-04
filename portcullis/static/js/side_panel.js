@@ -30,16 +30,8 @@ function toggle_side_pane()
 function ready_tabs() 
 {
     $.get('/portcullis/streams/', function(resp) {
-        $('div.side-nav div#graphs').html(resp);
+        $('div.side-nav div.graphs').html(resp);
     });
-
-    /*
-    var tabs = $('#tabs').tabs({
-        cache: true,
-        beforeActivate: function(event, ui) {
-            $('#widget_container').html('');
-        }
-    });*/
 }
 
 
@@ -48,7 +40,7 @@ function load_model_grid(app, model)
 {
     var url = "/chucho/model_editor/"+app+"/"+model+"/";
     $.get(url, {}, function(data) {
-        $('#widget_container').html(data);  
+        $('#widget_container div.utilities').html(data);  
     });
 }
 

@@ -54,9 +54,12 @@ def index(request, content = None, content_id = None):
             })
             graphs.append(t_graph.render(c_graph))
 
+        g_container = loader.get_template('graph_container.html')
+        g_context = RequestContext(request, {'graphs': graphs})
+
         content_t = loader.get_template('content_container.html')
         content_c = RequestContext(request, {
-             'widgets': graphs
+             'widget': g_container.render(g_context)
             ,'graphIds': DEFAULT_GRAPHS
             ,'defaultStreams': True
         }) 

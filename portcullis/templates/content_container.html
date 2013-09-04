@@ -4,10 +4,11 @@
 </div>
 
 <div id="widget_container">
-    {% for widget in widgets %}
-    {{widget|safe}}
-    {% endfor %}
-    
+
+    {{widget}}
+   
+    <div class="utilities" style="display:none"></div>
+
     {% if token or defaultStreams %}
     <script>
         //On load function will search for any 'portcullis-graph' divs on the page.

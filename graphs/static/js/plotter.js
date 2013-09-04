@@ -162,7 +162,7 @@ function on_graphs_load(graphIds)
         // setup the download link.
         setupDownload(this.id);
     });
-    
+   
     if (  $('#auth_token').val() )
         load_all_shared_graphs();
     else 
@@ -191,6 +191,7 @@ function on_graph_load(datastream_id, perm)
     var period = get_period();
     if(!period)
         return;
+
     load_graph(datastream_id, period, graph_overview_callback(false, perm));
 }
 
@@ -482,6 +483,7 @@ function load_all_graphs() {
     /*
      * Get's all graph divs and loads their data.
      */
+
     divs = $(".portcullis-graph");
     var period = get_period();
     if(period === null)
@@ -539,7 +541,6 @@ function graph_overview_callback(is_shared, perm) {
      */
 
     return function (data) {
-        
         if (is_shared) {
             var start = data.xmin*1000 - timezone_offset;
             var end = data.xmax*1000 - timezone_offset;
@@ -755,6 +756,7 @@ function resetZoom(streamId)
             from: from,
             to:   to
         }};
+
         load_graph(datastream_id, ranges, zoom_graph_callback(ranges, false)); 
     }
     
@@ -820,6 +822,9 @@ function setupDownload(datastream_id)
  */
 function toggle_time_periods(radio) 
 {
+    if($(radio).closest('div.graphs').css('display') === 'none')
+        return;
+
     if($(radio).val() == "custom") {
         $('.custom_period').removeAttr('disabled');
         if($('#start').val() && $('#end').val()) {
@@ -859,7 +864,6 @@ function saveView()
             graph.zoom_start = Math.round(zrange.xaxis.from/1000.0 + timezone_offset/1000.0);
             graph.zoom_end = Math.round(zrange.xaxis.to/1000.0 + timezone_offset/1000.0);
         } catch (e) {
-            console.log('Error getting zoom ranges: ' + e);
             // graph has no data here, so it is not zoomed
             graph.zoom_start = null;
             graph.zoom_end = null;
@@ -1029,7 +1033,7 @@ function load_unload_stream(checkbox)
 
         // append to widget container
         $.get('/graphs/', {'json_data': json}, function(data) {
-            $('#widget_container').append(data);
+            $('#widget_container div.graphs').append(data);
             on_graph_load(datastream_id, true);
             $('#share_link').removeClass('display_none');
             checkedGraphs.push(datastream_id);
@@ -1093,7 +1097,8 @@ function auto_refresh(chk_ele)
         var refreshBtn = $('#refresh');
         
         setInterval(function() {
-            if($('#auto_refresh').attr('checked')) {
+            var state = $.bbq.getState();
+            if($('#auto_refresh').attr('checked') && state['tab'] === "graphs") {
                 $(refreshBtn).trigger('click');
             }
         }, 30000);
