@@ -381,6 +381,21 @@ class ClaimedSensor(models.Model):
     def __unicode__(self):
         return self.name
 
+    def can_view(self, user):
+        '''
+        ' Return True if the user has permission to read this claimed sensor, False otherwise.
+        '
+        ' Keyword args:
+        '    user - Returns True if the user is allowed to view the claimed sensor. Returns false otherwise.
+        '''
+        assert isinstance(user, PortcullisUser), "user object was not a PortcullisUser"
+
+        if user == self.owner or user.is_superuser:
+            return True
+
+        return False
+
+
 
 class DataStreamManager(ChuchoManager):
     def can_edit(self, user):
