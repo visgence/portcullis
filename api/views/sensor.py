@@ -28,7 +28,7 @@ def updateObject(obj, data):
         try:
             setattr(obj, field, fieldData)
         except ValueError as e:
-            return ["There was a problem assigning a value to a %s: %s" % (obj.__class__.__name__, str(e))]
+            return "There was a problem assigning a value to a %s: %s" % (obj.__class__.__name__, str(e))
 
     try:
         obj.full_clean()
@@ -36,7 +36,7 @@ def updateObject(obj, data):
     except ValidationError as e:
         return [{field: error} for field, error in e.message_dict.iteritems()]
     except Exception as e:
-        return ["There was an unexpected error while saving a %s: %s" % (obj.__class__.__name__, str(e))]
+        return "There was an unexpected error while saving a %s: %s" % (obj.__class__.__name__, str(e))
 
     return obj
 
@@ -50,7 +50,6 @@ def claimSensor(sensor, name, owner):
     try:
         claimedSensor = updateObject(ClaimedSensor.objects.get(name=name, owner=owner), data)
     except ClaimedSensor.DoesNotExist:
-
         try:
             claimedSensor = updateObject(ClaimedSensor.objects.get(sensor=sensor), data)
         except ClaimedSensor.DoesNotExist:
