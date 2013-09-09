@@ -21,10 +21,36 @@
 
 <script>
     $(function() {
+        var stateCache = {};
+        var properStates = {
+            'graphs':['time', 'auto-refresh', 'start', 'end'], 
+            'utilities': []
+        };
+
         $('ul.navbar-nav').on('click', 'li', function(e) {
             var state = $.bbq.getState();
-            state['tab'] = $(e.currentTarget).data('target');
-            $.bbq.pushState(state);
+            
+            var currentTab = 'graphs';
+            if(state.hasOwnProperty('tab'))
+                currentTab = state['tab'];
+
+            var stateToSave = {};
+            $.each(state, function(key, val) {
+                if($.inArray(key, properStates[currentTab]) > -1)
+                    stateToSave[key] = val;
+            });
+            console.log(stateToSave);
+            stateCache[currentTab] = stateToSave;
+            
+            var newTab = $(e.currentTarget).data('target');
+            var newState = {
+                'tab': newTab
+            };
+            console.log(newState);
+            if(stateCache.hasOwnProperty(newTab) && stateCache[newTab] !== undefined)
+                $.extend(true, newState, stateCache[newTab]);
+
+            $.bbq.pushState(newState, 2);
         });
     });
 </script>
