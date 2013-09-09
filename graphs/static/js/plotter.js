@@ -15,6 +15,7 @@ var timezone_offset = timezone_date.getTimezoneOffset()*60*1000;//milliseconds
 var overviewPlots = {};
 var plots = {};
 var checkedGraphs = [];
+var graphSpinners = [];
 
 function create_plot_select_handler(datastream_id) 
 { 
@@ -150,7 +151,7 @@ function on_graphs_load(graphIds)
 
     //Find all portcullis graph divs
     $(checkedGraphs).each(function(i, id) {
-        
+    
         //bind main graphs
         $("#sensor" + id).bind("plotselected",create_plot_select_handler(id));
         $("#sensor" + id).bind("plothover",create_plot_click_handler(id));
@@ -163,10 +164,7 @@ function on_graphs_load(graphIds)
         setupDownload(this.id);
     });
    
-    if (  $('#auth_token').val() )
-        load_all_shared_graphs();
-    else 
-        load_all_graphs();
+    load_all_graphs();
 }
 
 //TODO: delete perm parameter when we get embeded graphs for sniffer working better
@@ -483,15 +481,30 @@ function load_all_graphs() {
     /*
      * Get's all graph divs and loads their data.
      */
-
     divs = $(".portcullis-graph");
     var period = get_period();
     if(period === null)
         return;
 
+    $.each(graphSpinners, function(i, s) {
+        if(s.tiny !== null)
+            s.tiny.stop();
+        if(s.large !== null)
+            s.large.stop();
+    });
+    graphSpinners = [];
+
     //Cycle though all graphs and fetch data from server
-    for (var i = 0; i < divs.length; i++) 
+    for (var i = 0; i < divs.length; i++) { 
+        var spinners = {
+            'ds': divs[i].id,
+            'tiny': null,
+            'large': null
+        };
+        graphSpinners.push(spinners);
+
         load_graph(divs[i].id, period, graph_overview_callback(false, true));
+    }
 }
 
 
@@ -595,8 +608,29 @@ function graph_overview_callback(is_shared, perm) {
 
 function load_graph(datastream_id, ranges, callback) {
     var granularity = get_granularity();
-    var indicator_s = spin(document.getElementById('stream_span_' + datastream_id), 'tiny');
-    var indicator_g = spin(document.getElementById('graph_container_' + datastream_id));
+
+    var spinIndex = -1;
+    $.each(graphSpinners, function(i, s) {
+        if(s.ds === datastream_id) {
+            spinIndex = i;
+            return false;
+        }
+    });
+
+    if(spinIndex == -1) {
+        console.log("The graph with id %s does not have any spinners but it should!", datastream_id);
+        return;
+    }
+
+    if(graphSpinners[spinIndex]['tiny'] === null)
+        graphSpinners[spinIndex]['tiny'] = spin(document.getElementById('stream_span_' + datastream_id), 'tiny');
+    else
+        graphSpinners[spinIndex]['tiny'].spin();
+
+    if(graphSpinners[spinIndex]['large'] === null)
+        graphSpinners[spinIndex]['large'] = spin(document.getElementById('graph_container_' + datastream_id));
+    else
+        graphSpinners[spinIndex]['large'].spin();
 
     var getData = {};
  
@@ -611,8 +645,8 @@ function load_graph(datastream_id, ranges, callback) {
         callback(data);
     })
     .always(function() {
-        indicator_s.stop();
-        indicator_g.stop();
+        graphSpinners[spinIndex]['tiny'].stop();
+        graphSpinners[spinIndex]['large'].stop();
     });
 }
 
@@ -1010,12 +1044,21 @@ function load_unload_stream(checkbox)
 {
     var datastream_id = $(checkbox).val();     
     var index = $.inArray(datastream_id, checkedGraphs)
+    var spinnerIndex = -1;
+    $.each(graphSpinners, function(i, s) {
+        if(s.ds === datastream_id) {
+            spinnerIndex = i;
+            return false;
+        }
+    });
     
     if($(checkbox).prop('checked')) {
         if(get_period() === null) {
             $(checkbox).prop('checked', false);
             if(index > -1)
-                checkedGraphs.splice(index, 1);            
+                checkedGraphs.splice(index, 1);
+            if(spinnerIndex > -1)
+                graphSpinners.splice(spinnerIndex, 1);
             return;
         }
         
@@ -1033,10 +1076,18 @@ function load_unload_stream(checkbox)
 
         // append to widget container
         $.get('/graphs/', {'json_data': json}, function(data) {
+
+            var spinners = {
+                'ds': datastream_id,
+                'tiny': null,
+                'large': null
+            };
+            graphSpinners.push(spinners);
+
             $('#widget_container div.graphs').append(data);
+            checkedGraphs.push(datastream_id);
             on_graph_load(datastream_id, true);
             $('#share_link').removeClass('display_none');
-            checkedGraphs.push(datastream_id);
         });
     }
     else {
@@ -1047,6 +1098,8 @@ function load_unload_stream(checkbox)
             return;
         } else {
             checkedGraphs.splice(index, 1);
+            if(spinnerIndex > -1)
+                graphSpinners.splice(spinnerIndex, 1);
         }
 
         if(checkedGraphs.length <= 0)
@@ -1090,19 +1143,24 @@ function utc_to_local(timestamp)
  * Keyword Args
  *     chk_ele - Checkbox element that was clicked
  */
+var clear_interval_id;
 function auto_refresh(chk_ele)
 {
-    if($(chk_ele).attr('checked')) {
+    if($(chk_ele).prop('checked')) {
         $.bbq.pushState({'auto-refresh': true});
         var refreshBtn = $('#refresh');
         
-        setInterval(function() {
+        //Clear any previous interval
+        clearInterval(clear_interval_id);
+        clear_interval_id = setInterval(function() {
             var state = $.bbq.getState();
-            if($('#auto_refresh').attr('checked') && state['tab'] === "graphs") {
+            if($('#auto_refresh').prop('checked') && (state['tab'] === "graphs" || state['tab'] === undefined)) {
                 $(refreshBtn).trigger('click');
             }
         }, 30000);
     }
-    else
+    else {
         $.bbq.pushState({'auto-refresh': false});
+        clearInterval(clear_interval_id);
+    }
 }
