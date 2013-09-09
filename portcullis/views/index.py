@@ -32,39 +32,34 @@ def index(request, content = None, content_id = None):
     '   content-id - The identifier for the content, usually a key/token.
     '''
 
-    if content == 'saved_view':
-        side_pane = skeleton(request)
-        content_pane = saved_view(request, content_id).content
-    else:
+    graphs = []
+    t_graph = loader.get_template('graph.html')
+    reductions = reductFunc.keys()
+    for graphId in DEFAULT_GRAPHS:
 
-        graphs = []
-        t_graph = loader.get_template('graph.html')
-        reductions = reductFunc.keys()
-        for graphId in DEFAULT_GRAPHS:
+        try:
+            stream = DataStream.objects.get(id=graphId)
+        except DataStream.DoesNotExist:
+            raise Http404('Invalid stream id given for default!') 
 
-            try:
-                stream = DataStream.objects.get(id=graphId)
-            except DataStream.DoesNotExist:
-                raise Http404('Invalid stream id given for default!') 
+        c_graph = Context({
+             'id': graphId
+            ,'reduction': stream.reduction_type
+            ,'reductions': reductions
+        })
+        graphs.append(t_graph.render(c_graph))
 
-            c_graph = Context({
-                 'id': graphId
-                ,'reduction': stream.reduction_type
-                ,'reductions': reductions
-            })
-            graphs.append(t_graph.render(c_graph))
+    g_container = loader.get_template('graph_container.html')
+    g_context = RequestContext(request, {'graphs': graphs})
 
-        g_container = loader.get_template('graph_container.html')
-        g_context = RequestContext(request, {'graphs': graphs})
-
-        content_t = loader.get_template('content_container.html')
-        content_c = RequestContext(request, {
-             'widget': g_container.render(g_context)
-            ,'graphIds': DEFAULT_GRAPHS
-            ,'defaultStreams': True
-        }) 
-        side_pane = skeleton(request)
-        content_pane = content_t.render(content_c)
+    content_t = loader.get_template('content_container.html')
+    content_c = RequestContext(request, {
+         'widget': g_container.render(g_context)
+        ,'graphIds': DEFAULT_GRAPHS
+        ,'defaultStreams': True
+    }) 
+    side_pane = skeleton(request)
+    content_pane = content_t.render(content_c)
 
     nav_t = loader.get_template('nav_bar.html')
     nav_c = RequestContext(request, {})
