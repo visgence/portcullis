@@ -276,7 +276,7 @@ class SensorTest(HelperMethods):
         self.assertEqual(claimedSensor.sensor, oldSensor)
 
         newSensor = create(data, owner)
-
+        self.assertTrue(isinstance(newSensor, Sensor)) 
         self.assertNotEqual(newSensor, oldSensor)
         self.assertEqual(ClaimedSensor.objects.get(sensor=newSensor), claimedSensor)
 

@@ -52,11 +52,15 @@ def index(request, content = None, content_id = None):
     g_container = loader.get_template('graph_container.html')
     g_context = RequestContext(request, {'graphs': graphs})
 
+    s_template = loader.get_template('register_sensor.html')
+    s_context = RequestContext(request, {})
+
     content_t = loader.get_template('content_container.html')
     content_c = RequestContext(request, {
          'widget': g_container.render(g_context)
         ,'graphIds': DEFAULT_GRAPHS
         ,'defaultStreams': True
+        ,'sensorTemplate': s_template.render(s_context)
     }) 
     side_pane = skeleton(request)
     content_pane = content_t.render(content_c)

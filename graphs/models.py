@@ -367,6 +367,25 @@ class ClaimedSensorManager(ChuchoManager):
 
         return objs
 
+    
+    def claimed(self, sensor):
+        '''
+        '  Checks to see if a sensor instance is claimed or not.
+        '
+        '  Keyword Args:
+        '     sensor - Sensor instance to check
+        '
+        '  Returns: ClaimedSensor instance that has claimed the sensor or None if sensor is un-claimed
+        '''
+
+        if not isinstance(sensor, Sensor):
+            return None
+
+        try:
+            return self.get(sensor=sensor)
+        except ClaimedSensor.DoesNotExist:
+            return None
+
 
 class ClaimedSensor(models.Model):
     sensor = models.ForeignKey(Sensor, unique=True, null=True)

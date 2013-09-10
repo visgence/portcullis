@@ -21,7 +21,7 @@ from django.db import transaction
 import time
 
 #Local Imports
-from graphs.models import DataStream, ScalingFunction
+from graphs.models import DataStream, ScalingFunction, ClaimedSensor
 from api.utilities import cors_http_response_json
 
 
@@ -172,14 +172,30 @@ def updateObject(obj, data):
 
 
 def claimDs(claimedSensor, data):
+    
+    if not isinstance(claimedSensor, ClaimedSensor):
+        return "Was not given a claimed sensor while trying to claim a DataStream"
+  
+    if 'name' not in data or data['name'] == '':
+        dsName = claimedSensor.owner.email
+        if claimedSensor.owner.first_name != '':
+            dsName = claimedSensor.owner.first_name
+        dsName += "|"+claimedSensor.name
+        data['name'] = dsName 
+
     try:
         ds = updateObject(DataStream.objects.get(claimed_sensor=claimedSensor), data)
         return ds
     except DataStream.DoesNotExist:
         pass
-   
-    sf = data.get('scaling_function', '')
-    if not isinstance(sf, ScalingFunction):
+
+    if 'scaling_function' in data:
+        sfName = data['scaling_function']
+        try:
+            sf = ScalingFunction.objects.get(name=sfName)
+        except ScalingFunction.DoesNotExist:
+            return "There is no Scaling Function with the name \'%s\'"%str(sfName) 
+    else:
         sf = ScalingFunction.objects.get(name="Identity")
 
     data.update({'claimed_sensor': claimedSensor, 'scaling_function': sf})

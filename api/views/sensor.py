@@ -61,54 +61,40 @@ def claimSensor(sensor, name, owner):
 @transaction.commit_manually
 def create(data, owner):
     try:
+        
         try:
             uuid = data['uuid']
+            sensor = Sensor.objects.get(uuid=uuid)
         except KeyError:
             transaction.rollback()
             return "A sensor uuid is required"
-
-        try:
-            name = data['name']
-        except KeyError:
-            transaction.rollback()
-            return str(uuid)+": A sensor name is required"
-
-        #Get sensor or create one
-        try:
-            sensor = updateObject(Sensor.objects.get(uuid=uuid), data)
         except Sensor.DoesNotExist:
-            sensor = updateObject(Sensor(), data)
-        
-        if not isinstance(sensor, Sensor):
+            sensor = None
+      
+        #See if the sensor is claimed or not
+        claimedSensor = ClaimedSensor.objects.claimed(sensor)
+
+        #Cases for if a user has no authority to create/claim sensors
+        if (sensor is None and owner is None) or \
+           (sensor is not None and claimedSensor is None and owner is None):
+
             transaction.rollback()
-            return sensor
+            return "Invalid Credentials"
+      
+        name = data.get('name', '')
+        sensor = Sensor() if sensor is None else sensor
 
-        #Get/create a claimed sensor and if we dont get one back error
-        claimedSensor = claimSensor(sensor, name, owner)
-        if not isinstance(claimedSensor, ClaimedSensor):
-            transaction.rollback()
-            return claimedSensor
-
-        dsName = owner.email
-        if owner.first_name != '':
-            dsName = owner.first_name
-        dsName += "|"+claimedSensor.name
-        data['name'] = dsName 
-
-        if 'scaling_function' in data:
-            sfName = data['scaling_function']
-            
-            try:
-                sf = ScalingFunction.objects.get(name=sfName)
-                data['scaling_function'] = sf
-            except ScalingFunction.DoesNotExist:
+        #If sensor isnt claimed and we have credentials
+        if claimedSensor is None and owner is not None:
+            sensor = updateObject(Sensor, data)
+            if not isinstance(sensor, Sensor):
                 transaction.rollback()
-                return "There is no Scaling Function with the name \'%s\'"%str(sfName) 
+                return sensor
 
-        ds = claimDs(claimedSensor, data)
-        if not isinstance(ds, DataStream):
-            transaction.rollback()
-            return ds
+            claimedSensor = claimSensor(sensor, name, owner)
+            if not isinstance(claimedSensor, ClaimedSensor):
+                transaction.rollback()
+                return claimedSensor
 
         #We've successfully set up everything for the sensor so return it
         transaction.commit()
@@ -148,23 +134,32 @@ def createSensors(request):
         returnData['errors'].append('There was no sensor data sent')
         return cors_http_response_json(returnData, 404)
 
+
+    user = None
     try:
         email = jsonData['email']
         user = User.objects.get(email=email)
     except KeyError:
-        returnData['errors'].append('Email required')
-        return cors_http_response_json(returnData, 404)
+        pass
     except User.DoesNotExist:
         returnData['errors'].append('User with email %s does not exist' % str(email))
         return cors_http_response_json(returnData, 404)
 
     for s in sensors:
         sensor = create(s, user)
+        
         #Assume error string if not a sensor
         if not isinstance(sensor, Sensor):
             returnData['errors'].append(sensor)
         else:
             returnData['sensors'].append(sensor.toDict())
+            
+            ds_data = s.get('ds_data', None)
+            if ds_data is not None:
+                claimedSensor = ClaimedSensor.objects.claimed(sensor)
+                ds = claimDs(claimedSensor, ds_data)
+                if not isinstance(ds, DataStream):
+                    returnData['errors'] = ds
 
     return cors_http_response_json(returnData)
 
