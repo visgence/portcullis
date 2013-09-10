@@ -48,6 +48,8 @@
         <script type="text/javascript" src="{{STATIC_URL}}js/bootstrap.min.js"></script>
 
         <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}css/base.css">
+
+            {% block additional-headers %}{% endblock %}
     </head>
     <body>
         <div id="header">

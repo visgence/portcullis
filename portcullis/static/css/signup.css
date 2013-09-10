@@ -1,0 +1,9 @@
+.container {
+    max-width: 750px;
+    margin-top: 5em;
+}
+
+.panel-default > .panel-heading {
+    background-color: #363D97;
+    color: #FFFFFF;
+}
