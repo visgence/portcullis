@@ -22,12 +22,37 @@ except ImportError:
     import json
 
 #Local Imports
-from graphs.models import DataStream, SensorReading, Sensor, ClaimedSensor
+from graphs.models import DataStream, SensorReading, Sensor, ClaimedSensor, ScalingFunction
 from portcullis.models import PortcullisUser
 from portcullis.customExceptions import SensorReadingCollision
+
 from api.views.reading_loader import insert_reading
 from api.views.sensor import claimSensor, create
+from api.views.datastream import claimDs
 
+
+class HelperMethods(TestCase):
+
+
+    def createSensor(self):
+        '''
+            Helper to create a new dummy sensor
+        '''
+
+        ns = Sensor(uuid="foo")
+        ns.save()
+        return ns
+
+    def createClaimedSensor(self):
+        '''
+            Helper to create a new dummy claimed sensor
+        '''
+
+        sensor = self.createSensor()
+        owner = PortcullisUser.objects.get(email="admin@visgence.com")
+        newCs = ClaimedSensor(sensor=sensor, owner=owner, name="foo_cs")
+        newCs.save()
+        return newCs
 
 
 class ReadingLoaderTest(TestCase):
@@ -86,8 +111,7 @@ class ReadingLoaderTest(TestCase):
         self.assertRaises(SensorReadingCollision, insert_reading, *(ds, sensor, 10.5, timestamp) )
 
 
-
-class SensorTest(TestCase):
+class SensorTest(HelperMethods):
     '''
     '  Tests for the view file sensor.py
     '''
@@ -97,15 +121,8 @@ class SensorTest(TestCase):
     def setUp(self):
         self.c = Client()
 
-    def createSensor(self):
-        '''
-            Helper to create a new dummy sensor
-        '''
 
-        ns = Sensor(uuid="foo")
-        ns.save()
-        return ns
-
+    ################# claimSensor ################
 
     def test_claimSensor_no_sensor(self):
         '''
@@ -178,6 +195,9 @@ class SensorTest(TestCase):
         self.assertEqual(cs.pk, newCs.pk)
 
 
+    
+    ################# create ################
+
     def test_create_no_owner(self):
         '''
             Test that we get back an error should we not give an owner
@@ -229,7 +249,6 @@ class SensorTest(TestCase):
         self.assertEqual(Sensor.objects.get(uuid="brand_new_sensor"), sensor)
 
 
-
     def test_create_good_data_update(self):
         '''
             Test that we get back a updated sensor given good data
@@ -260,4 +279,66 @@ class SensorTest(TestCase):
 
         self.assertNotEqual(newSensor, oldSensor)
         self.assertEqual(ClaimedSensor.objects.get(sensor=newSensor), claimedSensor)
+
+
+class DataStreamTest(HelperMethods):
+    '''
+    ' Tests for the view file datastream.py
+    '''
+
+    fixtures = ['portcullisUsers.json', 'sensors.json', 'claimedSensors.json', 'scalingFunctions.json',  'dataStreams.json']
+
+    
+    ################# claimDs ################
+    
+    def test_claimDs_create(self):
+        '''
+            Test that we create a ds and claim it to a given sensor that doesn't have a ds yet
+        '''
+
+        cs = self.createClaimedSensor()
+        self.assertRaises(DataStream.DoesNotExist, DataStream.objects.get, **{'claimed_sensor': cs})
+        data = {'name': 'foo_ds'}
+        newDs = claimDs(cs, data)
+        ds = DataStream.objects.get(claimed_sensor=cs)
+        self.assertEqual(newDs, ds)
+
+
+    def test_claimDs_update(self):
+        '''
+            Test that we update a ds given it's claimed sensor and new data
+        '''
+
+        owner = PortcullisUser.objects.get(email="admin@visgence.com")
+        cs = ClaimedSensor.objects.get(owner=owner, name="Claimed Sensor One")
+        ds = DataStream.objects.get(claimed_sensor=cs)
+        newData = {
+            'color': '#FFFFFF'
+            ,'min_value': 1.1
+            ,'max_value': 1.1
+            ,'reduction_type': 'median'
+            ,'is_public': False
+            ,'scaling_function': ScalingFunction.objects.get(name="Kbps")
+            ,'name': "new foo name"
+            ,'description': 'blarg'
+            ,'units': 'some units'
+        }
+
+        #First test that the new values don't already exist in the ds
+        valueExists = False
+        for field in ds._meta._fields():
+            if field.name in newData and newData[field.name] == getattr(ds, field.name):
+                valueExists = True
+
+        self.assertFalse(valueExists)
+        updatedDs = claimDs(cs, newData)
+        self.assertEquals(updatedDs, DataStream.objects.get(claimed_sensor=cs)) 
         
+        #Test values again on the updated ds to make sure they got updated
+        valuesUpdated = True
+        for field in updatedDs._meta._fields():
+            if field.name in newData and newData[field.name] != getattr(updatedDs, field.name):
+                valuesUpdated = False
+
+        self.assertTrue(valuesUpdated)
+

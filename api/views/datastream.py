@@ -172,12 +172,7 @@ def updateObject(obj, data):
 
 
 def claimDs(claimedSensor, data):
-    print "printing data"
-    print data 
-    print
     try:
-        print "getting ds"
-        print DataStream.objects.get(claimed_sensor=claimedSensor)
         ds = updateObject(DataStream.objects.get(claimed_sensor=claimedSensor), data)
         return ds
     except DataStream.DoesNotExist:
