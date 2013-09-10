@@ -12,7 +12,7 @@
     <div class="collapse navbar-collapse navbar-ex1-collapse">
         <ul class="nav navbar-nav">
             <li class="active" data-target="graphs"><a class="clickable">Graphs</a></li>
-            {% if user.is_authenticated %}
+            {% if user.is_authenticated and user.is_superuser %}
                 <li data-target="utilities"><a class="clickable">Utilities</a></li>
             {% endif %}
         </ul>
