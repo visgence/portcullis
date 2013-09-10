@@ -13,7 +13,7 @@
 from django.http import HttpResponseRedirect, HttpResponse
 from django.template import RequestContext, loader
 from django.core.urlresolvers import reverse
-from django.contrib.auth import authenticate, login, logout as auth_logout
+from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 from django.views.decorators.http import require_POST
 from django.contrib.auth import get_user_model
 AuthUser = get_user_model()
@@ -25,6 +25,7 @@ except ImportError:
 # Local Imports
 from check_access import check_access
 from api.utilities import cors_http_response_json
+from portcullis.models import PortcullisUser
 
 
 def user_login(request):
@@ -33,30 +34,38 @@ def user_login(request):
 
     if request.method == 'POST':
         json_data = json.loads(request.POST['json_data'])
-
-        user = authenticate(username=json_data["username"], password=json_data["password"])
-        if user is not None:
-            if user.is_active:
-                login(request, user)
-
-                greeting_page = loader.get_template('greeting.html')
-                greeting_c = RequestContext(request, {})
     
-                nav_t = loader.get_template('nav_bar.html')
-                nav_c = RequestContext(request, {})
+        user = login(request, json_data['username'], json_data['password']) 
+        if isinstance(user, PortcullisUser):
+            greeting_page = loader.get_template('greeting.html')
+            greeting_c = RequestContext(request, {})
 
-                data = {
-                    'greeting': greeting_page.render(greeting_c),
-                    'nav': nav_t.render(nav_c)
-                }
+            nav_t = loader.get_template('nav_bar.html')
+            nav_c = RequestContext(request, {})
 
-                return cors_http_response_json(data)
-            else:
-                error = "This account is disabled"
+            data = {
+                'greeting': greeting_page.render(greeting_c),
+                'nav': nav_t.render(nav_c)
+            }
+
+            return cors_http_response_json(data)
         else:
-            error = "Invalid username and/or password"
+            return cors_http_response_json({'error': user})
 
     return cors_http_response_json({'error': error})
+
+
+def login(request, username, password):
+
+    user = authenticate(username=username, password=password)
+    if user is not None:
+        if user.is_active:
+            auth_login(request, user)
+            return user
+        else:
+            return "This account is disabled"
+    else:
+        return "Invalid username and/or password"
 
 
 def logout(request):

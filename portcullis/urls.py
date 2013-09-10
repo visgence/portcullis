@@ -8,6 +8,7 @@ urlpatterns = patterns(
     url(r'^streams/$', 'side_pane.streams', name='side_pane-streams'),
 
     url(r'^signup/page/$', 'signup.signupPage', name='portcullis-signup-page'),
+    url(r'^signup/$', 'signup.signup', name='portcullis-signup'),
 )
 
 

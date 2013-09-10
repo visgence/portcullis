@@ -13,23 +13,78 @@
             <h4>Create A New Account</h4>
         </div>
         <div class="panel-body">
-            <form class="form" role="form">
-                <div class="form-group">
-                    <label for="email">Email</label>
-                    <input id="email" class="form-control" type="text" placeholder="Enter Email">
+            <form id="signup-form" class="form" role="form" >
+                {% csrf_token %}
+                <div class="form-group" action="#">
+                    <label for="email" class="control-label">Email</label>
+                    <input id="email" name="email" class="form-control" type="text" placeholder="Email">
+                    <p class="help-block msg"></p>
+                </div>
+                <div class="form-group" action="#">
+                    <label for="first-name" class="control-label">First Name</label>
+                    <input id="first-name" name="first-name" class="form-control" type="text" placeholder="First Name">
+                    <p class="help-block msg"></p>
+                </div>
+                <div class="form-group" action="#">
+                    <label for="last-name" class="control-label">Last Name</label>
+                    <input id="last-name" name="last-name" class="form-control" type="text" placeholder="Last Name">
+                    <p class="help-block msg"></p>
                 </div>
                 <div class="form-group">
-                    <label for="password">Password</label>
-                    <input id="password" class="form-control" type="password" placeholder="Enter Password">
+                    <label for="password" class="control-label">Password</label>
+                    <input id="password" name="password" class="form-control" type="password" placeholder="Password">
+                    <p class="help-block msg"></p>
                 </div>
                 <div class="form-group">
-                    <label for="password-repeat">Re-Type Password</label>
-                    <input id="password-repeat" class="form-control" type="password" placeholder="Enter Password Again">
+                    <label for="password-repeat" class="control-label">Confirm Your Password</label>
+                    <input id="password-repeat" name="password-repeat" class="form-control" type="password" 
+                        placeholder="Confirm Password">
+                    <p class="help-block msg"></p>
                 </div>
+               
+                <button type="submit" class="btn btn-primary">Create</button>
                 
-                <button type="button" class="btn btn-primary">Create</button>
+                <div class="has-error">
+                    <p class="help-block" id="error-msg"></p>
+                </div>
             </form>
         </div>
     </div>
 </div>
+
+<script>
+    $(function() {
+        $('#signup-form').on('submit', function() {
+            var formData = {
+                'email': $('#email').val()
+                ,'first-name': $('#first-name').val()
+                ,'last-name': $('#last-name').val()
+                ,'password': $('#password').val()
+                ,'password-repeat': $('#password-repeat').val()
+            };
+            var data = {
+                'signupData': JSON.stringify(formData)
+                ,'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val()
+            }
+
+            $.post('{% url "portcullis-signup" %}', data, function(resp) {
+                console.log(resp);
+                if(resp.hasOwnProperty('error')) {
+                    $('.form-group.has-error').removeClass('has-error').children('.msg').html(''); 
+                    $('#error-msg').html('');
+                    $('#'+resp.field).next('.msg').text(resp.error).parent().addClass('has-error');
+                }
+                else if(resp == "success")
+                    window.location = '/';
+                else
+                    $('#error-msg').html("We're sorry, but something unexpected occured.");
+            })
+            .fail(function(resp) {
+                $('#error-msg').html("We're sorry, but something unexpected occured.");
+            });
+            return false;
+        });
+    });
+
+</script>
 {% endblock content %}
