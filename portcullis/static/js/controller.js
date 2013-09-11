@@ -15,9 +15,11 @@ $(window).bind('hashchange', function(event) {
 
         $('.'+$(current).data('target')).hide();
         $(current).removeClass('active');
+        $(window).trigger(current+'-hidden');
 
         $('.navbar-nav li[data-target="'+state['tab']+'"]').addClass('active');
         $('.'+state['tab']).show();
+        $(window).trigger(state['tab']+'-shown');
     }
 
     if('time' in state) {

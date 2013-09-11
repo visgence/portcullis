@@ -25,13 +25,13 @@ $(function() {
             this.owner = vars.owner || '';
             this.sensorUri = vars.sensorUri || '';
             this.registeredSensors([]);
-        };
+        }.bind(this);
 
         this.addSensor = function(data) {
             var newSensor = new Sensor();
             newSensor.init(data);
             this.registeredSensors.push(newSensor);
-        };
+        }.bind(this);
 
         this.loadRegistered = function() {
             var self = this;
@@ -54,7 +54,11 @@ $(function() {
                     $('#table-error-msg').text("Something went wrong loading your registered sensors.");
                 }
             });
-        };
+        }.bind(this);
+
+        this.refresh = function() {
+            this.loadRegistered();
+        }.bind(this);
 
     }.bind(this);
 
@@ -64,7 +68,11 @@ $(function() {
         vm.init({'owner': email, 'sensorUri': url});
         vm.loadRegistered();
         ko.applyBindings(vm, $('#sensor-registration').get(0)); 
-   
+        $(window).on('sensor-shown', function() {
+            vm.refresh()
+            resetMsgs();
+            $('#sensor-register-form').get(0).reset();
+        });   
 
         //TODO: move this stuff into view model
         var resetMsgs = function() {
