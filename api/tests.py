@@ -32,7 +32,9 @@ from api.views.datastream import claimDs
 
 
 class HelperMethods(TestCase):
-
+    '''
+    '  Collection of methods to help in the testing process such as quick creation of dummy objects for the db.
+    '''
 
     def createSensor(self):
         '''
@@ -200,11 +202,12 @@ class SensorTest(HelperMethods):
 
     def test_create_no_owner(self):
         '''
-            Test that we get back an error should we not give an owner
+            Test that we get back the claimed sensor we give even when not giving an owner
         '''
 
         data = {"uuid": "sensor_one_id", "name": "Claimed Sensor One"} 
-        self.assertTrue(isinstance(create(data, None), str))
+        sensor = Sensor.objects.get(uuid="sensor_one_id")
+        self.assertEqual(create(data, None), sensor)
 
 
     def test_create_no_uuid(self):
@@ -219,23 +222,14 @@ class SensorTest(HelperMethods):
     
     def test_create_no_name(self):
         '''
-            Test that we get back an error should we not send a name
+            Test that we get back the sensor we send when we don't give a name
         '''
 
         data = {"uuid": "sensor_one_id"} 
         owner = PortcullisUser.objects.get(email="admin@visgence.com")
-        self.assertTrue(isinstance(create(data, owner), str))
+        sensor = Sensor.objects.get(uuid="sensor_one_id")
+        self.assertEqual(create(data, owner), sensor)
 
-
-    def test_create_bad_scaling_function(self):
-        '''
-            Test that we get an error if we an error if we try to give a non existant scaling function name
-        '''
-
-        data = {"uuid": "sensor_one_id", "name": "Claimed Sensor One", "scaling_function": "false name"} 
-        owner = PortcullisUser.objects.get(email="admin@visgence.com")
-        self.assertTrue(isinstance(create(data, owner), str))
-        
 
     def test_create_good_data_create(self):
         '''
@@ -249,12 +243,13 @@ class SensorTest(HelperMethods):
         self.assertEqual(Sensor.objects.get(uuid="brand_new_sensor"), sensor)
 
 
-    def test_create_good_data_update(self):
+    def test_create_good_data_unclaimed_update(self):
         '''
-            Test that we get back a updated sensor given good data
+            Test that we get back a updated sensor given good data and the sensor is not claimed
         '''
 
-        data = {"uuid": "sensor_one_id", "name": "Brand New Name", "units": "new units"} 
+        newSensor = self.createSensor()
+        data = {"uuid": newSensor.uuid, "name": "Claimed Sensor One", "units": "new units"} 
         owner = PortcullisUser.objects.get(email="admin@visgence.com")
         sensor = Sensor.objects.get(uuid="sensor_one_id")
         updatedSensor = create(data, owner)

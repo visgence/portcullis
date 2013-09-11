@@ -83,10 +83,10 @@ def create(data, owner):
       
         name = data.get('name', '')
         sensor = Sensor() if sensor is None else sensor
-
+        
         #If sensor isnt claimed and we have credentials
         if claimedSensor is None and owner is not None:
-            sensor = updateObject(Sensor, data)
+            sensor = updateObject(sensor, data)
             if not isinstance(sensor, Sensor):
                 transaction.rollback()
                 return sensor
