@@ -36,10 +36,23 @@ $(function() {
         this.loadRegistered = function() {
             var self = this;
             $.get(this.sensorUri, {'credentials': JSON.stringify({'email': this.owner})}, function(resp) {
-                self.registeredSensors.removeAll();
-                $.each(resp.sensors, function() {
-                    self.addSensor(this);
-                });
+                if(resp.errors.length > 0) {
+                    $('#table-error-msg').text("Something went wrong loading your registered sensors.");
+                }
+                else {
+                    $('#table-error-msg').text('');
+                    self.registeredSensors.removeAll();
+                    $.each(resp.sensors, function() {
+                        self.addSensor(this);
+                    });
+                };
+            }).
+            fail(function(resp) {
+                console.error(resp);
+                var error = JSON.parse(resp.responseText);
+                if(error.errors.length > 0) {
+                    $('#table-error-msg').text("Something went wrong loading your registered sensors.");
+                }
             });
         };
 

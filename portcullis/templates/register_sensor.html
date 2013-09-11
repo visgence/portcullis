@@ -35,8 +35,9 @@
     </form>
 
     <h3>Registered Sensor For {{user.first_name}} {{user.last_name}}</h3>
-
-    <table class="table table-striped" data-bind="if: registeredSensors().length > 0">
+    <p class="text-danger" id="table-error-msg"></p>
+    
+    <table class="table table-striped table-bordered" data-bind="if: registeredSensors().length > 0">
         <thead>
             <tr>
                 <th>UUID</th>

@@ -180,7 +180,7 @@ class SensorView(View):
             return cors_http_response_json(returnData, 404)
         except (TypeError, ValueError):
             returnData['errors'].append('Bad Json')
-            return cors_http_response_json(returnData, 404)
+            return cors_http_response_json(returnData, 400)
 
         try:
             email = credentials['email']
