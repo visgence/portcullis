@@ -24,6 +24,7 @@ $(function() {
             vars = vars || {};
             this.owner = vars.owner || '';
             this.sensorUri = vars.sensorUri || '';
+            this.registeredSensors([]);
         };
 
         this.addSensor = function(data) {
@@ -32,10 +33,13 @@ $(function() {
             this.registeredSensors.push(newSensor);
         };
 
-        this.loadRegistered = function(data) {
-            
+        this.loadRegistered = function() {
+            var self = this;
             $.get(this.sensorUri, {'credentials': JSON.stringify({'email': this.owner})}, function(resp) {
-                console.log(resp);
+                self.registeredSensors.removeAll();
+                $.each(resp.sensors, function() {
+                    self.addSensor(this);
+                });
             });
         };
 
@@ -80,7 +84,7 @@ $(function() {
                 if(resp.errors.length > 0)
                     handleErrors(resp.errors);
                 else if(resp.sensors.length > 0 && resp.sensors[0].uuid === data.sensors[0].uuid) {
-                    vm.addSensor(resp.sensors[0]);
+                    vm.loadRegistered();
                     resetMsgs();
                     $('#sensor-register-form').get(0).reset();
                     $('#form-msg').text("Sensor registered successfully!").closest('div.form-group').addClass('has-success');
