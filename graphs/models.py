@@ -284,12 +284,20 @@ class Sensor(models.Model):
         return sensor
 
     def toDict(self):
-        return {
+        data = {
             'uuid': self.uuid
             ,'sensor_type': self.sensor_type
             ,'units': self.units
             ,'description': self.description
         }
+
+        try:
+            cs = self.claimedsensor_set.get(sensor=self)
+            data['name'] = cs.name
+        except ClaimedSensor.DoesNotExist:
+            pass
+
+        return data
 
     def save(self, *args, **kwargs):
         super(Sensor, self).save(*args, **kwargs)

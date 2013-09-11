@@ -1,4 +1,6 @@
 from django.conf.urls.defaults import patterns, url
+from django.views.decorators.csrf import csrf_exempt
+from api.views.sensor import SensorView
 
 urlpatterns = patterns('api.views',
     url(r'^add_reading/$','reading_loader.add_reading'),
@@ -14,5 +16,5 @@ urlpatterns = patterns('api.views',
     url(r'^passwordForm/$', 'login.password_form', name='api-password_form'),
     url(r'^changePassword/$', 'login.change_password', name='api-change_password'),
     
-    url(r'^createSensors/$', 'sensor.createSensors', name='api-create-sensors'),
+    url(r'^sensor/$', csrf_exempt(SensorView.as_view()), name='sensor-list'),
 )
