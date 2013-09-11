@@ -2,23 +2,81 @@
     <h3>Register A Sensor</h3>
     <hr/>
 
-    <form class="form-horizontal" role="role">
+    <form class="form-horizontal" id="sensor-register-form" role="role">
         <div class="form-group">
             <label class="control-label col-lg-4 col-md-4" for="uuid">Sensor UUID</label>
             <div class="col-lg-6 col-md-6">
                 <input type="text" id="uuid" placeholder="uuid" class="form-control">
+                <p class="help-block" id="uuid-msg"></p>
             </div>
         </div>
+
         <div class="form-group">
             <label class="control-label col-lg-4 col-md-4" for="name">Sensor Name</label>
             <div class="col-lg-6 col-md-6">
                 <input type="text" id="name" placeholder="name" class="form-control">
+                <p class="help-block" id="name-msg"></p>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <div class="col-lg-offset-4 col-md-offset-4 col-lg-6 col-md-6">
+                <button type="submit" class="btn btn-primary">Register</button>
             </div>
         </div>
         <div class="form-group">
             <div class="col-lg-offset-4 col-md-offset-4 col-lg-6 col-md-6">
-                <button type="button" class="btn btn-primary">Register</button>
+                <p class="help-block" id="form-msg"></p>
             </div>
         </div>
     </form>
 </dvi>
+
+<script>
+    $(function() {
+       
+        var resetMsgs = function() {
+            $('#uuid-msg').text('').closest('div.form-group').removeClass('has-error');
+            $('#name-msg').text('').closest('div.form-group').removeClass('has-error');
+            $('#form-msg').text('').closest('div.form-group').removeClass('has-error has-success');
+        };
+
+        var handleErrors = function(errors) {
+            resetMsgs();
+            $.each(errors, function(i, error) {
+                console.log('error');
+                console.log(error);
+                if(error.hasOwnProperty('name'))
+                    $('#name-msg').text(error['name']).closest('div.form-group').addClass('has-error');
+                else if(error.hasOwnProperty('uuid'))
+                    $('#uuid-msg').text(error['uuid']).closest('div.form-group').addClass('has-error');
+                else
+                    $('#form-msg').text(error).parent('div.form-group').addClass('has-error');
+            });
+        };
+
+        $('#sensor-register-form').on('submit', function() {
+       
+            var data = {
+                'email': "{{user.email}}"
+                ,'sensors': [{'uuid': $('#uuid').val(), 'name': $('#name').val()}]
+            };
+           
+            $.post("{% url 'api-create-sensors' %}", JSON.stringify(data), function(resp) {
+                console.log(resp);
+                if(resp.errors.length > 0)
+                    handleErrors(resp.errors);
+                else if(resp.sensors.length > 0 && resp.sensors[0].uuid === data.sensors[0].uuid) {
+                    resetMsgs();
+                    $('#sensor-register-form').get(0).reset();
+                    $('#form-msg').text("Sensor registered successfully!").closest('div.form-group').addClass('has-success');
+                }
+                else
+                    handleErrors(["We're sorry, but an unexpected error occureced."]);
+            }).setRequestHeader('X-CSRFToken', $('input[name="csrfmiddlewaretoken"]').val());
+
+            //Stop form from actually submiting
+            return false;
+        });
+    });
+</script>

@@ -108,11 +108,11 @@ def create(data, owner):
 @require_POST
 def createSensors(request):
     '''
-    ' Creates a list of sensors to a owner given the proper credentials for that owner and the data
-    ' to create the sensor if it does not exist.
+    ' Accepts a list of sensors and their data as json and will make sure they are claimed.
+    ' User credentials are necessary to claiming unclaimed sensors unless the sensor is already claimed
+    ' in which case the sensor will simply update itself.
     ' 
-    ' Owner must provide their email and password for authentication.
-    ' 
+    ' Owner must provide their email and password for authentication to create and claim sensor.  
     '''
 
     returnData = {
@@ -150,7 +150,10 @@ def createSensors(request):
         
         #Assume error string if not a sensor
         if not isinstance(sensor, Sensor):
-            returnData['errors'].append(sensor)
+            if isinstance(sensor, list):
+                returnData['errors'].extend(sensor)
+            else:
+                returnData['errors'].append(sensor)
         else:
             returnData['sensors'].append(sensor.toDict())
             
