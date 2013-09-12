@@ -14,7 +14,7 @@ $(function() {
     $('ul.navbar-nav').on('click', 'li', function(e) {
         var newTab = $(e.currentTarget).data('target');
         if(isActive(newTab) === false)
-            activate(newTab);
+            activate(newTab, true);
     });
 
     var changeHashTab = function(newTab) {
@@ -37,13 +37,12 @@ $(function() {
         };
         if(stateCache.hasOwnProperty(newTab) && stateCache[newTab] !== undefined)
             $.extend(true, newState, stateCache[newTab]);
-        console.log(newState);
+        
         $.bbq.pushState(newState, 2);
     };
 
     var isTab = function(tab) {
         tab = tab || '';
-        console.log($('ul.navbar-nav li[data-target="'+tab+'"]').length > 0 ? true:false);
         return $('ul.navbar-nav li[data-target="'+tab+'"]').length > 0 ? true:false;
     };
 
@@ -56,15 +55,21 @@ $(function() {
         return $('ul.navbar-nav li.active').data('target');
     };
 
-    var activate = function(tab) {
+    var activate = function(tab, loadContent) {
         tab = tab || '';
         var toActivate = $('ul.navbar-nav li[data-target="'+tab+'"]');
         if(toActivate.length > 0) {
             $('ul.navbar-nav li[class="active"]').removeClass('active');
             $(toActivate).addClass('active');
             changeHashTab(tab);
-            loadActive();
+            if(loadContent === true)
+                loadActive();
         }
+    };
+
+    var isLoaded = function(tab) {
+        tab = tab || '';
+        return $('#'+tab+'-container').length > 0 ? true:false;
     };
 
     var loadActive = function() {
@@ -81,5 +86,6 @@ $(function() {
         ,'activate': activate
         ,'getActive': getActive
         ,'isTab': isTab
+        ,'isLoaded': isLoaded
     };
 });

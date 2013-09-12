@@ -13,11 +13,15 @@ $(function() {
             var current = $.fn.Nav.getActive();
             if(state['tab'] === current)
                 return;
-           
-            $.fn.Nav.activate(state['tab']);
+
+            if($.fn.Nav.isLoaded(state['tab'])) {
+                $.fn.Nav.activate(state['tab'], false);                
+            }
+            else 
+                $.fn.Nav.activate(state['tab'], true);
         }
         else if($.fn.Nav.isActive(default_tab) === false) {
-            $.fn.Nav.activate(default_tab);
+            $.fn.Nav.activate(default_tab, true);
         }
 
         if('time' in state) {
