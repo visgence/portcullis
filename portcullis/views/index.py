@@ -7,20 +7,14 @@
 """
 
 # System imports
-from django.http import HttpResponse, Http404
-from django.template import RequestContext, loader, Context
+from django.http import HttpResponse
+from django.template import RequestContext, loader
 from django.core.context_processors import csrf
 
 # Local imports
-from graphs.models import DataStream
-from graphs.data_reduction import reductFunc
 from portcullis.models import PortcullisUser as User
 from check_access import check_access
 
-try:
-    from default_graphs import DEFAULT_GRAPHS
-except:
-    DEFAULT_GRAPHS = []
 
 
 def index(request):

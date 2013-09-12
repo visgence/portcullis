@@ -103,17 +103,21 @@
 
 {% csrf_token %}
 
-<div id="graphs-container"></div><!--End widget_container -->
+<div id="graphs-container">
+    {% for graph in graphs %}
+        {{graph}}
+    {% endfor %}
+</div><!--End widget_container -->
 
-{% if token or defaultStreams %}
+{% if defaultGraphs|length > 0 %}
     <script>
         //On load function will search for any 'portcullis-graph' divs on the page.
         $(function() {
             if($('#granularity').length)
-                on_graphs_load({{graphIds|safe}});
+                on_graphs_load({{defaultGraphs|safe}});
             else {
                 $(window).on('graphControlsRendered', function() {
-                    on_graphs_load({{graphIds|safe}});
+                    on_graphs_load({{defaultGraphs|safe}});
                 });
             }
         });

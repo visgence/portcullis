@@ -28,13 +28,6 @@ function post_login(data)
         $('#nav').html(data.nav);
 
         $('#login_error').text('');
-        $.get('/portcullis/side_pane/', function(data) {
-            $('#side_pane').html(data);
-            ready_datepickers();
-            ready_checkboxes();
-            ready_tabs();
-        });
-        $('.logged_out_hide').removeClass('logged_out_hide');
     }
 }
 
