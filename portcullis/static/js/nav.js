@@ -20,23 +20,23 @@ $(function() {
 
         var state = $.bbq.getState();
         
-        var currentTab = 'graphs';
-        if(state.hasOwnProperty('tab'))
+        if(state.hasOwnProperty('tab')) {
             currentTab = state['tab'];
 
-        var stateToSave = {};
-        $.each(state, function(key, val) {
-            if($.inArray(key, properStates[currentTab]) > -1)
-                stateToSave[key] = val;
-        });
-        stateCache[currentTab] = stateToSave;
-        
+            var stateToSave = {};
+            $.each(state, function(key, val) {
+                if($.inArray(key, properStates[currentTab]) > -1)
+                    stateToSave[key] = val;
+            });
+            stateCache[currentTab] = stateToSave;
+        }
+
         var newState = {
             'tab': newTab
         };
         if(stateCache.hasOwnProperty(newTab) && stateCache[newTab] !== undefined)
             $.extend(true, newState, stateCache[newTab]);
-
+        console.log(newState);
         $.bbq.pushState(newState, 2);
     };
 

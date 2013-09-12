@@ -1,6 +1,6 @@
 
 $(function() {
-    var state_cach = {};
+    var default_tab = 'graphs';
 
     /* Responds to any changes in the url hash for jquery bbq */
     $(window).bind('hashchange', function(event) {
@@ -11,14 +11,13 @@ $(function() {
                 return;
            
             var current = $.fn.Nav.getActive();
-            console.log('current tab: %s', current);
             if(state['tab'] === current)
                 return;
            
             $.fn.Nav.activate(state['tab']);
         }
-        else if($.fn.Nav.isActive('graphs') === false) {
-            $.fn.Nav.activate('graphs');
+        else if($.fn.Nav.isActive(default_tab) === false) {
+            $.fn.Nav.activate(default_tab);
         }
 
         if('time' in state) {
