@@ -14,6 +14,8 @@ from django.core.context_processors import csrf
 # Local imports
 from graphs.models import DataStream
 from graphs.data_reduction import reductFunc
+from portcullis.models import PortcullisUser as User
+from check_access import check_access
 
 try:
     from default_graphs import DEFAULT_GRAPHS
@@ -34,12 +36,21 @@ def index(request):
 
 
 def utilitiesIndex(request):
+
+    user = check_access(request)
+    if not isinstance(user, User):
+        return user 
+
     t = loader.get_template('utilities.html') 
     c = RequestContext(request, {})
     return HttpResponse(t.render(c))
 
 
 def sensorsIndex(request):
+
+    user = check_access(request)
+    if not isinstance(user, User):
+        return user 
 
     t = loader.get_template('sensors.html') 
     c = RequestContext(request, {})

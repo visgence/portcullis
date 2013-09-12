@@ -40,12 +40,6 @@ def streams(request):
         c_dict.update({'group':'owned'})
         owned_subtree = t_subtree.render(Context(c_dict))
 
-        #Pull streams that are viewable by this user.
-        #viewable_streams = DataStream.objects.get_viewable(user).exclude(id__in=owned_streams).distinct()
-        #c_dict = stream_tree_top(viewable_streams)
-        #c_dict.update({'group':'viewable'})
-        #viewable_subtree = t_subtree.render(Context(c_dict))
-
     #Pull any public streams as well
     public_streams = DataStream.objects.filter(is_public = True).exclude(id__in=owned_streams).distinct()
     c_dict = stream_tree_top(public_streams)
@@ -56,11 +50,9 @@ def streams(request):
     c_streams = RequestContext(request, {
             'user':request.user,
             'owned_streams': owned_streams,
-            #'viewable_streams': viewable_streams,
             'public_streams': public_streams,
             'owned_subtree': owned_subtree,
             'public_subtree': public_subtree,
-            #'viewable_subtree': viewable_subtree
             })
     
     return HttpResponse(t_streams.render(c_streams), mimetype='text/html')
@@ -120,22 +112,16 @@ def stream_subtree(request):
         if group == 'owned':
             streams = DataStream.objects.filter(name__startswith=name)
             streams = streams.filter(claimed_sensor__owner=portcullisUser)
-        #elif group == 'viewable':
-        #    streams = DataStream.objects.get_viewable(portcullisUser)
-        #    streams = streams.filter(name__startswith=name)
-        #    streams = streams.exclude(owner=portcullisUser)
         elif group == 'public':
             streams = DataStream.objects.filter(name__startswith=name)
-            #viewableStreams = DataStream.objects.get_viewable(portcullisUser)
             streams = streams.filter(is_public=True).exclude(claimed_sensor__owner=portcullisUser)
-            #streams = streams.exclude(id__in=viewableStreams)
         else:
             dump = json.dumps({'errors': 'Error: %s is not a valid datastream type.' % group})
             return HttpResponse(dump, content_type="application/json")
 
-    #elif group == 'public':
-    #    streams = DataStream.objects.filter(name__startswith=name)
-    #    streams = streams.filter(is_public=True)
+    elif group == 'public':
+        streams = DataStream.objects.filter(name__startswith=name)
+        streams = streams.filter(is_public=True)
     else:
         dump = json.dumps({'errors': 'Error: You must be logged in to see the %s datastream type.' % group})
         return HttpResponse(dump, content_type="application/json")

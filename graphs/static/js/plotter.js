@@ -1084,10 +1084,9 @@ function load_unload_stream(checkbox)
             };
             graphSpinners.push(spinners);
 
-            $('#widget_container div.graphs').append(data);
+            $('#graphs-container').append(data);
             checkedGraphs.push(datastream_id);
             on_graph_load(datastream_id, true);
-            $('#share_link').removeClass('display_none');
         });
     }
     else {
