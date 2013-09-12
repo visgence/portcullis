@@ -7,8 +7,9 @@ $(function() {
         ,'sensors': '/portcullis/sensors/index/'
     };
     var properStates = {
-        'graphs':['time', 'auto-refresh', 'start', 'end'], 
-        'utilities': []
+        'graphs':['time', 'auto-refresh', 'start', 'end']
+        ,'utilities': []
+        ,'sensors': []
     };
 
     $('ul.navbar-nav').on('click', 'li', function(e) {

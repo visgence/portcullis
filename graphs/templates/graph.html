@@ -34,6 +34,9 @@
         <div id="stream_controls_container_{{id}}" class="stream_controls_container">
             <ul>
                 <li>
+                    <span id="downloadify{{id}}"><!--Place holder for download button--></span>
+                </li>
+                <li>
                     <input type="button" value="Zoom Reset" onClick="load_all_graphs();"/>
                 </li>
                 <li>
@@ -51,9 +54,6 @@
                 <li> 
                     <label>Graph Color</label>
                     <input id="minicolor_{{id}}" class="minicolors" type="text"/>
-                </li>
-                <li>
-                    <span id="downloadify{{id}}"><!--Place holder for download button--></span>
                 </li>
             </ul>
         </div>

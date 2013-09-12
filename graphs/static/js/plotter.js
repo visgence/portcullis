@@ -151,20 +151,15 @@ function on_graphs_load(graphIds)
 
     //Find all portcullis graph divs
     $(checkedGraphs).each(function(i, id) {
-    
-        //bind main graphs
-        $("#sensor" + id).bind("plotselected",create_plot_select_handler(id));
-        $("#sensor" + id).bind("plothover",create_plot_click_handler(id));
-        $("#sensor" + id).bind("mouseleave", function(){ reset_graph_selection(id); });
-         
-        //bind  overview graph 
-        $("#overview" + id).bind("plotselected",create_plot_select_handler(id));
 
-        // setup the download link.
-        setupDownload(this.id);
+        var spinners = {
+            'ds': id,
+            'tiny': null,
+            'large': null
+        };
+        graphSpinners.push(spinners);
+        on_graph_load(id, true); 
     });
-   
-    load_all_graphs();
 }
 
 //TODO: delete perm parameter when we get embeded graphs for sniffer working better
@@ -565,7 +560,6 @@ function graph_overview_callback(is_shared, perm) {
         }
 
         var ranges = get_period();
-
         var msg = '';
         if(data.data.length === 0) {
             msg = "No data for this range.";
@@ -820,7 +814,7 @@ function zoom_all_graphs(ranges)
  */
 function setupDownload(datastream_id)
 {
-    $('#downloadify'+datastream_id).downloadify({
+    var d = $('#downloadify'+datastream_id).downloadify({
         filename: function(){
             return 'datastream_'+datastream_id+'.csv'; 
         },

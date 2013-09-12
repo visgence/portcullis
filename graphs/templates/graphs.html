@@ -1,11 +1,9 @@
 {% extends "main_page.html" %}
 
 {% block side_pane %}
-
 <script type="text/javascript" src="{{STATIC_URL}}js/graph_controls.js"></script>
     
 <div class="side-nav">
-
     <div id="graph_controls">
         <h2>Graph Controls</h2>
 
@@ -99,8 +97,8 @@
 
 {% endblock side_pane %}
 
-{% block content_pane %}
 
+{% block content_pane %}
 {% csrf_token %}
 
 <div id="graphs-container">
@@ -113,6 +111,7 @@
     <script>
         //On load function will search for any 'portcullis-graph' divs on the page.
         $(function() {
+
             if($('#granularity').length)
                 on_graphs_load({{defaultGraphs|safe}});
             else {
