@@ -7,6 +7,9 @@ admin.autodiscover()
 urlpatterns = patterns(
     'graphs.views',
     url(r'^$', 'display_graphs.display_graph', name='graphs'),
+    
+    url(r'^index/$', 'graphs_index.graphsIndex', name='graphs-index'),
+    
     url(r'^render_simple_graph/$', 'display_graphs.display_simple_graph', name='graphs-simple_graph'),
     url(r'^render_simple/$', 'display_graphs.display_simple_base', name='graphs-simple'),
     url(r'^render_container/$', 'display_graphs.render_graph_container', name='graphs-container'),

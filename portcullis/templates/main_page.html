@@ -1,30 +1,11 @@
-{% extends "base.html" %}
-
-{% block content %}
-
 <link rel="stylesheet" media="all" type="text/css" href="{{STATIC_URL}}css/main_page.css">
 
-<div id="main_page">
+<div id="main_page" class="content">
     <div id="side_pane">
-        {{side_pane|safe}}
+        {% block side_pane %}{% endblock %}
     </div><!--End side_pane-->
 
-    <script type="text/javascript">
-        ready_tabs();
-
-        var state = $.bbq.getState();
-        if(!('time' in state))
-            state['time'] = 'hour';
-        if(!('auto-refresh' in state))
-            state['auto-refresh'] = false;
-
-        $.bbq.pushState(state);
-            
-    </script>
-
     <div id="content">
-        {{content_pane|safe}}
+        {% block content_pane %}{% endblock %}
     </div>
 </div>
-
-{% endblock content %}
