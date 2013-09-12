@@ -40,6 +40,13 @@ def utilitiesIndex(request):
     return HttpResponse(t.render(c))
 
 
+def sensorsIndex(request):
+
+    t = loader.get_template('sensors.html') 
+    c = RequestContext(request, {})
+    return HttpResponse(t.render(c))
+
+
 #def index(request, content = None, content_id = None):
 #    '''
 #    ' This is the main page index.  It should render all the

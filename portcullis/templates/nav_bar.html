@@ -17,7 +17,7 @@
         <ul class="nav navbar-nav">
             <li data-target="graphs"><a class="clickable">Graphs</a></li>
             {% if user.is_authenticated %}
-                <li data-target="sensor"><a class="clickable">Sensor</a></li>
+                <li data-target="sensors"><a class="clickable">Sensors</a></li>
             {% endif %}
             {% if user.is_authenticated and user.is_superuser %}
                 <li data-target="utilities"><a class="clickable">Utilities</a></li>

@@ -5,6 +5,7 @@ urlpatterns = patterns(
     url(r'^$', 'index.index', name='portcullis-index'),
     
     url(r'^utilities/index/$', 'index.utilitiesIndex', name='portcullis-utilities-index'),
+    url(r'^sensors/index/$', 'index.sensorsIndex', name='portcullis-sensors-index'),
    
     url(r'^side_pane/$', 'side_pane.skeleton', name='side_pane-skeleton'),
     url(r'^side_pane/get_subtree/$', 'side_pane.stream_subtree', name='side_pane-subtree'),

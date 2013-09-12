@@ -4,6 +4,7 @@ $(function() {
     var tabUris = {
         'graphs': '/graphs/index'
         ,'utilities': '/portcullis/utilities/index/'
+        ,'sensors': '/portcullis/sensors/index/'
     };
     var properStates = {
         'graphs':['time', 'auto-refresh', 'start', 'end'], 
