@@ -4,6 +4,7 @@
 from django.db import transaction
 from django.core.exceptions import ValidationError
 from django.views.generic import View
+from django.http import HttpResponse
 
 #System Imports
 try:
@@ -16,6 +17,7 @@ from graphs.models import Sensor, ClaimedSensor, DataStream
 from portcullis.models import PortcullisUser as User
 from api.utilities import cors_http_response_json
 from api.views.datastream import claimDs
+from check_access import check_access
 
 
 def updateObject(obj, data):
@@ -173,27 +175,14 @@ class SensorView(View):
             ,'sensors': []
         }
 
-        try:
-            credentials = json.loads(request.GET['credentials'])
-        except KeyError:
-            returnData['errors'].append('No json sent')
-            return cors_http_response_json(returnData, 404)
-        except (TypeError, ValueError):
-            returnData['errors'].append('Bad Json')
-            return cors_http_response_json(returnData, 400)
-
-        try:
-            email = credentials['email']
-            owner = User.objects.get(email=email)
-        except KeyError:
-            returnData['errors'].append('No credentials were provided.')
-            return cors_http_response_json(returnData, 404)
-        except User.DoesNotExist:
-            returnData['errors'].append('User with email %s does not exist' % str(email))
-            return cors_http_response_json(returnData, 404)
+        user = check_access(request)
+        if not isinstance(user, User):
+            returnData['errors'].append('User authentication failed.')
+            return HttpResponse(json.dumps(returnData), content_type="application/json", status_code=401)
        
-        sensors = Sensor.objects.filter(claimedsensor__owner=owner)
+        sensors = Sensor.objects.filter(claimedsensor__owner=user)
         returnData['sensors'] = [s.toDict() for s in sensors]
         
-        return cors_http_response_json(returnData)
+        return HttpResponse(json.dumps(returnData), content_type="application/json")
+       
 

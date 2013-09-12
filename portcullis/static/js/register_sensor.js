@@ -35,7 +35,7 @@ $(function() {
 
         this.loadRegistered = function() {
             var self = this;
-            $.get(this.sensorUri, {'credentials': JSON.stringify({'email': this.owner})}, function(resp) {
+            $.get(this.sensorUri, function(resp) {
                 if(resp.errors.length > 0) {
                     $('#table-error-msg').text("Something went wrong loading your registered sensors.");
                 }
