@@ -14,7 +14,7 @@ $(function() {
     }.bind(this);
 
     var SensorViewModel = function() {
-        this.registeredSensors = ko.observableArray();
+        this.claimedSensors = ko.observableArray();
 
         //TODO: Make this it's own user class
         this.owner = '';
@@ -24,24 +24,24 @@ $(function() {
             vars = vars || {};
             this.owner = vars.owner || '';
             this.sensorUri = vars.sensorUri || '';
-            this.registeredSensors([]);
+            this.claimedSensors([]);
         }.bind(this);
 
         this.addSensor = function(data) {
             var newSensor = new Sensor();
             newSensor.init(data);
-            this.registeredSensors.push(newSensor);
+            this.claimedSensors.push(newSensor);
         }.bind(this);
 
-        this.loadRegistered = function() {
+        this.loadclaimed = function() {
             var self = this;
             $.get(this.sensorUri, function(resp) {
                 if(resp.errors.length > 0) {
-                    $('#table-error-msg').text("Something went wrong loading your registered sensors.");
+                    $('#table-error-msg').text("Something went wrong loading your claimed sensors.");
                 }
                 else {
                     $('#table-error-msg').text('');
-                    self.registeredSensors.removeAll();
+                    self.claimedSensors.removeAll();
                     $.each(resp.sensors, function() {
                         self.addSensor(this);
                     });
@@ -51,13 +51,13 @@ $(function() {
                 console.error(resp);
                 var error = JSON.parse(resp.responseText);
                 if(error.errors.length > 0) {
-                    $('#table-error-msg').text("Something went wrong loading your registered sensors.");
+                    $('#table-error-msg').text("Something went wrong loading your claimed sensors.");
                 }
             });
         }.bind(this);
 
         this.refresh = function() {
-            this.loadRegistered();
+            this.loadclaimed();
         }.bind(this);
 
     }.bind(this);
@@ -66,12 +66,12 @@ $(function() {
 
         var vm = new SensorViewModel();
         vm.init({'owner': email, 'sensorUri': url});
-        vm.loadRegistered();
+        vm.loadclaimed();
         ko.applyBindings(vm, $('#sensor-registration').get(0)); 
         $(window).on('sensor-shown', function() {
             vm.refresh()
             resetMsgs();
-            $('#sensor-register-form').get(0).reset();
+            $('#sensor-claim-form').get(0).reset();
         });   
 
         //TODO: move this stuff into view model
@@ -93,7 +93,7 @@ $(function() {
             });
         };
         
-        $('#sensor-register-form').on('submit', function() {
+        $('#sensor-claim-form').on('submit', function() {
        
             var data = {
                 'email': email
@@ -105,10 +105,10 @@ $(function() {
                 if(resp.errors.length > 0)
                     handleErrors(resp.errors);
                 else if(resp.sensors.length > 0 && resp.sensors[0].uuid === data.sensors[0].uuid) {
-                    vm.loadRegistered();
+                    vm.loadclaimed();
                     resetMsgs();
-                    $('#sensor-register-form').get(0).reset();
-                    $('#form-msg').text("Sensor registered successfully!").closest('div.form-group').addClass('has-success');
+                    $('#sensor-claim-form').get(0).reset();
+                    $('#form-msg').text("Sensor claimed successfully!").closest('div.form-group').addClass('has-success');
                 }
                 else
                     handleErrors(["We're sorry, but an unexpected error occureced."]);

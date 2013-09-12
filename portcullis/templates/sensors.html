@@ -3,10 +3,10 @@
 {% block content_pane %}
     <div id="sensors-container">
         <div id="sensor-registration" style="margin-right: 300px;">
-            <h3>Register A Sensor</h3>
+            <h3>Claim A Sensor</h3>
             <hr/>
 
-            <form class="form-horizontal" id="sensor-register-form" role="role">
+            <form class="form-horizontal" id="sensor-claim-form" role="role">
                 {% csrf_token %}
                 <div class="form-group">
                     <label class="control-label col-lg-4 col-md-4" for="uuid">Sensor UUID</label>
@@ -26,7 +26,7 @@
                 
                 <div class="form-group">
                     <div class="col-lg-offset-4 col-md-offset-4 col-lg-6 col-md-6">
-                        <button type="submit" class="btn btn-primary">Register</button>
+                        <button type="submit" class="btn btn-primary">Claim</button>
                     </div>
                 </div>
                 <div class="form-group">
@@ -36,17 +36,17 @@
                 </div>
             </form>
 
-            <h3>Registered Sensor For {{user.first_name}} {{user.last_name}}</h3>
+            <h3>Claimed Sensor For {{user.first_name}} {{user.last_name}}</h3>
             <p class="text-danger" id="table-error-msg"></p>
             
-            <table class="table table-striped table-bordered" data-bind="if: registeredSensors().length > 0">
+            <table class="table table-striped table-bordered" data-bind="if: claimedSensors().length > 0">
                 <thead>
                     <tr>
                         <th>UUID</th>
                         <th>name</th>
                     </tr>
                 </thead>
-                <tbody data-bind="foreach: registeredSensors">
+                <tbody data-bind="foreach: claimedSensors">
                     <tr>
                         <td data-bind="text: uuid"></td>
                         <td data-bind="text: name"></td>
@@ -54,12 +54,12 @@
                 </tbody>
             </table>
 
-            <span data-bind="if: registeredSensors().length <= 0" class="help-block">
-                You currently do not have any registered Sensors.
+            <span data-bind="if: claimedSensors().length <= 0" class="help-block">
+                You currently do not have any claimed Sensors.
             </span>
         </div>
     </div>
-    <script type="text/javascript" src="{{STATIC_URL}}js/register_sensor.js"></script>
+    <script type="text/javascript" src="{{STATIC_URL}}js/sensor.js"></script>
 
     <script>
         $(function() {
