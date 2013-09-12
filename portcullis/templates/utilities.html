@@ -1,6 +1,9 @@
 {% extends "main_page.html" %}
 
 {% block side_pane %}
+
+<script type="text/javascript" src="{{STATIC_URL}}js/utilities.js"></script>
+
 <div class="side-nav">
     <div class="utilities">
         <ul>
@@ -37,6 +40,7 @@
         </ul>
     </div>
 </div>
+
 {% endblock side_pane %}
 
 {% block content_pane %}

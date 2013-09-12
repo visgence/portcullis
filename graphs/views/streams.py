@@ -13,23 +13,6 @@ except ImportError:
 from graphs.models import DataStream, ClaimedSensor
 from check_access import check_access
 
-def skeleton(request):
-    '''
-    Render the side_pane skeleton.  The other stuff will be loaded in later with ajax.
-    '''
-
-    user = check_access(request)
-    logged_in = True
-    if user is None or isinstance(user, HttpResponse):
-        logged_in = False
-
-
-    t = loader.get_template('side_pane.html')
-    c = RequestContext(request, {
-            'streams': streams(request).content,
-            'logged_in': logged_in
-            })
-    return HttpResponse(t.render(c), mimetype='text/html')
 
 def streams(request):
     '''
@@ -79,10 +62,8 @@ def streams(request):
             'public_subtree': public_subtree,
             #'viewable_subtree': viewable_subtree
             })
-    t_controls = loader.get_template('graph_controls.html')
-    c_controls = RequestContext(request)
     
-    return HttpResponse(t_controls.render(c_controls) + t_streams.render(c_streams), mimetype='text/html')
+    return HttpResponse(t_streams.render(c_streams), mimetype='text/html')
 
 def stream_tree_top(streams):
     '''

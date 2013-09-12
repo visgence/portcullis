@@ -1,48 +1,20 @@
 /*
- * portcullis/static/side_panel.js
+ * graphs/static/graph_controls.js
  * Contributing Authors:
  *    Jeremiah Davis (Visgence, Inc.)
  *    Bretton Murphy (Visgence, Inc.)
  *
  * (c) 2013 Visgence, Inc.
- *
- * This file contains functions for side_panel (navigation) functionality.
  */
-
-/** Toggle hide the side panel. */
-function toggle_side_pane() 
-{
-    // Make sure to toggle the arrow direction.
-    if ( $('#side_pane_button .ui-icon-circle-triangle-w').length ) {
-        $('#side_pane_button').button('option', 'icons', {primary: 'ui-icon-circle-triangle-s'});
-        $('#content').css('margin-left', '300px');
-        $('#side_pane').css('width', '300px');
-    }
-    else if ( $('#side_pane_button .ui-icon-circle-triangle-s').length ) {
-        $('#side_pane_button').button('option', 'icons', {primary: 'ui-icon-circle-triangle-w'});
-        $('#content').css('margin-left', '20px');
-        $('#side_pane').css('width', '20px');
-    }
-    $('#side_pane_content').toggle('slide', {direction: 'left'}, 'fast');
-}
 
 /** Readies the side panes tabs jquery ui */
 function ready_tabs() 
 {
-    $.get('/portcullis/streams/', function(resp) {
-        $('div.side-nav div.graphs').html(resp);
+    $.get('/graphs/streams/', function(resp) {
+        $('div.side-nav div#stream-tree').html(resp);
     });
 }
 
-
-/** Gets the html for managing a users streams and puts it in the content of the page */
-function load_model_grid(app, model) 
-{
-    var url = "/chucho/model_editor/"+app+"/"+model+"/";
-    $.get(url, {}, function(data) {
-        $('#utilities-container').html(data);  
-    });
-}
 
 /** Get the html for the next level of the stream sub_tree. */
 function toggle_subtree(event)
@@ -64,7 +36,7 @@ function toggle_subtree(event)
     if(toggle_symbol.html() == '+'){
         if (div.text() == '') {
 
-            $.get('/portcullis/side_pane/get_subtree/', {
+            $.get('/graphs/streams/get_subtree/', {
                   'jsonData': JSON.stringify({'name': $(element).attr('id'), group: $(element).attr('group')})
             }, function(resp) {
                 if ( 'errors' in resp ) {

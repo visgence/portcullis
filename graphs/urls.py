@@ -8,8 +8,11 @@ urlpatterns = patterns(
     'graphs.views',
     url(r'^$', 'display_graphs.display_graph', name='graphs'),
     
-    url(r'^index/$', 'graphs_index.graphsIndex', name='graphs-index'),
-    
+    url(r'^index/$', 'index.graphsIndex', name='graphs-index'),
+
+    url(r'^streams/get_subtree/$', 'streams.stream_subtree', name='graphs-streams-subtree'),
+    url(r'^streams/$', 'streams.streams', name='graphs-streams'),
+
     url(r'^render_simple_graph/$', 'display_graphs.display_simple_graph', name='graphs-simple_graph'),
     url(r'^render_simple/$', 'display_graphs.display_simple_base', name='graphs-simple'),
     url(r'^render_container/$', 'display_graphs.render_graph_container', name='graphs-container'),

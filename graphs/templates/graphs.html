@@ -1,6 +1,9 @@
 {% extends "main_page.html" %}
 
 {% block side_pane %}
+
+<script type="text/javascript" src="{{STATIC_URL}}js/graph_controls.js"></script>
+    
 <div class="side-nav">
 
     <div id="graph_controls">
@@ -72,52 +75,49 @@
                 <input type="text" name = "granularity" id="granularity" value="{{granularity}}" onChange="refresh_graphs();"/>
             </div>
         </div>
-
-        <script>
-            collapse_all('controls_toggle');
-            ready_datepickers();
-            //$(window).trigger('hashchange');
-            $(function() {
-
-                ready_tabs();
-
-                var state = $.bbq.getState();
-                if(!('time' in state))
-                    state['time'] = 'hour';
-                if(!('auto-refresh' in state))
-                    state['auto-refresh'] = false;
-                $.bbq.pushState(state);
-
-                $(window).trigger('graphControlsRendered');
-            });
-        </script>
     </div>
 
+    <div id="stream-tree"></div>
 </div>
+
+<script>
+    collapse_all('controls_toggle');
+    ready_datepickers();
+    $(function() {
+        ready_tabs();
+
+        var state = $.bbq.getState();
+        if(!('time' in state))
+            state['time'] = 'hour';
+        if(!('auto-refresh' in state))
+            state['auto-refresh'] = false;
+        $.bbq.pushState(state);
+
+        $(window).trigger('graphControlsRendered');
+    });
+</script>
+
 {% endblock side_pane %}
 
 {% block content_pane %}
 
 {% csrf_token %}
 
-<div id="graphs-container">
-    {{widget}}
-   
-    {% if token or defaultStreams %}
-        <script>
-            //On load function will search for any 'portcullis-graph' divs on the page.
-            $(function() {
-                if($('#granularity').length)
-                    on_graphs_load({{graphIds|safe}});
-                else {
-                    $(window).one('graphControlsRendered', function() {
-                        on_graphs_load({{graphIds|safe}});
-                    });
-                }
-            });
-        </script>
-    {% endif %}
-</div><!--End widget_container -->
+<div id="graphs-container"></div><!--End widget_container -->
 
+{% if token or defaultStreams %}
+    <script>
+        //On load function will search for any 'portcullis-graph' divs on the page.
+        $(function() {
+            if($('#granularity').length)
+                on_graphs_load({{graphIds|safe}});
+            else {
+                $(window).on('graphControlsRendered', function() {
+                    on_graphs_load({{graphIds|safe}});
+                });
+            }
+        });
+    </script>
+{% endif %}
 
 {% endblock content_pane %}

@@ -7,10 +7,6 @@ urlpatterns = patterns(
     url(r'^utilities/index/$', 'index.utilitiesIndex', name='portcullis-utilities-index'),
     url(r'^sensors/index/$', 'index.sensorsIndex', name='portcullis-sensors-index'),
    
-    url(r'^side_pane/$', 'side_pane.skeleton', name='side_pane-skeleton'),
-    url(r'^side_pane/get_subtree/$', 'side_pane.stream_subtree', name='side_pane-subtree'),
-    url(r'^streams/$', 'side_pane.streams', name='side_pane-streams'),
-
     url(r'^signup/page/$', 'signup.signupPage', name='portcullis-signup-page'),
     url(r'^signup/$', 'signup.signup', name='portcullis-signup'),
 )

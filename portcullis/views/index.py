@@ -12,7 +12,6 @@ from django.template import RequestContext, loader, Context
 from django.core.context_processors import csrf
 
 # Local imports
-from portcullis.views.side_pane import skeleton
 from graphs.models import DataStream
 from graphs.data_reduction import reductFunc
 
