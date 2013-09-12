@@ -1,5 +1,5 @@
 """
-" graphs/views/graphs.py
+" graphs/views/graphs_index.py
 " Contributing Authors:
 "    Bretton Murphy (Visgence, Inc)
 "

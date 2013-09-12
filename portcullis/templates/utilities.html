@@ -1,11 +1,8 @@
-{% load url from future %}
+{% extends "main_page.html" %}
 
-
+{% block side_pane %}
 <div class="side-nav">
-
-    <div class="graphs"></div>
-    
-    <div class="utilities" style="display: none">
+    <div class="utilities">
         <ul>
             <li>
                 <span id="manage_devices" class="clickable_text"
@@ -40,3 +37,8 @@
         </ul>
     </div>
 </div>
+{% endblock side_pane %}
+
+{% block content_pane %}
+<div id="utilities-container"></div>
+{% endblock content_pane %}

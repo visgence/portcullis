@@ -7,14 +7,15 @@ $(function() {
         var state = event.getState();
     
         if('tab' in state) {
-            if($.fn.Nav.isTab(state['tab']))
+            if($.fn.Nav.isTab(state['tab']) === false)
                 return;
-            
+           
             var current = $.fn.Nav.getActive();
+            console.log('current tab: %s', current);
             if(state['tab'] === current)
                 return;
-
-            $.fn.Nav.activate(current);
+           
+            $.fn.Nav.activate(state['tab']);
         }
         else if($.fn.Nav.isActive('graphs') === false) {
             $.fn.Nav.activate('graphs');

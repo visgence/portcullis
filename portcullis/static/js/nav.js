@@ -3,6 +3,7 @@ $(function() {
     var currentRequest = null;
     var tabUris = {
         'graphs': '/graphs/index'
+        ,'utilities': '/portcullis/utilities/index/'
     };
     var properStates = {
         'graphs':['time', 'auto-refresh', 'start', 'end'], 
@@ -41,6 +42,7 @@ $(function() {
 
     var isTab = function(tab) {
         tab = tab || '';
+        console.log($('ul.navbar-nav li[data-target="'+tab+'"]').length > 0 ? true:false);
         return $('ul.navbar-nav li[data-target="'+tab+'"]').length > 0 ? true:false;
     };
 
@@ -76,6 +78,7 @@ $(function() {
     $.fn.Nav = {
         'isActive': isActive
         ,'activate': activate
+        ,'getActive': getActive
         ,'isTab': isTab
     };
 });

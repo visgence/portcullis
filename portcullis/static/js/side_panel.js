@@ -40,7 +40,7 @@ function load_model_grid(app, model)
 {
     var url = "/chucho/model_editor/"+app+"/"+model+"/";
     $.get(url, {}, function(data) {
-        $('#widget_container div.utilities').html(data);  
+        $('#utilities-container').html(data);  
     });
 }
 

@@ -23,7 +23,6 @@ except:
 
 
 def index(request):
-
     nav_t = loader.get_template('nav_bar.html')
     nav_c = RequestContext(request, {})
 
@@ -33,6 +32,12 @@ def index(request):
         'nav': nav_t.render(nav_c),
     })
     return HttpResponse(t.render(c), mimetype="text/html")
+
+
+def utilitiesIndex(request):
+    t = loader.get_template('utilities.html') 
+    c = RequestContext(request, {})
+    return HttpResponse(t.render(c))
 
 
 #def index(request, content = None, content_id = None):
