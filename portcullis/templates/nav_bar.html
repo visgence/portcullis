@@ -1,3 +1,7 @@
+
+<script type="text/javascript" src="{{STATIC_URL}}js/nav.js"></script>
+<script type="text/javascript" src="{{STATIC_URL}}js/controller.js"></script>
+
 <nav class="navbar navbar-default" role="navigation">
     <div class="navbar-header">
         <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
@@ -11,7 +15,7 @@
 
     <div class="collapse navbar-collapse navbar-ex1-collapse">
         <ul class="nav navbar-nav">
-            <li class="active" data-target="graphs"><a class="clickable">Graphs</a></li>
+            <li data-target="graphs"><a class="clickable">Graphs</a></li>
             {% if user.is_authenticated %}
                 <li data-target="sensor"><a class="clickable">Sensor</a></li>
             {% endif %}
@@ -21,39 +25,3 @@
         </ul>
     </div>
 </nav>
-
-<script>
-    $(function() {
-        var stateCache = {};
-        var properStates = {
-            'graphs':['time', 'auto-refresh', 'start', 'end'], 
-            'utilities': []
-        };
-
-        $('ul.navbar-nav').on('click', 'li', function(e) {
-            var state = $.bbq.getState();
-            
-            var currentTab = 'graphs';
-            if(state.hasOwnProperty('tab'))
-                currentTab = state['tab'];
-
-            var stateToSave = {};
-            $.each(state, function(key, val) {
-                if($.inArray(key, properStates[currentTab]) > -1)
-                    stateToSave[key] = val;
-            });
-            console.log(stateToSave);
-            stateCache[currentTab] = stateToSave;
-            
-            var newTab = $(e.currentTarget).data('target');
-            var newState = {
-                'tab': newTab
-            };
-            console.log(newState);
-            if(stateCache.hasOwnProperty(newTab) && stateCache[newTab] !== undefined)
-                $.extend(true, newState, stateCache[newTab]);
-
-            $.bbq.pushState(newState, 2);
-        });
-    });
-</script>
