@@ -6,12 +6,19 @@ $(function() {
 
         //TODO: Make this it's own user class
         this.owner = '';
-        this.sensorUri = '';
+        this.csUri = '';
+
+        this.tableMsg = ko.observable();
 
         this.init = function(vars) {
             vars = vars || {};
-            this.owner = vars.owner || '';
-            this.sensorUri = vars.sensorUri || '';
+            if(!vars.hasOwnProperty('csUri') || vars['csUri'] === '')
+                throw('No Claimed Sensor URI was given.');
+            if(!vars.hasOwnProperty('owner') || vars['owner'] === '')
+                throw('No owner was given.');
+
+            this.csUri = vars['csUri'];
+            this.owner = vars['owner'];
             this.claimedSensors([]);
         }.bind(this);
 
@@ -24,12 +31,13 @@ $(function() {
 
         this.loadclaimed = function() {
             var self = this;
-            $.get(this.sensorUri, function(resp) {
+            $.get(this.csUri, function(resp) {
                 if(resp.errors.length > 0) {
-                    $('#table-error-msg').text("Something went wrong loading your claimed sensors.");
+                    console.error(resp);
+                    self.tableMsg("Something went wrong loading your claimed sensors.");
                 }
                 else {
-                    $('#table-error-msg').text('');
+                    self.tableMsg("");
                     self.claimedSensors.removeAll();
                     $.each(resp.sensors, function() {
                         self.addSensor(this);
@@ -40,7 +48,7 @@ $(function() {
                 console.error(resp);
                 var error = JSON.parse(resp.responseText);
                 if(error.errors.length > 0) {
-                    $('#table-error-msg').text("Something went wrong loading your claimed sensors.");
+                    self.tableMsg("Something went wrong loading your claimed sensors.");
                 }
             });
         }.bind(this);

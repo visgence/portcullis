@@ -1,59 +1,72 @@
 
 $(function() {
 
-    var init = function(url, email) {
 
-        var vm = new $.fn.ClaimedSensorList();
-        vm.init({'owner': email, 'sensorUri': url});
-        vm.loadclaimed();
-        ko.applyBindings(vm, $('#sensor-registration').get(0)); 
+    var ClaimedSensorForm = function() {
+        this.csToAdd = ko.observable();
+        this.csList = new $.fn.ClaimedSensorList();
 
-        //TODO: move this stuff into ClaimedSensor
-        var resetMsgs = function() {
-            $('#uuid-msg').text('').closest('div.form-group').removeClass('has-error');
-            $('#name-msg').text('').closest('div.form-group').removeClass('has-error');
-            $('#form-msg').text('').closest('div.form-group').removeClass('has-error has-success');
-        };
+        this.csUri = '';
+        this.owner = '';
+
+        this.formMsg = ko.observable();
+        this.hasError = ko.observable();
+
+        this.init = function(vars) {
+            vars = vars || {};
+            if(!vars.hasOwnProperty('csUri') || vars['csUri'] === '')
+                throw('No Claimed Sensor URI was given.');
+            if(!vars.hasOwnProperty('owner') || vars['owner'] === '')
+                throw('No owner was given.');
+
+            this.csUri = vars['csUri'];
+            this.owner = vars['owner'];
+
+            this.hasError(false);
+
+            this.csList.init({'owner': this.owner, 'csUri': this.csUri});
+            this.csList.loadclaimed();
+            ko.applyBindings(this.csList, $('#users-claimed-sensors').get(0));
+            
+            this.csToAdd(new $.fn.ClaimedSensor());
+        }.bind(this);
 
         var handleErrors = function(errors) {
-            resetMsgs();
-            $.each(errors, function(i, error) {
-                if(error.hasOwnProperty('name'))
-                    $('#name-msg').text(error['name']).closest('div.form-group').addClass('has-error');
-                else if(error.hasOwnProperty('uuid'))
-                    $('#uuid-msg').text(error['uuid']).closest('div.form-group').addClass('has-error');
-                else
-                    $('#form-msg').text(error).parent('div.form-group').addClass('has-error');
-            });
-        };
-        
-        $('#sensor-claim-form').on('submit', function() {
-       
+            console.error(error);
+            var self = this; 
+            self.hasError(true);
+            self.formMsg("An unexpected error occured");
+        }.bind(this);
+
+        this.claimSensor = function() {
+            this.formMsg('');
+            if(!this.csToAdd().isValid())
+                return;
+
             var data = {
-                'email': email
-                ,'sensors': [{'uuid': $('#uuid').val(), 'name': $('#name').val()}]
+                'email': this.owner
+                ,'sensors': [this.csToAdd().toDict()]
             };
-           
-            $.post(url, JSON.stringify(data), function(resp) {
-                console.log(resp);
+          
+            var self = this;
+            $.post(this.csUri, JSON.stringify(data), function(resp) {
                 if(resp.errors.length > 0)
                     handleErrors(resp.errors);
                 else if(resp.sensors.length > 0 && resp.sensors[0].uuid === data.sensors[0].uuid) {
-                    vm.loadclaimed();
-                    resetMsgs();
-                    $('#sensor-claim-form').get(0).reset();
-                    $('#form-msg').text("Sensor claimed successfully!").closest('div.form-group').addClass('has-success');
+                    self.csList.loadclaimed();
+                    self.csToAdd().reset();
+                    self.hasError(false);
+                    self.formMsg("Sensor claimed successfully!");
                 }
                 else
                     handleErrors(["We're sorry, but an unexpected error occureced."]);
+            })
+            .fail(function(resp) {
+                handleErrors([resp.responseText]);   
             });
-
-            //Stop form from actually submiting
-            return false;
-        });
+        }.bind(this);
     };
 
-    $.fn.ClaimedSensorForm = {
-        'init': init
-    };
+
+    $.fn.ClaimedSensorForm = ClaimedSensorForm;
 });
