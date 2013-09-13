@@ -59,12 +59,15 @@
             </span>
         </div>
     </div>
-    <script type="text/javascript" src="{{STATIC_URL}}js/sensor.js"></script>
+    
+    <script type="text/javascript" src="{{STATIC_URL}}js/claimedSensor.list.js"></script>
+    <script type="text/javascript" src="{{STATIC_URL}}js/claimedSensor.js"></script>
+    <script type="text/javascript" src="{{STATIC_URL}}js/claimedSensorForm.js"></script>
 
     <script>
         $(function() {
-            var sensor = $.fn.Sensor;
-            sensor.init("{% url 'sensor-list' %}", "{{user.email}}");
+            var sensorForm = $.fn.ClaimedSensorForm;
+            sensorForm.init("{% url 'sensor-list' %}", "{{user.email}}");
         });
     </script>
 {% endblock %}
