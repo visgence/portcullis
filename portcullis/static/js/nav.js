@@ -78,6 +78,7 @@ $(function() {
         if(tabUris.hasOwnProperty(active)) {
             $.get(tabUris[active], function(resp) {
                 $('#base-content').html(resp);
+                $(window).trigger(active+'-loaded');
             });
         }
     };
