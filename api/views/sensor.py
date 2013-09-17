@@ -1,4 +1,10 @@
-
+"""
+" api/views/stream.py
+" Contributing Authors:
+"    Bretton Murphy (Visgence, Inc)
+"
+" (c) 2012 Visgence, Inc.
+"""
 
 #Django Imports
 from django.db import transaction
@@ -16,7 +22,7 @@ except ImportError:
 from graphs.models import Sensor, DataStream
 from portcullis.models import PortcullisUser as User
 from api.utilities import cors_http_response_json
-from api.views.datastream import claimDs
+from api.views.datastream import create as createDs
 from check_access import check_access
 
 
@@ -73,7 +79,7 @@ def claimSensor(data, owner):
 
         streamData = data.get('stream_data', {})
 
-        ds = claimDs(sensor, owner, streamData)
+        ds = createDs(sensor, owner, streamData)
         if not isinstance(ds, DataStream):
             transaction.rollback()
             return ds
