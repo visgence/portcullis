@@ -306,124 +306,6 @@ class Sensor(models.Model):
         return self.uuid
 
 
-class ClaimedSensorManager(ChuchoManager):
-    def can_edit(self, user):
-        '''
-        ' Checks if a PortcullisUser is allowed to edit or add instances of this model.
-        '
-        ' Keyword Arguments:
-        '   user - PortcullisUser to check permission for.
-        '
-        ' Return: True if user is allowed to edit objects of this model and False otherwise.
-        '''
-
-        #Validate user object
-        if not isinstance(user, PortcullisUser):
-            raise TypeError("%s is not a PortcullisUser" % str(user))
-
-        return True
-
-
-    def get_viewable(self, user, filter_args=None, omni=None):
-        '''
-        ' Gets all sensors that can be viewed or assigned by a specified portcullis user.
-        '
-        ' Super users will have access to all sensorss. (users with is_superuser = true)
-        '
-        ' Keyword Arguements:
-        '   user - PortcullisUser to filter sensors by.
-        '
-        ' Return: QuerySet of sensors that are viewable by the specified PortcullisUser.
-        '''
-
-        #Validate user object
-        if not isinstance(user, PortcullisUser):
-            raise TypeError("%s is not a PortcullisUser" % str(user))
-
-        if filter_args is not None and len(filter_args) > 0:
-            objs = self.advanced_search(**filter_args)
-        elif omni is not None:
-            objs = self.search(omni)
-        else:
-            objs = self.all()
-       
-        return objs 
-
-
-    def get_editable(self, user, filter_args=None, omni=None):
-        '''
-        ' Gets all sensors that can be edited by a specified portcullis user.
-        '
-        ' Super users will have access to all sensors for editing. (users with is_superuser = true)
-        '
-        ' Keyword Arguements:
-        '   user - PortcullisUser to filter editable sensors by.
-        '
-        ' Return: QuerySet of sensors that are editable by the specified PortcullisUser.
-        '''
-
-        #Validate user object
-        if not isinstance(user, PortcullisUser):
-            raise TypeError("%s is not a PortcullisUser" % str(user))
-
-        if filter_args is not None and len(filter_args) > 0:
-            objs = self.advanced_search(**filter_args)
-        elif omni is not None:
-            objs = self.search(omni)
-        else:
-            objs = self.all()
-
-        return objs
-
-    
-    def claimed(self, sensor):
-        '''
-        '  Checks to see if a sensor instance is claimed or not.
-        '
-        '  Keyword Args:
-        '     sensor - Sensor instance to check
-        '
-        '  Returns: ClaimedSensor instance that has claimed the sensor or None if sensor is un-claimed
-        '''
-
-        if not isinstance(sensor, Sensor):
-            return None
-
-        try:
-            return self.get(sensor=sensor)
-        except ClaimedSensor.DoesNotExist:
-            return None
-
-
-class ClaimedSensor(models.Model):
-    sensor = models.ForeignKey(Sensor, unique=True, null=True)
-    name = models.TextField()
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL)
-
-    objects = ClaimedSensorManager()
-
-    class Meta():
-        unique_together = (('owner', 'name'),)
-
-    def __unicode__(self):
-        return self.name
-
-    def can_view(self, user):
-        '''
-        ' Return True if the user has permission to read this claimed sensor, False otherwise.
-        '
-        ' Keyword args:
-        '    user - Returns True if the user is allowed to view the claimed sensor. Returns false otherwise.
-        '''
-        assert isinstance(user, PortcullisUser), "user object was not a PortcullisUser"
-
-        if user == self.owner or user.is_superuser:
-            return True
-
-        return False
-
-
-
 class DataStreamManager(ChuchoManager):
     def can_edit(self, user):
         '''
@@ -556,8 +438,28 @@ class DataStreamManager(ChuchoManager):
         
         return None
 
+    def claimed(self, sensor):
+        '''
+        '  Checks to see if a sensor instance is claimed or not.
+        '
+        '  Keyword Args:
+        '     sensor - Sensor instance to check
+        '
+        '  Returns: DataStream instance that has claimed the sensor or None if sensor is un-claimed
+        '''
+
+        if not isinstance(sensor, Sensor):
+            return None
+
+        try:
+            return self.get(sensor=sensor)
+        except DataStream.DoesNotExist:
+            return None
+
 
 class DataStream(models.Model):
+    sensor = models.ForeignKey(Sensor, unique=True, null=True)
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL)
     color = models.CharField(max_length=32, blank=True)
     min_value = models.DecimalField(null=True, max_digits=20, decimal_places=6, blank=True)
     max_value = models.DecimalField(null=True, max_digits=20, decimal_places=6, blank=True)
@@ -567,7 +469,6 @@ class DataStream(models.Model):
     name = models.TextField()
     description = models.TextField(blank=True)
     units = models.CharField(max_length=32, blank=True)
-    claimed_sensor = models.ForeignKey(ClaimedSensor, unique=True)
     created = models.BigIntegerField(default=time.time(), editable=False)
 
     objects = DataStreamManager()
@@ -581,6 +482,7 @@ class DataStream(models.Model):
 
     class Meta:
         ordering = ['id']
+        unique_together = (('owner', 'name'),)
 
     def __unicode__(self):
         return "Stream_ID: %s" % self.id  + " Name: " + self.name

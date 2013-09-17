@@ -51,7 +51,6 @@ class Command(BaseCommand):
             fixtures.append([
                     'graphs/fixtures/scalingFunctions.json',
                     'graphs/fixtures/sensors.json',
-                    'graphs/fixtures/claimedSensors.json',
                     'graphs/fixtures/dataStreams.json'
             ])
 

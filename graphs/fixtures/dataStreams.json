@@ -3,44 +3,48 @@
         "pk": 1
         ,"model": "graphs.datastream"
         ,"fields": {
-            "scaling_function": 1
+            "owner": 1
+            ,"sensor": "sensor_one_id"
+            ,"scaling_function": 1
             ,"units": "pps"
             ,"name": "Datastream One"
             ,"is_public": true
-            ,"claimed_sensor": 1
         }
     }
     ,{
         "pk": 2
         ,"model": "graphs.datastream"
         ,"fields": {
-            "scaling_function": 1
+            "owner": 1
+            ,"sensor": "sensor_two_id"
+            ,"scaling_function": 1
             ,"units": "bps"
             ,"name": "Datastream Two"
             ,"is_public": true
-            ,"claimed_sensor": 2
         }
     }
     ,{
         "pk": 3
         ,"model": "graphs.datastream"
         ,"fields": {
-            "scaling_function": 1
+            "owner": 1
+            ,"sensor": "sensor_three_id"
+            ,"scaling_function": 1
             ,"units": "pps"
             ,"name": "Datastream Three"
             ,"is_public": true
-            ,"claimed_sensor": 3
         }
     }
     ,{
         "pk": 4
         ,"model": "graphs.datastream"
         ,"fields": {
-            "scaling_function": 1
+            "owner": 1
+            ,"sensor": "sensor_four_id"
+            ,"scaling_function": 1
             ,"units": "bps"
             ,"name": "Datastream Five"
             ,"is_public": true
-            ,"claimed_sensor": 4
         }
     }
 ]
