@@ -291,17 +291,11 @@ class Sensor(models.Model):
             ,'description': self.description
         }
 
-        try:
-            cs = self.claimedsensor_set.get(sensor=self)
-            data['name'] = cs.name
-        except ClaimedSensor.DoesNotExist:
-            pass
-
         return data
 
     def isClaimed(self):
         try:
-            self.database_set.get(sensor=self)
+            self.datastream_set.get(sensor=self)
             return True
         except DataStream.DoesNotExist:
             return False
