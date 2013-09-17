@@ -197,30 +197,28 @@ class SensorTest(HelperMethods):
         self.assertEqual(cs.pk, newCs.pk)
 
 
-    
-    ################# create ################
 
-    def test_create_no_owner(self):
+    def test_claimSensor_no_owner(self):
         '''
             Test that we get back the claimed sensor we give even when not giving an owner
         '''
 
         data = {"uuid": "sensor_one_id", "name": "Claimed Sensor One"} 
         sensor = Sensor.objects.get(uuid="sensor_one_id")
-        self.assertEqual(create(data, None), sensor)
+        self.assertEqual(claimSensor(data, None), sensor)
 
 
-    def test_create_no_uuid(self):
+    def test_claimSensor_no_uuid(self):
         '''
             Test that we get back an error should we not send a uuid 
         '''
 
-        data = {"name": "Claimed Sensor One"} 
+        data = {"stream_data": {'name': "Claimed Sensor One"}} 
         owner = PortcullisUser.objects.get(email="admin@visgence.com")
-        self.assertTrue(isinstance(create(data, owner), str))
+        self.assertTrue(isinstance(claimSensor(data, owner), str))
+
     
-    
-    def test_create_no_name(self):
+    def test_claimSensor_no_name(self):
         '''
             Test that we get back the sensor we send when we don't give a name
         '''
@@ -228,52 +226,62 @@ class SensorTest(HelperMethods):
         data = {"uuid": "sensor_one_id"} 
         owner = PortcullisUser.objects.get(email="admin@visgence.com")
         sensor = Sensor.objects.get(uuid="sensor_one_id")
-        self.assertEqual(create(data, owner), sensor)
+        self.assertEqual(claimSensor(data, owner), sensor)
 
 
-    def test_create_good_data_create(self):
+    def test_claimSensor_good_data_create(self):
         '''
             Test that we get back a new sensor given good data
         '''
 
-        data = {"uuid": "brand_new_sensor", "name": "Brand New Name"} 
+        stream_data = {'name': "Brand New name"} 
+        data = {"uuid": "brand_new_sensor", "stream_data": stream_data} 
         owner = PortcullisUser.objects.get(email="admin@visgence.com")
-        sensor = create(data, owner)
-        self.assertTrue(isinstance(sensor, Sensor))
+        sensor = claimSensor(data, owner)
         self.assertEqual(Sensor.objects.get(uuid="brand_new_sensor"), sensor)
 
 
-    def test_create_good_data_unclaimed_update(self):
+    def test_claimSensor_good_data_unclaimed_update(self):
         '''
             Test that we get back a updated sensor given good data and the sensor is not claimed
         '''
 
-        newSensor = self.createDummySensor()
-        data = {"uuid": newSensor.uuid, "name": "Claimed Sensor One", "units": "new units"} 
         owner = PortcullisUser.objects.get(email="admin@visgence.com")
+        ds = DataStream.objects.get(owner=owner, name="Datastream One")
+        ds.sensor = None
+        ds.save()
         sensor = Sensor.objects.get(uuid="sensor_one_id")
-        updatedSensor = create(data, owner)
+        sensor.description = ''
+        sensor.save()
+        data = {"uuid": sensor.uuid, "description": "new description", "stream_data": {"name": ds.name, "units": "new units"}} 
+        
+        updatedSensor = claimSensor(data, owner)
 
         self.assertTrue(isinstance(updatedSensor, Sensor))
-        self.assertNotEqual(updatedSensor.units, sensor.units)
+        self.assertNotEqual(updatedSensor.description, sensor.description)
 
 
-    def test_create_swap_sensor(self):
+    def test_claimSensor_swap_sensor(self):
         '''
             Test that we can claim a new sensor.
         '''
 
-        data = {"uuid": "brand_new_sensor", "name": "Claimed Sensor One"} 
+        data = {"uuid": "brand_new_sensor", "stream_data": {"name": "Datastream One"}}
         owner = PortcullisUser.objects.get(email="admin@visgence.com")
 
-        claimedSensor = ClaimedSensor.objects.get(owner=owner, name=data['name'])
+        ds = DataStream.objects.get(owner=owner, name=data['stream_data']['name'])
         oldSensor = Sensor.objects.get(uuid="sensor_one_id")
-        self.assertEqual(claimedSensor.sensor, oldSensor)
+        self.assertEqual(ds.sensor, oldSensor)
 
-        newSensor = create(data, owner)
+        newSensor = claimSensor(data, owner)
         self.assertTrue(isinstance(newSensor, Sensor)) 
         self.assertNotEqual(newSensor, oldSensor)
-        self.assertEqual(ClaimedSensor.objects.get(sensor=newSensor), claimedSensor)
+        self.assertEqual(DataStream.objects.get(owner=owner, name=data['stream_data']['name']).sensor, newSensor)
+
+
+    ################# create ################
+
+
 
 
 class DataStreamTest(HelperMethods):
