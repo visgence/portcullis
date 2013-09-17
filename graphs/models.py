@@ -299,6 +299,15 @@ class Sensor(models.Model):
 
         return data
 
+    def isClaimed(self):
+        try:
+            self.database_set.get(sensor=self)
+            return True
+        except DataStream.DoesNotExist:
+            return False
+        except Exception:
+            return False
+
     def save(self, *args, **kwargs):
         super(Sensor, self).save(*args, **kwargs)
 
@@ -438,7 +447,7 @@ class DataStreamManager(ChuchoManager):
         
         return None
 
-    def claimed(self, sensor):
+    def claimedBySensor(self, sensor):
         '''
         '  Checks to see if a sensor instance is claimed or not.
         '

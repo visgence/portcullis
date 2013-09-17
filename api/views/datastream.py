@@ -23,6 +23,7 @@ import time
 #Local Imports
 from graphs.models import DataStream, ScalingFunction, ClaimedSensor
 from api.utilities import cors_http_response_json
+from portcullis.models import PortcullisUser as User
 
 
 @require_POST
@@ -171,23 +172,35 @@ def updateObject(obj, data):
     return obj
 
 
-def claimDs(claimedSensor, data):
-    
-    if not isinstance(claimedSensor, ClaimedSensor):
-        return "Was not given a claimed sensor while trying to claim a DataStream"
-  
-    if 'name' not in data or data['name'] == '':
-        dsName = claimedSensor.owner.email
-        if claimedSensor.owner.first_name != '':
-            dsName = claimedSensor.owner.first_name
-        dsName += "|"+claimedSensor.name
-        data['name'] = dsName 
+def create(sensor, owner, data):
+    '''
+    ' Create or updates a DataStream. If an existing DataStream can be found by a sensor or owner/name combo then
+    ' that sensor will be updated.  Otherwise a new DataStream will be created.
+    '
+    ' Keyword Args: 
+    '   sensor - Sensor instance that is used to help determine if we need to update a DataStream or create one. If a new 
+    '            DataStream gets created then the new DataStream will claim the sensor. 
+    '   owner  - User object that either owns an existing DataStream to update or will own the new DataStream that get's 
+    '            created.
+    '   data   - Dict of data to update/create a DataStream with.
+    '
+    ' Returns: DataStream instance if a DataStream was updated/created successfully else an error
+    '''
 
-    try:
-        ds = updateObject(DataStream.objects.get(claimed_sensor=claimedSensor), data)
-        return ds
-    except DataStream.DoesNotExist:
-        pass
+    if not isinstance(sensor, Sensor):
+        return "Was not given a sensor while trying to create/update a DataStream"
+
+    name = data.get('name', '')
+    ds = DataStream.objects.claimedBySensor(sensor)
+    if ds is None:
+        try:
+            ds = DataStream.objects.get(owner=owner, name=name)
+        except DataStream.DoesNotExist:
+            ds = None
+    elif isinstance(owner, User) and ds.owner != owner:
+        return "Invalid Credentials"
+
+    ds = DataStream() if ds is None else ds
 
     if 'scaling_function' in data:
         sfName = data['scaling_function']
@@ -198,8 +211,8 @@ def claimDs(claimedSensor, data):
     else:
         sf = ScalingFunction.objects.get(name="Identity")
 
-    data.update({'claimed_sensor': claimedSensor, 'scaling_function': sf})
-    ds = updateObject(DataStream(), data)
-    return ds 
+    data.update({'sensor': sensor, 'scaling_function': sf})
+    updatedDs = updateObject(ds, data)
+    return updatedDs 
 
 

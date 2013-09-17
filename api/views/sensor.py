@@ -13,7 +13,7 @@ except ImportError:
     import json
 
 #Local Imports
-from graphs.models import Sensor, ClaimedSensor, DataStream
+from graphs.models import Sensor, DataStream
 from portcullis.models import PortcullisUser as User
 from api.utilities import cors_http_response_json
 from api.views.datastream import claimDs
@@ -42,25 +42,8 @@ def updateObject(obj, data):
     return obj
 
 
-def claimSensor(sensor, name, owner):
-    
-    #First try to update sensor by owner/name combo.  This allows us to update the which sensor is claimed.
-    #If that doesn't work try to locate the claimed sensor by it's sensor which will allow the sensors 
-    #name and/or owner to be updated. Otherwise just create one.
-    data = {'name': name, 'owner': owner, 'sensor': sensor}
-    try:
-        claimedSensor = updateObject(ClaimedSensor.objects.get(name=name, owner=owner), data)
-    except ClaimedSensor.DoesNotExist:
-        try:
-            claimedSensor = updateObject(ClaimedSensor.objects.get(sensor=sensor), data)
-        except ClaimedSensor.DoesNotExist:
-            claimedSensor = updateObject(ClaimedSensor(), data)
-
-    return claimedSensor
-
-
 @transaction.commit_manually
-def create(data, owner):
+def claimSensor(data, owner):
     try:
         
         try:
@@ -72,30 +55,28 @@ def create(data, owner):
         except Sensor.DoesNotExist:
             sensor = None
       
-        #See if the sensor is claimed or not
-        claimedSensor = ClaimedSensor.objects.claimed(sensor)
-
         #Cases for if a user has no authority to create/claim sensors
         if (sensor is None and owner is None) or \
-           (sensor is not None and claimedSensor is None and owner is None):
+           (sensor is not None and not sensor.isClaimed() and owner is None):
 
             transaction.rollback()
             return "Invalid Credentials"
       
-        name = data.get('name', '')
         sensor = Sensor() if sensor is None else sensor
         
         #If sensor isnt claimed and we have credentials
-        if claimedSensor is None and owner is not None:
+        if not sensor.isClaimed() and owner is not None:
             sensor = updateObject(sensor, data)
             if not isinstance(sensor, Sensor):
                 transaction.rollback()
                 return sensor
 
-            claimedSensor = claimSensor(sensor, name, owner)
-            if not isinstance(claimedSensor, ClaimedSensor):
-                transaction.rollback()
-                return claimedSensor
+        streamData = data.get('stream_data', {})
+
+        ds = claimDs(sensor, owner, streamData)
+        if not isinstance(ds, DataStream):
+            transaction.rollback()
+            return ds
 
         #We've successfully set up everything for the sensor so return it
         transaction.commit()
@@ -147,7 +128,7 @@ class SensorView(View):
             return cors_http_response_json(returnData, 404)
 
         for s in sensors:
-            sensor = create(s, user)
+            sensor = claimSensor(s, user)
             
             #Assume error string if not a sensor
             if not isinstance(sensor, Sensor):
@@ -157,13 +138,6 @@ class SensorView(View):
                     returnData['errors'].append(sensor)
             else:
                 returnData['sensors'].append(sensor.toDict())
-                
-                ds_data = s.get('ds_data', None)
-                if ds_data is not None:
-                    claimedSensor = ClaimedSensor.objects.claimed(sensor)
-                    ds = claimDs(claimedSensor, ds_data)
-                    if not isinstance(ds, DataStream):
-                        returnData['errors'] = ds
 
         return cors_http_response_json(returnData)
 
