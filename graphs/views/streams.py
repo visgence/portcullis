@@ -10,7 +10,7 @@ except ImportError:
     import json
 
 #Local Imports
-from graphs.models import DataStream, ClaimedSensor
+from graphs.models import DataStream
 from check_access import check_access
 
 
@@ -34,8 +34,7 @@ def streams(request):
     viewable_subtree = None
     if user is not None:
         #Pull streams that are owned by this user.
-        owned_sensors = ClaimedSensor.objects.filter(owner=user)
-        owned_streams = DataStream.objects.filter(claimed_sensor__in=owned_sensors)
+        owned_streams = DataStream.objects.filter(owner=user)
         c_dict = stream_tree_top(owned_streams)
         c_dict.update({'group':'owned'})
         owned_subtree = t_subtree.render(Context(c_dict))
@@ -111,10 +110,10 @@ def stream_subtree(request):
     if isinstance(portcullisUser, AuthUser):
         if group == 'owned':
             streams = DataStream.objects.filter(name__startswith=name)
-            streams = streams.filter(claimed_sensor__owner=portcullisUser)
+            streams = streams.filter(owner=portcullisUser)
         elif group == 'public':
             streams = DataStream.objects.filter(name__startswith=name)
-            streams = streams.filter(is_public=True).exclude(claimed_sensor__owner=portcullisUser)
+            streams = streams.filter(is_public=True).exclude(owner=portcullisUser)
         else:
             dump = json.dumps({'errors': 'Error: %s is not a valid datastream type.' % group})
             return HttpResponse(dump, content_type="application/json")

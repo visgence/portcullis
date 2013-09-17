@@ -21,7 +21,7 @@ import time
 import urllib
 
 #Local Imports
-from graphs.models import DataStream, SensorReading, Sensor, ClaimedSensor
+from graphs.models import DataStream, SensorReading, Sensor
 from portcullis.customExceptions import SensorReadingCollision
 from api.utilities import cors_http_response
 
