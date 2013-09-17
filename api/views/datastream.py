@@ -212,7 +212,11 @@ def create(sensor, owner, data):
     else:
         sf = ScalingFunction.objects.get(name="Identity")
 
-    data.update({'sensor': sensor, 'scaling_function': sf, 'owner': owner})
+    extra = {'sensor': sensor, 'scaling_function': sf}
+    if owner is not None:
+        extra.update({'owner': owner})
+
+    data.update(extra)
     updatedDs = updateObject(ds, data)
     return updatedDs 
 
