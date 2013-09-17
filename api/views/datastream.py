@@ -1,5 +1,5 @@
 """
-" api/views/create_ds.py
+" api/views/datastream.py
 " Contributing Authors:
 "    Bretton Murphy (Visgence, Inc)
 "    Jerry Davis (Visgence, Inc)
@@ -21,7 +21,7 @@ from django.db import transaction
 import time
 
 #Local Imports
-from graphs.models import DataStream, ScalingFunction, ClaimedSensor
+from graphs.models import DataStream, ScalingFunction, Sensor
 from api.utilities import cors_http_response_json
 from portcullis.models import PortcullisUser as User
 
@@ -197,7 +197,8 @@ def create(sensor, owner, data):
             ds = DataStream.objects.get(owner=owner, name=name)
         except DataStream.DoesNotExist:
             ds = None
-    elif isinstance(owner, User) and ds.owner != owner:
+
+    if isinstance(owner, User) and ds is not None and ds.owner != owner:
         return "Invalid Credentials"
 
     ds = DataStream() if ds is None else ds
@@ -211,7 +212,7 @@ def create(sensor, owner, data):
     else:
         sf = ScalingFunction.objects.get(name="Identity")
 
-    data.update({'sensor': sensor, 'scaling_function': sf})
+    data.update({'sensor': sensor, 'scaling_function': sf, 'owner': owner})
     updatedDs = updateObject(ds, data)
     return updatedDs 
 

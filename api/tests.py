@@ -22,13 +22,13 @@ except ImportError:
     import json
 
 #Local Imports
-from graphs.models import DataStream, SensorReading, Sensor, ClaimedSensor, ScalingFunction
+from graphs.models import DataStream, SensorReading, Sensor, ScalingFunction
 from portcullis.models import PortcullisUser
 from portcullis.customExceptions import SensorReadingCollision
 
 from api.views.reading_loader import insert_reading
-from api.views.sensor import claimSensor, create
-from api.views.datastream import claimDs
+from api.views.sensor import claimSensor
+from api.views.datastream import create as createDs
 
 
 class HelperMethods(TestCase):
@@ -36,7 +36,7 @@ class HelperMethods(TestCase):
     '  Collection of methods to help in the testing process such as quick creation of dummy objects for the db.
     '''
 
-    def createSensor(self):
+    def createDummySensor(self):
         '''
             Helper to create a new dummy sensor
         '''
@@ -50,7 +50,7 @@ class HelperMethods(TestCase):
             Helper to create a new dummy claimed sensor
         '''
 
-        sensor = self.createSensor()
+        sensor = self.createDummySensor()
         owner = PortcullisUser.objects.get(email="admin@visgence.com")
         newCs = ClaimedSensor(sensor=sensor, owner=owner, name="foo_cs")
         newCs.save()
@@ -62,7 +62,7 @@ class ReadingLoaderTest(TestCase):
     ' Tests for the view file reading_loader.py
     '''
    
-    fixtures = ['portcullisUsers.json', 'sensors.json', 'claimedSensors.json', 'scalingFunctions.json',  'dataStreams.json']
+    fixtures = ['portcullisUsers.json', 'sensors.json', 'scalingFunctions.json',  'dataStreams.json']
 
     def setUp(self):
         self.c = Client()
@@ -118,7 +118,7 @@ class SensorTest(HelperMethods):
     '  Tests for the view file sensor.py
     '''
 
-    fixtures = ['portcullisUsers.json', 'sensors.json', 'claimedSensors.json', 'scalingFunctions.json',  'dataStreams.json']
+    fixtures = ['portcullisUsers.json', 'sensors.json', 'scalingFunctions.json',  'dataStreams.json']
 
     def setUp(self):
         self.c = Client()
@@ -166,7 +166,7 @@ class SensorTest(HelperMethods):
 
         name = "Claimed Sensor One"
         owner = PortcullisUser.objects.get(email="admin@visgence.com")
-        newSensor = self.createSensor()
+        newSensor = self.createDummySensor()
         
         csOne = ClaimedSensor.objects.get(owner=owner, name=name)
         csTwo = claimSensor(newSensor, name, owner)
@@ -182,7 +182,7 @@ class SensorTest(HelperMethods):
 
         name = "New Sensor Name"
         owner = PortcullisUser.objects.get(email="admin@visgence.com")
-        newSensor = self.createSensor()
+        newSensor = self.createDummySensor()
         self.assertRaises(ClaimedSensor.DoesNotExist, ClaimedSensor.objects.get, **{'name': name, 'owner': owner})
 
         cs = claimSensor(newSensor, name, owner)
@@ -248,7 +248,7 @@ class SensorTest(HelperMethods):
             Test that we get back a updated sensor given good data and the sensor is not claimed
         '''
 
-        newSensor = self.createSensor()
+        newSensor = self.createDummySensor()
         data = {"uuid": newSensor.uuid, "name": "Claimed Sensor One", "units": "new units"} 
         owner = PortcullisUser.objects.get(email="admin@visgence.com")
         sensor = Sensor.objects.get(uuid="sensor_one_id")
@@ -286,27 +286,33 @@ class DataStreamTest(HelperMethods):
     
     ################# claimDs ################
     
-    def test_claimDs_create(self):
+    def test_create_new_ds(self):
         '''
             Test that we create a ds and claim it to a given sensor that doesn't have a ds yet
         '''
 
-        cs = self.createClaimedSensor()
-        self.assertRaises(DataStream.DoesNotExist, DataStream.objects.get, **{'claimed_sensor': cs})
+        dummySensor = self.createDummySensor()
+        self.assertRaises(DataStream.DoesNotExist, DataStream.objects.get, **{'sensor': dummySensor})
+        owner = PortcullisUser.objects.get(email="admin@visgence.com")
         data = {'name': 'foo_ds'}
-        newDs = claimDs(cs, data)
-        ds = DataStream.objects.get(claimed_sensor=cs)
+        newDs = createDs(dummySensor, owner, data)
+        
+        self.assertTrue(isinstance(newDs, DataStream))
+        try:
+            ds = DataStream.objects.get(sensor=dummySensor)
+        except DataStream.DoesNotExist:
+            self.fail('No DataStream with Sensor \'%s\''%dummySensor)
         self.assertEqual(newDs, ds)
 
 
-    def test_claimDs_update(self):
+    def test_create_update_ds(self):
         '''
-            Test that we update a ds given it's claimed sensor and new data
+            Test that we update a ds given it's sensor that is has claimed and new data
         '''
 
         owner = PortcullisUser.objects.get(email="admin@visgence.com")
-        cs = ClaimedSensor.objects.get(owner=owner, name="Claimed Sensor One")
-        ds = DataStream.objects.get(claimed_sensor=cs)
+        sensor = Sensor.objects.get(uuid="sensor_one_id")
+        ds = DataStream.objects.get(sensor=sensor)
         newData = {
             'color': '#FFFFFF'
             ,'min_value': 1.1
@@ -326,8 +332,8 @@ class DataStreamTest(HelperMethods):
                 valueExists = True
 
         self.assertFalse(valueExists)
-        updatedDs = claimDs(cs, newData)
-        self.assertEquals(updatedDs, DataStream.objects.get(claimed_sensor=cs)) 
+        updatedDs = createDs(sensor, owner, newData)
+        self.assertEquals(updatedDs, DataStream.objects.get(sensor=sensor)) 
         
         #Test values again on the updated ds to make sure they got updated
         valuesUpdated = True
@@ -337,3 +343,16 @@ class DataStreamTest(HelperMethods):
 
         self.assertTrue(valuesUpdated)
 
+    def test_create_invalid_credentials(self):
+        '''
+            Test that we get an error string when we try to update a DataStream with a claimed
+            sensor but a different owner.
+        '''
+
+        owner = PortcullisUser.objects.get(email="normal@visgence.com")
+        sensor = Sensor.objects.get(uuid="sensor_one_id")
+        ds = DataStream.objects.get(sensor=sensor)
+        self.assertNotEqual(ds.owner, owner)
+        updatedDs = createDs(sensor, owner, {})
+        self.assertEquals(updatedDs, "Invalid Credentials")
+        
