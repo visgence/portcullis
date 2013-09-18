@@ -520,7 +520,7 @@ class DataStream(models.Model):
         if self.is_public:
             return True
 
-        if isinstance(user, PortcullisUser) and (user == self.claimed_sensor.owner or user.is_superuser):
+        if isinstance(user, PortcullisUser) and (user == self.owner or user.is_superuser):
             return True
 
         return False
