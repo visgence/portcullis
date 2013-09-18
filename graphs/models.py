@@ -248,6 +248,7 @@ class Sensor(models.Model):
 
     column_options = {
         'uuid': {'_editable': True}
+        ,'_metadata': {'grid_column': False, '_editable': False}
         }
 
     def can_view(self, user):
@@ -496,8 +497,9 @@ class DataStream(models.Model):
     objects = DataStreamManager()
 
     column_options = {
-        'scaling_function': {'grid_column': False},
-        }
+        'scaling_function': {'grid_column': False}
+        ,'_metadata': {'grid_column': False, '_editable': False}
+    }
 
     # For omni search
     search_fields = ['id', 'name', 'owner', 'units']
