@@ -298,6 +298,12 @@ class Sensor(models.Model):
             ,'description': self.description
         }
 
+        try:
+            ds = self.datastream_set.get(sensor=self)
+            data['name'] = ds.name
+        except DataStream.DoesNotExist:
+            pass
+
         return data
 
     def isClaimed(self):
