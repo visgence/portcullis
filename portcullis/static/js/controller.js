@@ -31,6 +31,7 @@ $(function() {
 
     /* Responds to any changes in the url hash for jquery bbq */
     $(window).bind('hashchange', function(event) {
+        console.log('changed');
         var state = event.getState();
     
         if('tab' in state) {
@@ -50,12 +51,13 @@ $(function() {
 
             $(window).one(state['tab']+'-loaded', function() {tabs[state['tab']](state)});
         }
-        else if($.fn.Nav.isActive(default_tab) === false) {
-            $.fn.Nav.activate(default_tab, true);
-            $(window).one(default_tab+'-loaded', function() {tabs[default_tab](state)});
-        }
-
     });
 
-    $(window).trigger('hashchange');
+    var state = $.bbq.getState();
+    if(!('tab' in state)) {
+        state['tab'] = default_tab;
+        $.bbq.pushState(state);
+    }
+    else
+        $(window).trigger('hashchange');
 });

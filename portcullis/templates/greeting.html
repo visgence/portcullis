@@ -2,5 +2,14 @@
 
 <div id="user_greeting">
     Hello {{user.first_name}} {{user.last_name}} (<a href="{% url 'api-logout' %}">logout</a>)<br>
-    <span style="font-size: 8pt;">[<a href="#" onclick="changePassDialog();">Change password</a>]</span>
+    <span style="font-size: 8pt;">[<a href="#" id="change-pass-link">Change password</a>]</span>
 </div>
+
+<script>
+    $(function() {
+        $('#change-pass-link').on('click', function() {
+            changePassDialog();
+            return false;
+        });
+    });
+</script>
