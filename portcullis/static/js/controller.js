@@ -5,7 +5,7 @@ $(function() {
     var tabs = {
         'graphs': function(state) {
             if('time' in state) {
-                $('#'+state['time']).attr('checked', 'checked');
+                $('#'+state['time']).prop('checked', true);
 
                 if(state['time'] == "custom") {
                     if('start' in state)
@@ -18,7 +18,7 @@ $(function() {
             }
 
             if('auto-refresh' in state && state['auto-refresh'] == "true") {
-                $('#auto_refresh').attr('checked', 'checked');
+                $('#auto_refresh').prop('checked', true);
                 $('#auto_refresh').trigger('change');
             }
             else {
@@ -39,10 +39,10 @@ $(function() {
            
             var current = $.fn.Nav.getActive();
             if(state['tab'] === current) {
-                $(window).one(state['tab']+'-loaded', function() {tabs[state['tab']](state)});
+                tabs[state['tab']](state)
                 return;
             }
-
+            console.log('loading tab');
             if($.fn.Nav.isLoaded(state['tab']))
                 $.fn.Nav.activate(state['tab'], false);
             else

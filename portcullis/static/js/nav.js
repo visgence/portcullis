@@ -19,26 +19,10 @@ $(function() {
     });
 
     var changeHashTab = function(newTab) {
-
-        var state = $.bbq.getState();
-        
-        if(state.hasOwnProperty('tab')) {
-            currentTab = state['tab'];
-
-            var stateToSave = {};
-            $.each(state, function(key, val) {
-                if($.inArray(key, properStates[currentTab]) > -1)
-                    stateToSave[key] = val;
-            });
-            stateCache[currentTab] = stateToSave;
-        }
-
         var newState = {
             'tab': newTab
         };
-        if(stateCache.hasOwnProperty(newTab) && stateCache[newTab] !== undefined)
-            $.extend(true, newState, stateCache[newTab]);
-        
+
         $.bbq.pushState(newState, 2);
     };
 
