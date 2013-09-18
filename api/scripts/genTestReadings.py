@@ -10,7 +10,7 @@ from django.contrib.auth import get_user_model
 AuthUser = get_user_model()
 
 #Local imports
-from graphs.models import Sensor, DataStream, ClaimedSensor
+from graphs.models import Sensor, DataStream
 from api.views.reading_loader import insert_reading
 
 #System imports
@@ -44,16 +44,11 @@ for sensor in sensors:
 
 for sensor in foundSensors:
     try:
-        cs = ClaimedSensor.objects.get(sensor=sensor)
-        ds = DataStream.objects.get(claimed_sensor=cs)
+        ds = DataStream.objects.get(sensor=sensor)
         foundStreams.append(ds)
     except DataStream.DoesNotExist:
-        msg = "Could not find Datastream for ClaimedSensor %s. Aborting" % str(cs)
+        msg = "Could not find Datastream for Sensor %s. Aborting" % str(sensor)
         sys.exit(msg)
-    except ClaimedSensor.DoesNotExist:
-        msg = "Could not find ClaimedSensor for sensor %s. Aborting" % str(sensor)
-        sys.exit(msg)
-
 
 if len(foundSensors) <= 0:
     msg = "Out of the possible test Sensors " + ", ".join(sensors)
