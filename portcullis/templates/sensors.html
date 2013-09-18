@@ -7,19 +7,19 @@
 
         <form class="form-horizontal" id="sensor-claim-form" role="role" data-bind="submit: claimSensor">
             {% csrf_token %}
-            <div class="form-group" data-bind="css: {'has-error': sensorToAdd().uuid.hasError}">
+            <div class="form-group" data-bind="css: {'has-error': sensorToClaim().uuid.hasError}">
                 <label class="control-label col-lg-4 col-md-4" for="uuid">Sensor UUID</label>
                 <div class="col-lg-6 col-md-6">
-                    <input type="text" placeholder="uuid" class="form-control" data-bind="value: sensorToAdd().uuid">
-                    <p class="help-block" data-bind="text: sensorToAdd().uuid.errorMsg"></p>
+                    <input type="text" placeholder="uuid" class="form-control" data-bind="value: sensorToClaim().uuid">
+                    <p class="help-block" data-bind="text: sensorToClaim().uuid.errorMsg"></p>
                 </div>
             </div>
 
-            <div class="form-group" data-bind="css: {'has-error': sensorToAdd().name.hasError}">
+            <div class="form-group" data-bind="css: {'has-error': sensorToClaim().name.hasError}">
                 <label class="control-label col-lg-4 col-md-4" for="name">Sensor Name</label>
                 <div class="col-lg-6 col-md-6">
-                    <input type="text" placeholder="name" class="form-control" data-bind="value: sensorToAdd().name">
-                    <p class="help-block" data-bind="text: sensorToAdd().name.errorMsg"></p>
+                    <input type="text" placeholder="name" class="form-control" data-bind="value: sensorToClaim().name">
+                    <p class="help-block" data-bind="text: sensorToClaim().name.errorMsg"></p>
                 </div>
             </div>
             
@@ -35,39 +35,44 @@
             </div>
         </form>
 
-        <h3>Claimed Sensor For {{user.first_name}} {{user.last_name}}</h3>
+        <h3>Datastreams {% if user.is_superuser %}(Admin View){% endif %}</h3>
         <div id="users-claimed-sensors">
             <p class="text-danger" data-bind="text: tableMsg"></p>
             
-            <table class="table table-striped table-bordered" data-bind="if: claimedSensors().length > 0">
+            <table class="table table-striped table-bordered" data-bind="if: dataStreams().length > 0">
                 <thead>
                     <tr>
                         <th>UUID</th>
-                        <th>name</th>
+                        <th>Name</th>
                     </tr>
                 </thead>
-                <tbody data-bind="foreach: claimedSensors">
+                <tbody data-bind="foreach: dataStreams">
                     <tr>
-                        <td data-bind="text: uuid"></td>
+                        <td data-bind="text: sensor().uuid"></td>
                         <td data-bind="text: name"></td>
                     </tr>
                 </tbody>
             </table>
 
-            <span data-bind="if: claimedSensors().length <= 0" class="help-block">
-                You currently do not have any claimed Sensors.
+            <span data-bind="if: dataStreams().length <= 0" class="help-block">
+                You currently do not have any datastreams.
             </span>
         </div>
     </div>
     
-    <script type="text/javascript" src="{{STATIC_URL}}js/sensor.list.js"></script>
     <script type="text/javascript" src="{{STATIC_URL}}js/sensor.js"></script>
+    <script type="text/javascript" src="{{STATIC_URL}}js/datastream.js"></script>
+    <script type="text/javascript" src="{{STATIC_URL}}js/datastream.list.js"></script>
     <script type="text/javascript" src="{{STATIC_URL}}js/sensorForm.js"></script>
 
     <script>
         $(function() {
+            var data = {
+                'sensorUri': "{% url 'sensor-list' %}"
+                ,'streamUri': "{% url 'datastream-list' %}"
+                ,'user': "{{user.email}}"};
             var sensorForm = new $.fn.SensorForm();
-            sensorForm.init({'sensorUri': "{% url 'sensor-list' %}", 'owner': "{{user.email}}"});
+            sensorForm.init(data);
             ko.applyBindings(sensorForm, $('#sensor-claim-form').get(0));
         });
     </script>
