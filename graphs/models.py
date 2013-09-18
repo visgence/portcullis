@@ -10,6 +10,10 @@ import hashlib
 import random
 import string
 import time
+try:
+    import simplejson as json
+except ImportError:
+    import json
 
 # Local Imports
 from graphs.data_reduction import reduction_type_choices
@@ -238,6 +242,8 @@ class Sensor(models.Model):
     sensor_type = models.TextField(blank=True)
     units = models.CharField(max_length=32, blank=True)
     description = models.TextField(blank=True)
+    _metadata = models.TextField(blank=True)
+
     objects = SensorManager()
 
     column_options = {
@@ -302,12 +308,24 @@ class Sensor(models.Model):
         except Exception:
             return False
 
+    def getMetadata(self):
+        if self._metadata == '':
+            return {}
+        return json.loads(self._metadata)
+    
+    def setMetadata(self, data):
+        if data == '' or data is None:
+            data = {}
+
+        self._metadata = json.dumps(data)
+
     def save(self, *args, **kwargs):
         super(Sensor, self).save(*args, **kwargs)
 
     def __unicode__(self):
         return self.uuid
 
+    metadata = property(getMetadata, setMetadata) 
 
 class DataStreamManager(ChuchoManager):
     def can_edit(self, user):
@@ -473,6 +491,7 @@ class DataStream(models.Model):
     description = models.TextField(blank=True)
     units = models.CharField(max_length=32, blank=True)
     created = models.BigIntegerField(default=time.time(), editable=False)
+    _metadata = models.TextField(blank=True)
 
     objects = DataStreamManager()
 
@@ -543,6 +562,19 @@ class DataStream(models.Model):
             return True
 
         return False
+
+    def getMetadata(self):
+        if self._metadata == '':
+            return {}
+        return json.loads(self._metadata)
+    
+    def setMetadata(self, data):
+        if data == '' or data is None:
+            data = {}
+
+        self._metadata = json.dumps(data)
+    
+    metadata = property(getMetadata, setMetadata) 
 
 
 class SensorReading(models.Model):
