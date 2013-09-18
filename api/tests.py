@@ -126,16 +126,6 @@ class SensorTest(HelperMethods):
 
     ################# claimSensor ################
 
-    def test_claimSensor_no_sensor(self):
-        '''
-            Test that we get an error message if given no sensor instance
-        '''
-
-        owner = PortcullisUser.objects.get(email="admin@visgence.com")
-        name = "Claimed Sensor One"
-        cs = claimSensor(None, name, owner)
-        self.assertTrue(isinstance(cs, list))
-
 
     def test_claimSensor_no_name(self):
         '''
@@ -158,45 +148,6 @@ class SensorTest(HelperMethods):
         cs = claimSensor(sensor, name, None)
         self.assertTrue(isinstance(cs, str))
    
-
-    def test_claimSensor_update_sensor(self):
-        '''
-            Test that we get back the same ClaimedSensor we are updating the sensor on.
-        '''
-
-        name = "Claimed Sensor One"
-        owner = PortcullisUser.objects.get(email="admin@visgence.com")
-        newSensor = self.createDummySensor()
-        
-        csOne = ClaimedSensor.objects.get(owner=owner, name=name)
-        csTwo = claimSensor(newSensor, name, owner)
-        self.assertTrue(isinstance(csTwo, ClaimedSensor))
-        self.assertEqual(csOne.pk, csTwo.pk)
-        self.assertNotEqual(csOne.sensor, csTwo.sensor)
-
-
-    def test_claimSensor_create(self):
-        '''
-            Test that a new claimed sensor get's created when given owner/name combo that does exist yet.
-        '''
-
-        name = "New Sensor Name"
-        owner = PortcullisUser.objects.get(email="admin@visgence.com")
-        newSensor = self.createDummySensor()
-        self.assertRaises(ClaimedSensor.DoesNotExist, ClaimedSensor.objects.get, **{'name': name, 'owner': owner})
-
-        cs = claimSensor(newSensor, name, owner)
-        newCs = None
-        try:
-            newCs = ClaimedSensor.objects.get(owner=owner, name=name)
-        except ClaimedSensor.DoesNotExist:
-            pass
-
-        self.assertNotEqual(newCs, None)
-        self.assertTrue(isinstance(cs, ClaimedSensor))
-        self.assertEqual(cs.pk, newCs.pk)
-
-
 
     def test_claimSensor_no_owner(self):
         '''
@@ -277,11 +228,6 @@ class SensorTest(HelperMethods):
         self.assertTrue(isinstance(newSensor, Sensor)) 
         self.assertNotEqual(newSensor, oldSensor)
         self.assertEqual(DataStream.objects.get(owner=owner, name=data['stream_data']['name']).sensor, newSensor)
-
-
-    ################# create ################
-
-
 
 
 class DataStreamTest(HelperMethods):
