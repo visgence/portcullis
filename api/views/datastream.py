@@ -9,9 +9,12 @@
 
 #System Imports
 from django.core.exceptions import ValidationError
+from django.http import HttpResponse
 from django.db import IntegrityError
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
+from django.views.generic import View
+
 try:
     import simplejson as json
 except ImportError:
@@ -24,6 +27,7 @@ import time
 from graphs.models import DataStream, ScalingFunction, Sensor
 from api.utilities import cors_http_response_json
 from portcullis.models import PortcullisUser as User
+from check_access import check_access
 
 
 @require_POST
@@ -220,4 +224,23 @@ def create(sensor, owner, data):
     updatedDs = updateObject(ds, data)
     return updatedDs 
 
+
+class DataStreamView(View):
+
+    def get(self, request):
+        
+        returnData = {
+            'errors': []
+            ,'streams': []
+        }
+
+        user = check_access(request)
+        if not isinstance(user, User):
+            returnData['errors'].append('User authentication failed.')
+            return HttpResponse(json.dumps(returnData), content_type="application/json", status_code=401)
+   
+        streams = DataStream.objects.get_viewable(user)
+        returnData['streams'] = [s.toDict() for s in streams]
+
+        return HttpResponse(json.dumps(returnData, indent=4), content_type="application/json")
 

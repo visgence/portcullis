@@ -298,12 +298,6 @@ class Sensor(models.Model):
             ,'description': self.description
         }
 
-        try:
-            ds = self.datastream_set.get(sensor=self)
-            data['name'] = ds.name
-        except DataStream.DoesNotExist:
-            pass
-
         return data
 
     def isClaimed(self):
@@ -516,6 +510,18 @@ class DataStream(models.Model):
 
     def __unicode__(self):
         return "Stream_ID: %s" % self.id  + " Name: " + self.name
+
+    def toDict(self):
+        data = {
+            'sensor': None
+            ,'owner': self.owner.email
+            ,'name': self.name
+        }
+
+        if self.sensor is not None:
+            data['sensor'] = self.sensor.toDict()
+
+        return data
 
     def is_editable_by_user(self, user):
         '''
