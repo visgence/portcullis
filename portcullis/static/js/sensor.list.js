@@ -1,29 +1,29 @@
 $(function() {
 
-    var ClaimedSensorList = function() {
+    var SensorList = function() {
 
         this.claimedSensors = ko.observableArray();
 
         //TODO: Make this it's own user class
         this.owner = '';
-        this.csUri = '';
+        this.sensorUri = '';
 
         this.tableMsg = ko.observable();
 
         this.init = function(vars) {
             vars = vars || {};
-            if(!vars.hasOwnProperty('csUri') || vars['csUri'] === '')
-                throw('No Claimed Sensor URI was given.');
+            if(!vars.hasOwnProperty('sensorUri') || vars['sensorUri'] === '')
+                throw('No Sensor URI was given.');
             if(!vars.hasOwnProperty('owner') || vars['owner'] === '')
                 throw('No owner was given.');
 
-            this.csUri = vars['csUri'];
+            this.sensorUri = vars['sensorUri'];
             this.owner = vars['owner'];
             this.claimedSensors([]);
         }.bind(this);
 
         this.addSensor = function(data) {
-            var newSensor = new $.fn.ClaimedSensor();
+            var newSensor = new $.fn.Sensor();
             newSensor.init(data);
             newSensor.list = this;
             this.claimedSensors.push(newSensor);
@@ -31,7 +31,7 @@ $(function() {
 
         this.loadclaimed = function() {
             var self = this;
-            $.get(this.csUri, function(resp) {
+            $.get(this.sensorUri, function(resp) {
                 if(resp.errors.length > 0) {
                     console.error(resp);
                     self.tableMsg("Something went wrong loading your claimed sensors.");
@@ -39,6 +39,7 @@ $(function() {
                 else {
                     self.tableMsg("");
                     self.claimedSensors.removeAll();
+                    console.log(resp);
                     $.each(resp.sensors, function() {
                         self.addSensor(this);
                     });
@@ -59,5 +60,5 @@ $(function() {
 
     };
 
-    $.fn.ClaimedSensorList = ClaimedSensorList;
+    $.fn.SensorList = SensorList;
 });

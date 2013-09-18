@@ -1,6 +1,6 @@
 $(function() {
 
-    var ClaimedSensor = function(){
+    var Sensor = function(){
         this.uuid = ko.observable().extend({required: "UUID is required"});
         this.name = ko.observable().extend({required: "Name is required"});;
 
@@ -15,7 +15,9 @@ $(function() {
         this.toDict = function() {
             return {
                 'uuid': this.uuid()
-                ,'name': this.name()
+                ,'stream_data': {
+                    'name': this.name()
+                }
             };
         };
 
@@ -63,5 +65,5 @@ $(function() {
         return target;
     };
 
-    $.fn.ClaimedSensor = ClaimedSensor;
+    $.fn.Sensor = Sensor;
 });

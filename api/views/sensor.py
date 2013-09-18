@@ -149,7 +149,6 @@ class SensorView(View):
 
 
     def get(self, request):
-
         returnData = {
             'errors': []
             ,'sensors': []
@@ -160,7 +159,7 @@ class SensorView(View):
             returnData['errors'].append('User authentication failed.')
             return HttpResponse(json.dumps(returnData), content_type="application/json", status_code=401)
        
-        sensors = Sensor.objects.filter(claimedsensor__owner=user)
+        sensors = Sensor.objects.filter(datastream__owner=user)
         returnData['sensors'] = [s.toDict() for s in sensors]
         
         return HttpResponse(json.dumps(returnData), content_type="application/json")

@@ -7,19 +7,19 @@
 
         <form class="form-horizontal" id="sensor-claim-form" role="role" data-bind="submit: claimSensor">
             {% csrf_token %}
-            <div class="form-group" data-bind="css: {'has-error': csToAdd().uuid.hasError}">
+            <div class="form-group" data-bind="css: {'has-error': sensorToAdd().uuid.hasError}">
                 <label class="control-label col-lg-4 col-md-4" for="uuid">Sensor UUID</label>
                 <div class="col-lg-6 col-md-6">
-                    <input type="text" placeholder="uuid" class="form-control" data-bind="value: csToAdd().uuid">
-                    <p class="help-block" data-bind="text: csToAdd().uuid.errorMsg"></p>
+                    <input type="text" placeholder="uuid" class="form-control" data-bind="value: sensorToAdd().uuid">
+                    <p class="help-block" data-bind="text: sensorToAdd().uuid.errorMsg"></p>
                 </div>
             </div>
 
-            <div class="form-group" data-bind="css: {'has-error': csToAdd().name.hasError}">
+            <div class="form-group" data-bind="css: {'has-error': sensorToAdd().name.hasError}">
                 <label class="control-label col-lg-4 col-md-4" for="name">Sensor Name</label>
                 <div class="col-lg-6 col-md-6">
-                    <input type="text" placeholder="name" class="form-control" data-bind="value: csToAdd().name">
-                    <p class="help-block" data-bind="text: csToAdd().name.errorMsg"></p>
+                    <input type="text" placeholder="name" class="form-control" data-bind="value: sensorToAdd().name">
+                    <p class="help-block" data-bind="text: sensorToAdd().name.errorMsg"></p>
                 </div>
             </div>
             
@@ -60,15 +60,15 @@
         </div>
     </div>
     
-    <script type="text/javascript" src="{{STATIC_URL}}js/claimedSensor.list.js"></script>
-    <script type="text/javascript" src="{{STATIC_URL}}js/claimedSensor.js"></script>
-    <script type="text/javascript" src="{{STATIC_URL}}js/claimedSensorForm.js"></script>
+    <script type="text/javascript" src="{{STATIC_URL}}js/sensor.list.js"></script>
+    <script type="text/javascript" src="{{STATIC_URL}}js/sensor.js"></script>
+    <script type="text/javascript" src="{{STATIC_URL}}js/sensorForm.js"></script>
 
     <script>
         $(function() {
-            var csForm = new $.fn.ClaimedSensorForm();
-            csForm.init({'csUri': "{% url 'sensor-list' %}", 'owner': "{{user.email}}"});
-            ko.applyBindings(csForm, $('#sensor-claim-form').get(0));
+            var sensorForm = new $.fn.SensorForm();
+            sensorForm.init({'sensorUri': "{% url 'sensor-list' %}", 'owner': "{{user.email}}"});
+            ko.applyBindings(sensorForm, $('#sensor-claim-form').get(0));
         });
     </script>
 {% endblock %}
