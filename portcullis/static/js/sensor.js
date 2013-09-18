@@ -57,6 +57,8 @@ $(function() {
         }
 
         function validate(newValue) {
+            newValue = newValue ? newValue.trim() : newValue;
+
             target.hasError(newValue ? false:true);
             target.errorMsg(newValue ? "": msg || "This field is required");
         }
