@@ -45,17 +45,6 @@ class HelperMethods(TestCase):
         ns.save()
         return ns
 
-    def createClaimedSensor(self):
-        '''
-            Helper to create a new dummy claimed sensor
-        '''
-
-        sensor = self.createDummySensor()
-        owner = PortcullisUser.objects.get(email="admin@visgence.com")
-        newCs = ClaimedSensor(sensor=sensor, owner=owner, name="foo_cs")
-        newCs.save()
-        return newCs
-
 
 class ReadingLoaderTest(TestCase):
     '''
