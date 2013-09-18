@@ -81,7 +81,6 @@ def add_reading_list(request):
 
     try:
         try:
-            print request.body
             readings = json.loads(request.body)
         except KeyError:
             msg = "No json received. Please send a serialized array of arrays in the form "
@@ -116,7 +115,7 @@ def add_reading_list(request):
 
             # Get the datastream, if possible
             try:
-                ds = DataStream.objects.get(claimed_sensor__sensor__uuid=uuid)
+                ds = DataStream.objects.get(sensor__uuid=uuid)
             except DataStream.DoesNotExist as e:
                 ds = str(e)
             except ValueError as e:
@@ -125,7 +124,7 @@ def add_reading_list(request):
                 error_string += '\n' + ds + '\n'
             else:
                 try:
-                    insert_reading(ds, ds.claimed_sensor.sensor, raw_sensor_value, timestamp)
+                    insert_reading(ds, ds.sensor, raw_sensor_value, timestamp)
                     insertion_successes += 1
                 except SensorReadingCollision as e:
                     error_string += '\n' + str(e) + '\n'
