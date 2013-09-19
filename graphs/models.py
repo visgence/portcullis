@@ -514,6 +514,7 @@ class DataStream(models.Model):
     def toDict(self):
         data = {
             'sensor': None
+            ,'id': self.id
             ,'owner': self.owner.email
             ,'name': self.name
         }
