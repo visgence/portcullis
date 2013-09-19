@@ -45,6 +45,7 @@
                         <th>Owner</th>
                         <th>UUID</th>
                         <th>Name</th>
+                        <th>Data URL</th>
                     </tr>
                 </thead>
                 <tbody data-bind="foreach: dataStreams">
@@ -52,6 +53,7 @@
                         <td data-bind="text: owner"></td>
                         <td data-bind="text: sensor().uuid"></td>
                         <td data-bind="text: name"></td>
+                        <td data-bind="text: dataUrl"></td>
                     </tr>
                 </tbody>
             </table>
@@ -72,6 +74,7 @@
             var data = {
                 'sensorUri': "{% url 'sensor-list' %}"
                 ,'streamUri': "{% url 'datastream-list' %}"
+                ,'readingUri': "{% url 'sensor-reading-list' %}"
                 ,'user': "{{user.email}}"};
             var sensorForm = new $.fn.SensorForm();
             sensorForm.init(data);

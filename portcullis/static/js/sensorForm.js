@@ -9,6 +9,7 @@ $(function() {
         this.streamList = new DataStreamList();
 
         this.sensorUri = '';
+        this.readingUri = '';
         this.user = '';
 
         this.formMsg = ko.observable();
@@ -20,16 +21,19 @@ $(function() {
                 throw('No Sensor URI was given.');
             if(!vars.hasOwnProperty('streamUri') || vars['streamUri'] === '')
                 throw('No DataStream URI was given.');
+            if(!vars.hasOwnProperty('readingUri') || vars['readingUri'] === '')
+                throw('No Sensor Reading URI was given.');
             if(!vars.hasOwnProperty('user') || vars['user'] === '')
                 throw('No user was given.');
 
             this.sensorUri = vars['sensorUri'];
             this.streamUri = vars['streamUri'];
+            this.readingUri = vars['readingUri'];
             this.user = vars['user'];
 
             this.hasError(false);
 
-            this.streamList.init({'owner': this.user, 'streamUri': this.streamUri});
+            this.streamList.init({'owner': this.user, 'streamUri': this.streamUri, 'readingUri': this.readingUri});
             this.streamList.loadclaimed();
             ko.applyBindings(this.streamList, $('#users-claimed-sensors').get(0));
             
