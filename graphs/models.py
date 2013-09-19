@@ -373,7 +373,7 @@ class DataStreamManager(ChuchoManager):
         if user.is_superuser:
             return objs
 
-        return objs.filter(device__owner=user)
+        return objs.filter(owner=user)
         
     def get_ds_and_validate(self, ds_id, obj, perm='read'):
         '''
