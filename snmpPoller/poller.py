@@ -10,8 +10,8 @@ import ordereddict
 import pickle
 import json
 import requests
-urlCreate = "http://192.168.11.19:8003/api/createSensors/"
-urlAdd = "http://192.168.11.19:8003/api/addList/"
+urlCreate = "http://portcullis.visgence.com/api/sensors/"
+urlAdd = "http://portcullis.visgence.com/api/readings/"
 filename = 'streams.pickle'
 STREAMS = None
 
@@ -84,7 +84,7 @@ def main():
 
     print "Streams Read"
   
-    hosts = ['192.168.11.200','192.168.11.1']
+    hosts = ['192.168.11.200','192.168.11.1', '192.168.11.201']
     snmpTypes = ['ifInOctets','ifOutOctets','ifInUcastPkts','ifOutUcastPkts']
 
     for hostname in hosts:
@@ -124,18 +124,29 @@ def main():
 
 def createStreams(streams):
 
-    jsonData = {"sensors":[],"email":"auth@example.com"}
-
+    jsonData = {"sensors":[],"email":"admin@visgence.com"}
     for s in streams.values():
-        sensor ={}
+        sensor ={} 
         sensor['uuid'] = s.index
-        sensor['name'] = "%s|%s|%s" % (s.host,s.tag,s.ifName)
+        function = "Kpps"
+        units = "Kpps"
+        if "Octets" in s.tag:
+            function = "Kbps"
+            units = "Kbps"
+
+        sensor['stream_data'] = { 
+            'name': "%s|%s|%s" % (s.host,s.ifName,s.tag)
+            ,'is_public': True
+            ,'scaling_function': function
+            ,'units': units
+        }   
         jsonData['sensors'].append(sensor)
-           
+    
     
     data = json.dumps(jsonData,indent=4)
     r = requests.post(urlCreate,data=data)
     print r.text
+
 
 def postResults(results):
     
