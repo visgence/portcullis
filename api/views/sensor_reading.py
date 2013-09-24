@@ -112,6 +112,8 @@ def add_readings(readings, streamId=None):
   
     #Grab all reading from the json
     for reading in readings:
+        if streamId is None:
+            ds = None
         uuid = None
         raw_sensor_value = None
         timestamp = None
