@@ -100,7 +100,7 @@ class ScalingFunctionManager(ChuchoManager):
 
 
 class ScalingFunction(models.Model):
-    name = models.CharField(max_length=32, unique=True)
+    name = models.CharField(max_length=32, unique=True, index=True)
     definition = models.CharField(max_length=1000)
     objects = ScalingFunctionManager()
 
@@ -328,6 +328,7 @@ class Sensor(models.Model):
 
     metadata = property(getMetadata, setMetadata) 
 
+
 class DataStreamManager(ChuchoManager):
     def can_edit(self, user):
         '''
@@ -480,7 +481,7 @@ class DataStreamManager(ChuchoManager):
 
 
 class DataStream(models.Model):
-    sensor = models.ForeignKey(Sensor, unique=True, null=True)
+    sensor = models.ForeignKey(Sensor, unique=True, null=True, index=True)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
     color = models.CharField(max_length=32, blank=True)
     min_value = models.DecimalField(null=True, max_digits=20, decimal_places=6, blank=True)
