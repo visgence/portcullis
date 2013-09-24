@@ -22,5 +22,13 @@
             "name": "Temperature, Celsius (LM335)",
             "definition": "return (x/2.046 -273.15) * 1.8 + 32;"
         }
-    }    
+    },
+    {
+        "pk": 4,
+        "model": "graphs.scalingfunction",
+        "fields": {
+            "name": "Kpps",
+            "definition": "return (x/1000);"
+        }
+    }
 ]
