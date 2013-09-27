@@ -131,6 +131,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 )
 
 MIDDLEWARE_CLASSES = (
+    'api.errorMiddleware.ErrorLoggingMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.transaction.TransactionMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -177,6 +178,11 @@ INSTALLED_APPS = (
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format' : '%(levelname)5s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
+            }
+        },
     'filters': {
         'require_debug_false': {
             '()': 'django.utils.log.RequireDebugFalse'
@@ -187,13 +193,25 @@ LOGGING = {
             'level': 'ERROR',
             'filters': ['require_debug_false'],
             'class': 'django.utils.log.AdminEmailHandler'
-        }
-    },
+        },
+        'debug': {
+            'level': 'DEBUG',
+            'filters': [],
+            'class': 'logging.FileHandler',
+            'filename': '/tmp/portcullis_debug.log',
+            'formatter': 'verbose'
+            }
+        },
     'loggers': {
         'django.request': {
             'handlers': ['mail_admins'],
             'level': 'ERROR',
             'propagate': True,
         },
+        'debug': {
+            'handlers': ['debug'],
+            'level': 'DEBUG',
+            'propagate': False
+            }
+        }
     }
-}
