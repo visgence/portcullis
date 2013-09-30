@@ -16,6 +16,7 @@ var overviewPlots = {};
 var plots = {};
 var checkedGraphs = [];
 var graphSpinners = [];
+var finishedLoading = {};
 
 function create_plot_select_handler(datastream_id) 
 { 
@@ -628,6 +629,7 @@ function load_graph(datastream_id, ranges, callback) {
 
     var getData = {};
  
+    finishedLoading[datastream_id] = false;
     getData.start = Math.round(ranges.xaxis.from.getTime()/1000);
     getData.end = Math.round(ranges.xaxis.to.getTime()/1000);
     getData.granularity =  granularity;
@@ -641,6 +643,7 @@ function load_graph(datastream_id, ranges, callback) {
     .always(function() {
         graphSpinners[spinIndex]['tiny'].stop();
         graphSpinners[spinIndex]['large'].stop();
+        finishedLoading[datastream_id] = true;
     });
 }
 
@@ -1126,7 +1129,7 @@ function utc_to_local(timestamp)
     //Turn to miliseconds then add in time zone offset
     var local_timestamp = timestamp*1000 - tz_offset;
 
-    return local_timestamp
+    return local_timestamp;
 }
 
 
@@ -1147,7 +1150,15 @@ function auto_refresh(chk_ele)
         clearInterval(clear_interval_id);
         clear_interval_id = setInterval(function() {
             var state = $.bbq.getState();
-            if($('#auto_refresh').prop('checked') && (state['tab'] === "graphs" || state['tab'] === undefined)) {
+            var all_graphs_finished = true;
+            for (var g in finishedLoading) {
+                if (!finishedLoading[g]) {
+                    console.log('Cannot auto_refresh: Not all graphs have finished or failed to load.');
+                    all_graphs_finished = false;
+                    break;
+                }
+            }
+            if(all_graphs_finished && $('#auto_refresh').prop('checked') && (state['tab'] === "graphs" || state['tab'] === undefined)) {
                 $(refreshBtn).trigger('click');
             }
         }, 30000);
