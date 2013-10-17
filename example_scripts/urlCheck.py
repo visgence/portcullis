@@ -11,15 +11,16 @@
 '''
 
 import argparse
+import json
 import requests
 import sys
 
+
 def main(args, parser=None):
     url = args.url
-    ds_id = args.datastream_id
+    uuid = args.uuid
     portcullisUrl = args.portcullisUrl
-    auth_token = args.auth_token
-    if ds_id is None or portcullisUrl is None or auth_token is None:
+    if uuid is None or portcullisUrl is None:
         parser.print_help()
         sys.exit(1)
 
@@ -30,13 +31,11 @@ def main(args, parser=None):
     except requests.exceptions.ConnectionError as e:
         print 'Error connecting to http://%s' % (url,)
         status = 0
-    print 'Sending status %d to portcullis' % (status,)
-    payload = {'auth_token': auth_token
-               ,'datastream_id': ds_id
-               ,'value': status
-               }
+    print 'Sending status %d to %s' % (status, portcullisUrl)
+    payload = [[uuid, status]]
+
     try:
-        resp = requests.post('http://' + portcullisUrl + '/api/add_reading/', payload)
+        resp = requests.post('http://' + portcullisUrl + '/api/readings/', json.dumps(payload))
     except requests.exceptions.ConnectionError as e:
         print 'Error connecting to portcullis http://%s' % (portcullisUrl,)
         print 'ConnectionError: %s' % e
@@ -56,26 +55,14 @@ if __name__ == '__main__':
     group = parser.add_argument_group('Required arguments')
     group.add_argument('url', help='The url of which to check the http status code.')
     group.add_argument('-d'
-                        ,'--datastream_id'
-                        ,type=int
+                        ,'--uuid'
                         ,default=None
                         ,help='Destination portcullis datastream for the http status code.'
                         )
     group.add_argument('-u'
                         ,'--portcullisUrl'
                         ,help='Url for the portcullis data server.'
-                        ,default=''
+                        ,default=None
                         )
-    group.add_argument('-k'
-                        ,'--auth_token'
-                        ,default=''
-                        ,help='Key to allow writing to portcullis datastream.'
-                        )
-    # parser.add_argument('t',
-    #                     ,'--requestType'
-    #                     ,default='GET'
-    #                     ,choices=['GET', 'POST']
-    #                     ,help='Web request type, `GET\' or `POST\'.'
-    #                     )
     args = parser.parse_args()
     main(args, parser)
