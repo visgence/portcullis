@@ -26,25 +26,28 @@ def main(args, parser=None):
 
     print 'Sending request to http://%s' % (url,)
     try:
-        resp = requests.get('http://' + url)
+        resp = requests.get('http://' + url, timeout=120)
         status = resp.status_code
-    except requests.exceptions.ConnectionError as e:
+    except (requests.exceptions.Timeout, requests.exceptions.ConnectionError) as e:
         print 'Error connecting to http://%s' % (url,)
+        print 'Exception: %s' % e
         status = 0
     print 'Sending status %d to %s' % (status, portcullisUrl)
     payload = [[uuid, status]]
 
     try:
-        resp = requests.post('http://' + portcullisUrl + '/api/readings/', json.dumps(payload))
-    except requests.exceptions.ConnectionError as e:
-        print 'Error connecting to portcullis http://%s' % (portcullisUrl,)
-        print 'ConnectionError: %s' % e
+        resp = requests.post('http://' + portcullisUrl + '/api/readings/', json.dumps(payload), timeout=120)
+    except (requests.exceptions.Timeout, requests.exceptions.ConnectionError) as e:
+        sys.stderr('Error connecting to portcullis http://%s\n' % (portcullisUrl,))
+        sys.stderr('ConnectionError: %s\n' % e)
+        sys.stderr.flush()
         sys.exit(1)
     try:
         resp.raise_for_status()
         print resp.text
     except Exception as e:
-        print 'Error connecting to portcullis: %s' % (e,)
+        sys.stderr('Error connecting to portcullis: %s\n' % (e,))
+        sys.stderr.flush()
         sys.exit(1)
 
     print '\nDone\n'
