@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 import os,sys
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 BASE_DIR = os.path.normpath(BASE_DIR)
