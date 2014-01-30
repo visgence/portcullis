@@ -6,7 +6,7 @@ print BASE_DIR
 sys.path.insert(0,BASE_DIR)
 import netsnmp
 import time
-import ordereddict
+from collections import OrderedDict
 import pickle
 import json
 import requests
@@ -69,7 +69,7 @@ class Stream():
 
 def main():
     
-    streams = ordereddict.OrderedDict({})
+    streams = OrderedDict({})
     #streams = {}
     
     
