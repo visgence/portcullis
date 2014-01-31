@@ -25,10 +25,13 @@ def graphsIndex(request):
     graphs = []
     t_graph = loader.get_template('graph.html')
     reductions = reductFunc.keys()
+    tmpDefaultGraphs = []
+
     for graphId in DEFAULT_GRAPHS:
         
         try:
             stream = DataStream.objects.get(id=graphId)
+            tmpDefaultGraphs.append(graphId)
         except DataStream.DoesNotExist:
             print "Invalid stream id %s given for default!" % str(graphId)
             continue
@@ -43,6 +46,6 @@ def graphsIndex(request):
     t = loader.get_template('graphs.html') 
     c = RequestContext(request, {
         'graphs': graphs
-        ,'defaultGraphs': DEFAULT_GRAPHS
+        ,'defaultGraphs': tmpDefaultGraphs
     })
     return HttpResponse(t.render(c))
