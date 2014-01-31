@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 import os,sys
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 BASE_DIR = os.path.normpath(BASE_DIR)
@@ -6,7 +6,7 @@ print BASE_DIR
 sys.path.insert(0,BASE_DIR)
 import netsnmp
 import time
-import ordereddict
+from collections import OrderedDict
 import pickle
 import json
 import requests
@@ -69,7 +69,7 @@ class Stream():
 
 def main():
     
-    streams = ordereddict.OrderedDict({})
+    streams = OrderedDict({})
     #streams = {}
     
     
