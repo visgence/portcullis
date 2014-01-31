@@ -30,7 +30,8 @@ def graphsIndex(request):
         try:
             stream = DataStream.objects.get(id=graphId)
         except DataStream.DoesNotExist:
-            raise Http404('Invalid stream id given for default!') 
+            print "Invalid stream id %s given for default!" % str(graphId)
+            continue
 
         c_graph = Context({
              'id': graphId
