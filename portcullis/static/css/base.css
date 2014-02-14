@@ -1,8 +1,8 @@
 #header
 {
     margin: auto;
-    margin-bottom: 1em;
-    margin-top: 1em;
+    /*margin-bottom: 1em;*/
+    /*margin-top: 1em;*/
 }
 
 #base_content
@@ -12,10 +12,13 @@
 
 #greeting {
     margin-right: 2em;
+    margin-top: 1em;
 }
 
 nav.navbar {
     background-color: #363d97;
+    border-radius: 0;
+    border: 0;
 }
 .navbar-default .navbar-nav > .active > a, 
 .navbar-default .navbar-nav > .active > a:hover, 
