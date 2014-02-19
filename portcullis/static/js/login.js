@@ -26,8 +26,8 @@ function post_login(data)
     else {
         $('#greeting').html(data.greeting);
         $('#nav').html(data.nav);
-
         $('#login_error').text('');
+        ready_tabs();
     }
 }
 

@@ -264,7 +264,7 @@ function get_period()
     var start = null;
     var end = null;
 
-    if($('#custom').attr('checked')) {
+    if($('#custom').prop('checked')) {
         if( !$('#start').val() || !$('#end').val() ) {
             custom_period_error(false, 'Please give a start and end date');
             return null;
